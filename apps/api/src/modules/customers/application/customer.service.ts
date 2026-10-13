@@ -17,6 +17,7 @@ import type {
 import { AuthorizationService } from '../../authorization/application/authorization.service.js';
 import { hasTenantLevelMembership } from '../../authorization/application/membership-scope.js';
 import { SYSTEM_ROLE_TENANT_ADMIN } from '../../authorization/domain/permission-keys.js';
+import { IdentityAccountService } from '../../identity/application/identity-account.service.js';
 import { MembershipService } from '../../memberships/application/membership.service.js';
 import { Tenant } from '../domain/tenant.entity.js';
 import {
@@ -36,6 +37,7 @@ export class CustomerService {
     private readonly memberships: MembershipService,
     @Inject(forwardRef(() => AuthorizationService))
     private readonly authorization: AuthorizationService,
+    private readonly identities: IdentityAccountService,
   ) {}
 
   async findById(id: string): Promise<TenantRecord | null> {
@@ -78,10 +80,28 @@ export class CustomerService {
     return toCustomerResponse(tenant);
   }
 
-  async create(userId: string, name: string): Promise<CustomerResponse> {
+  async findBySlug(slug: string): Promise<CustomerResponse | null> {
+    const tenant = await this.tenantRepository.findOne({ where: { slug } });
+    return tenant ? toCustomerResponse(tenant) : null;
+  }
+
+  async create(
+    creatorUserId: string,
+    name: string,
+    initialAdminUserId?: string,
+  ): Promise<CustomerResponse> {
+    if (!(await this.identities.isPlatformAdmin(creatorUserId))) {
+      throw new AccessForbiddenException(
+        'Only platform admins can create customers',
+      );
+    }
     const trimmed = name.trim();
     if (!trimmed) {
       throw new InvalidRequestException('name is required');
+    }
+    const tenantAdminUserId = initialAdminUserId ?? creatorUserId;
+    if (!(await this.identities.isUserActive(tenantAdminUserId))) {
+      throw new ResourceNotFoundException('User not found');
     }
     const baseSlug = slugify(
       trimmed,
@@ -124,7 +144,7 @@ export class CustomerService {
       await this.authorization.seedSystemRoles(manager, tenant.id);
       const membership = await this.memberships.createInTransaction(manager, {
         tenantId: tenant.id,
-        userId,
+        userId: tenantAdminUserId,
         communityId: null,
       });
       const adminRole = await this.authorization.findSystemRole(
@@ -141,7 +161,8 @@ export class CustomerService {
       this.logger.log({
         msg: 'customer_created',
         tenantId: tenant.id,
-        userId,
+        creatorUserId,
+        tenantAdminUserId,
       });
       return toCustomerResponse(tenant);
     });

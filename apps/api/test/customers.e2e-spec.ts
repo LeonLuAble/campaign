@@ -11,7 +11,11 @@ import {
   clearIdentityData,
   ensureIdentitySchema,
 } from './ensure-identity-schema.js';
-import { auth, registerActivatedUser } from './tenant-test-helpers.js';
+import {
+  auth,
+  promotePlatformAdmin,
+  registerActivatedUser,
+} from './tenant-test-helpers.js';
 
 describe('Customers, communities, memberships (e2e)', () => {
   let app: INestApplication;
@@ -49,12 +53,27 @@ describe('Customers, communities, memberships (e2e)', () => {
     expect(response.status).toBe(401);
   });
 
+  it('rejects customer creation unless the caller is a platform admin', async () => {
+    const user = await registerActivatedUser(
+      app,
+      notifications,
+      'user@example.com',
+    );
+    const response = await request(app.getHttpServer())
+      .post('/api/v1/customers')
+      .set(auth(user.accessToken))
+      .send({ name: 'Tzu Chi Malaysia' });
+    expect(response.status).toBe(403);
+    expect(response.body.code).toBe('FORBIDDEN');
+  });
+
   it('creates a customer, seeds system roles, and lists it for the creator', async () => {
     const admin = await registerActivatedUser(
       app,
       notifications,
       'admin@example.com',
     );
+    await promotePlatformAdmin(dataSource, admin.userId);
 
     const created = await request(app.getHttpServer())
       .post('/api/v1/customers')
@@ -99,6 +118,7 @@ describe('Customers, communities, memberships (e2e)', () => {
       notifications,
       'admin@example.com',
     );
+    await promotePlatformAdmin(dataSource, admin.userId);
     const member = await registerActivatedUser(
       app,
       notifications,
@@ -178,6 +198,7 @@ describe('Customers, communities, memberships (e2e)', () => {
       notifications,
       'admin@example.com',
     );
+    await promotePlatformAdmin(dataSource, admin.userId);
     const member = await registerActivatedUser(
       app,
       notifications,
@@ -215,6 +236,47 @@ describe('Customers, communities, memberships (e2e)', () => {
       .send({ name: 'Hijacked' });
     expect(update.status).toBe(403);
     expect(update.body.code).toBe('FORBIDDEN');
+  });
+
+  it('seeds tenant_admin on initialAdminUserId and does not add the creator', async () => {
+    const platformAdmin = await registerActivatedUser(
+      app,
+      notifications,
+      'platform@example.com',
+    );
+    await promotePlatformAdmin(dataSource, platformAdmin.userId);
+    const tenantAdmin = await registerActivatedUser(
+      app,
+      notifications,
+      'tenant-admin@example.com',
+    );
+
+    const created = await request(app.getHttpServer())
+      .post('/api/v1/customers')
+      .set(auth(platformAdmin.accessToken))
+      .send({
+        name: 'Tzu Chi Malaysia',
+        initialAdminUserId: tenantAdmin.userId,
+      });
+    expect(created.status).toBe(201);
+
+    const creatorList = await request(app.getHttpServer())
+      .get('/api/v1/customers')
+      .set(auth(platformAdmin.accessToken));
+    expect(creatorList.status).toBe(200);
+    expect(creatorList.body).toEqual([]);
+
+    const creatorGet = await request(app.getHttpServer())
+      .get(`/api/v1/customers/${created.body.id}`)
+      .set(auth(platformAdmin.accessToken));
+    expect(creatorGet.status).toBe(404);
+
+    const tenantList = await request(app.getHttpServer())
+      .get('/api/v1/customers')
+      .set(auth(tenantAdmin.accessToken));
+    expect(tenantList.status).toBe(200);
+    expect(tenantList.body).toHaveLength(1);
+    expect(tenantList.body[0].id).toBe(created.body.id);
   });
 
   it('lists the permission catalog for an authenticated user', async () => {

@@ -120,6 +120,7 @@ export interface CustomerResponse {
 
 export interface CreateCustomerRequest {
   name: string;
+  initialAdminUserId?: string;
 }
 
 export interface UpdateCustomerRequest {

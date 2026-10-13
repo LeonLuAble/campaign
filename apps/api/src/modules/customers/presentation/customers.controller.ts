@@ -24,6 +24,7 @@ import type { TenantContext } from '../../authorization/application/tenant-conte
 import { CustomerService } from '../application/customer.service.js';
 import { CreateCustomerDto } from '../dto/create-customer.dto.js';
 import { UpdateCustomerDto } from '../dto/update-customer.dto.js';
+import { PlatformAdminGuard } from './platform-admin.guard.js';
 
 @Controller('customers')
 @UseGuards(JwtAuthGuard)
@@ -32,11 +33,12 @@ export class CustomersController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @UseGuards(PlatformAdminGuard)
   create(
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CreateCustomerDto,
   ) {
-    return this.customers.create(user.userId, dto.name);
+    return this.customers.create(user.userId, dto.name, dto.initialAdminUserId);
   }
 
   @Get()

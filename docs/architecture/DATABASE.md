@@ -51,6 +51,7 @@ Future/optional: `outbox_events`, `processed_events`.
 Rules:
 - no customers table duplicating tenants.
 - no password_hash/googleId/appleId on users.
+- users.is_platform_admin is a boolean default false (platform-level flag, not a tenant role). It does not grant implicit cross-tenant data access.
 - social identity UNIQUE(provider, provider_subject).
 - historical outcomes retain factor version used.
 - imports must be idempotent.

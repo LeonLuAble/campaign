@@ -10,7 +10,11 @@ import {
   clearIdentityData,
   ensureIdentitySchema,
 } from './ensure-identity-schema.js';
-import { auth, registerActivatedUser } from './tenant-test-helpers.js';
+import {
+  auth,
+  promotePlatformAdmin,
+  registerActivatedUser,
+} from './tenant-test-helpers.js';
 
 describe('Tenant isolation (e2e)', () => {
   let app: INestApplication;
@@ -44,11 +48,17 @@ describe('Tenant isolation (e2e)', () => {
 
     userA = await registerActivatedUser(app, notifications, 'a@example.com');
     userB = await registerActivatedUser(app, notifications, 'b@example.com');
+    const platformAdmin = await registerActivatedUser(
+      app,
+      notifications,
+      'platform@example.com',
+    );
+    await promotePlatformAdmin(dataSource, platformAdmin.userId);
 
     const createdA = await request(app.getHttpServer())
       .post('/api/v1/customers')
-      .set(auth(userA.accessToken))
-      .send({ name: 'Customer A' });
+      .set(auth(platformAdmin.accessToken))
+      .send({ name: 'Customer A', initialAdminUserId: userA.userId });
     const communityA = await request(app.getHttpServer())
       .post('/api/v1/communities')
       .set(auth(userA.accessToken))
@@ -60,8 +70,8 @@ describe('Tenant isolation (e2e)', () => {
 
     const createdB = await request(app.getHttpServer())
       .post('/api/v1/customers')
-      .set(auth(userB.accessToken))
-      .send({ name: 'Customer B' });
+      .set(auth(platformAdmin.accessToken))
+      .send({ name: 'Customer B', initialAdminUserId: userB.userId });
     const communityB = await request(app.getHttpServer())
       .post('/api/v1/communities')
       .set(auth(userB.accessToken))

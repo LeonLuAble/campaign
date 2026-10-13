@@ -2,6 +2,7 @@ import { DataSource } from 'typeorm';
 import { CreateIdentityTables1791865103000 } from '../src/platform/database/migrations/1791865103000-CreateIdentityTables.js';
 import { AddIdentityIdToUserTokens1791965204000 } from '../src/platform/database/migrations/1791965204000-AddIdentityIdToUserTokens.js';
 import { CreateTenantCommunityMembershipTables1792065305000 } from '../src/platform/database/migrations/1792065305000-CreateTenantCommunityMembershipTables.js';
+import { AddUserPlatformAdmin1792165406000 } from '../src/platform/database/migrations/1792165406000-AddUserPlatformAdmin.js';
 
 async function tableExists(
   dataSource: DataSource,
@@ -87,6 +88,11 @@ async function ensureIdentitySchemaWithoutTenant(
   }
   if (!(await columnExists(dataSource, 'user_tokens', 'identity_id'))) {
     await new AddIdentityIdToUserTokens1791965204000().up(
+      dataSource.createQueryRunner(),
+    );
+  }
+  if (!(await columnExists(dataSource, 'users', 'is_platform_admin'))) {
+    await new AddUserPlatformAdmin1792165406000().up(
       dataSource.createQueryRunner(),
     );
   }

@@ -1,5 +1,6 @@
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
+import { DataSource } from 'typeorm';
 import { DevNotificationSender } from '../src/modules/auth/infrastructure/dev-notification.sender.js';
 
 export async function registerActivatedUser(
@@ -33,4 +34,14 @@ export async function registerActivatedUser(
 
 export function auth(token: string): { Authorization: string } {
   return { Authorization: `Bearer ${token}` };
+}
+
+export async function promotePlatformAdmin(
+  dataSource: DataSource,
+  userId: string,
+): Promise<void> {
+  await dataSource.query(
+    `UPDATE users SET is_platform_admin = true WHERE id = $1`,
+    [userId],
+  );
 }

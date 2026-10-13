@@ -12,7 +12,7 @@ Current stack: Flutter/Dart, Flutter Web, NestJS/TypeScript, PostgreSQL, Redis, 
 
 Phase 0 (repository foundation) is complete.
 Phase 1 (Identity + Authentication) is complete: users, identities, credentials, social identities, refresh tokens, email/mobile password login, Google/Apple authentication boundary, registration, activation, password reset, secure token handling, migrations, and tests.
-Phase 2 (Customer/community/membership/authorization) is complete: `tenants` (API: customers), arbitrary-depth `community_nodes`, memberships, tenant-scoped roles, a global permission catalog, backend guards/policies, tenant isolation tests, additive TypeORM migrations, and API contracts.
+Phase 2 (Customer/community/membership/authorization) is complete: `tenants` (API: customers), arbitrary-depth `community_nodes`, memberships, tenant-scoped roles, a global permission catalog, backend guards/policies, tenant isolation tests, additive TypeORM migrations, and API contracts. Customer creation is restricted to platform admins (`users.is_platform_admin`). `npm run seed:tzu-chi` (from `apps/api`) promotes an existing user by email and creates Tzu Chi Malaysia if missing.
 
 Next phase: Phase 3 — User import/activation.
 
@@ -44,6 +44,7 @@ Read these before making architectural or domain decisions.
 - Impact factors are versioned/source-attributed.
 - Initial architecture is not microservices.
 - No Kafka/RabbitMQ/Kubernetes for MVP without explicit approval.
+- Only platform admins may create customers. Platform admin is `users.is_platform_admin` (default false), a platform-level flag, not a tenant role. It grants no implicit cross-tenant data access beyond `POST /customers`. Optional `initialAdminUserId` receives the seeded `tenant_admin` membership; if omitted, the creating platform admin becomes `tenant_admin`.
 
 ## Immediate Development Path
 If Phase 0 is not complete, finish Phase 0 first.

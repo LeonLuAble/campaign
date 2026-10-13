@@ -2,7 +2,12 @@ import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  AccessForbiddenException,
+  ResourceNotFoundException,
+} from '../../../shared/errors/domain-http.exceptions.js';
 import { AuthorizationService } from '../../authorization/application/authorization.service.js';
+import { IdentityAccountService } from '../../identity/application/identity-account.service.js';
 import { MembershipService } from '../../memberships/application/membership.service.js';
 import { Tenant } from '../domain/tenant.entity.js';
 import { CustomerService } from './customer.service.js';
@@ -20,6 +25,10 @@ describe('CustomerService', () => {
     listActiveForUserInTenant: vi.fn(),
   };
   const authorization = {};
+  const identities = {
+    isPlatformAdmin: vi.fn(),
+    isUserActive: vi.fn(),
+  };
   const dataSource = { transaction: vi.fn() };
 
   beforeEach(async () => {
@@ -31,6 +40,7 @@ describe('CustomerService', () => {
         { provide: DataSource, useValue: dataSource },
         { provide: MembershipService, useValue: memberships },
         { provide: AuthorizationService, useValue: authorization },
+        { provide: IdentityAccountService, useValue: identities },
       ],
     }).compile();
     service = module.get(CustomerService);
@@ -71,5 +81,23 @@ describe('CustomerService', () => {
     memberships.listTenantIdsForUser.mockResolvedValue([]);
     await expect(service.listForUser('user-1')).resolves.toEqual([]);
     expect(tenantRepository.find).not.toHaveBeenCalled();
+  });
+
+  it('refuses to create a customer unless the caller is a platform admin', async () => {
+    identities.isPlatformAdmin.mockResolvedValue(false);
+    await expect(
+      service.create('user-1', 'Tzu Chi Malaysia'),
+    ).rejects.toBeInstanceOf(AccessForbiddenException);
+    expect(dataSource.transaction).not.toHaveBeenCalled();
+  });
+
+  it('seeds tenant_admin on initialAdminUserId instead of the creator', async () => {
+    identities.isPlatformAdmin.mockResolvedValue(true);
+    identities.isUserActive.mockResolvedValue(false);
+    await expect(
+      service.create('creator-1', 'Tzu Chi Malaysia', 'admin-1'),
+    ).rejects.toBeInstanceOf(ResourceNotFoundException);
+    expect(identities.isUserActive).toHaveBeenCalledWith('admin-1');
+    expect(dataSource.transaction).not.toHaveBeenCalled();
   });
 });

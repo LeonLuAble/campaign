@@ -17,6 +17,14 @@ Auth error codes include `INVALID_CREDENTIALS`, `SOCIAL_TOKEN_INVALID`, `TOKEN_I
 Password policy: minimum 8 characters (configurable via `PASSWORD_MIN_LENGTH`).
 
 Customer: `/customers`
+- POST /customers `{ name, initialAdminUserId? }` → 201. Platform-admin only (`users.is_platform_admin`); other authenticated users get 403 `FORBIDDEN`. Platform admin is a platform-level user flag, not a tenant role, and grants no implicit access to customer data beyond create.
+- `initialAdminUserId` (optional UUID) is the user who receives the seeded `tenant_admin` membership. If omitted, the creating platform admin becomes `tenant_admin`. The creator is not added as a member when a different `initialAdminUserId` is supplied.
+- GET /customers → tenants the caller has an active membership in (no `customers.read` required)
+- GET /customers/:customerId → requires `customers.read` in that tenant; missing membership is 404
+- PATCH /customers/:customerId `{ name?, isActive? }` → requires `customers.update` and a tenant-level membership
+
+Bootstrap (idempotent, no hardcoded credentials): from `apps/api`, `npm run seed:tzu-chi -- --email existing-user@example.com` (or `SEED_ADMIN_EMAIL`) promotes that existing user to platform admin and creates `Tzu Chi Malaysia` if it does not already exist.
+
 Communities: `/communities`
 Membership/roles/permissions: `/memberships`, `/roles`, `/permissions`
 
