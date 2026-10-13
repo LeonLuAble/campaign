@@ -18,6 +18,9 @@ import { ActionsModule } from './modules/actions/actions.module.js';
 import { VegetarianModule } from './modules/vegetarian/vegetarian.module.js';
 import { ProgressModule } from './modules/progress/progress.module.js';
 import { MilestonesModule } from './modules/milestones/milestones.module.js';
+import { MeasurementsModule } from './modules/measurements/measurements.module.js';
+import { OutcomesModule } from './modules/outcomes/outcomes.module.js';
+import { VisualizationsModule } from './modules/visualizations/visualizations.module.js';
 import { DatabaseModule } from './platform/database/database.module.js';
 import { RedisModule } from './platform/redis/redis.module.js';
 
@@ -44,6 +47,9 @@ import { RedisModule } from './platform/redis/redis.module.js';
     VegetarianModule,
     ProgressModule,
     MilestonesModule,
+    MeasurementsModule,
+    OutcomesModule,
+    VisualizationsModule,
     AuthorizationModule,
   ],
 })

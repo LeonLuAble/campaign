@@ -2,5 +2,22 @@
   "@@locale": "zh",
   "appTitle": "社区活动",
   "homeMessage": "社区活动平台",
-  "environmentLabel": "环境：{environment}"
+  "environmentLabel": "环境：{environment}",
+  "openDashboard": "我的仪表板",
+  "participantDashboardTitle": "我的活动仪表板",
+  "emptyDashboard": "暂无仪表板数据。管理员配置测量项后，已核准的行动才会显示。",
+  "progressSection": "进度",
+  "measurementsSection": "测量",
+  "outcomesSection": "成果",
+  "timeSeriesSection": "时间序列",
+  "visualizationSection": "可视化",
+  "completionLabel": "完成度：{percent}",
+  "achievedOfTarget": "{achieved} / {target} {unit}",
+  "noOutcomes": "暂无成果。影响系数由管理员配置。",
+  "factorSourceLabel": "来源：{source}",
+  "outcomeValueLabel": "{value} {unit}",
+  "measurementQuantityLabel": "{quantity} {unit}",
+  "periodLabel": "{start} – {end}",
+  "treeInactive": "活动可视化尚未配置。",
+  "anonymousTotalsNote": "合计为匿名统计，不对个人进行排名。"
 }

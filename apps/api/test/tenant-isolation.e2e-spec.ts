@@ -472,4 +472,126 @@ describe('Tenant isolation (e2e)', () => {
 
     expect(campaignA.status).toBe(201);
   });
+
+  it('does not read another customer measurement, outcome or dashboard', async () => {
+    const templateB = await request(app.getHttpServer())
+      .post('/api/v1/campaign-templates')
+      .set(auth(userB.accessToken))
+      .send({ customerId: tenantB.id, name: 'Template B3' });
+    const scopeB = await request(app.getHttpServer())
+      .post('/api/v1/campaign-scopes')
+      .set(auth(userB.accessToken))
+      .send({
+        customerId: tenantB.id,
+        templateId: templateB.body.id,
+        name: 'Scope B3',
+      });
+    const campaignB = await request(app.getHttpServer())
+      .post('/api/v1/campaigns')
+      .set(auth(userB.accessToken))
+      .send({
+        customerId: tenantB.id,
+        templateId: templateB.body.id,
+        scopeId: scopeB.body.id,
+        name: 'Campaign B3',
+        timezone: 'UTC',
+        startsOn: '2020-01-01',
+        endsOn: '2099-12-31',
+      });
+    const definition = await request(app.getHttpServer())
+      .post(`/api/v1/campaigns/${campaignB.body.id}/measurement-definitions`)
+      .set(auth(userB.accessToken))
+      .send({ name: 'Days', sourceUnit: 'days' });
+    const factor = await request(app.getHttpServer())
+      .post(`/api/v1/campaigns/${campaignB.body.id}/impact-factors`)
+      .set(auth(userB.accessToken))
+      .send({
+        sourceUnit: 'days',
+        outcomeMetric: 'co2_kg',
+        outcomeUnit: 'kg',
+        factorValue: 1,
+        source: 'Tenant B citation',
+        effectiveFrom: '2020-01-01',
+      });
+    expect(definition.status).toBe(201);
+    expect(factor.status).toBe(201);
+
+    const getDefinition = await request(app.getHttpServer())
+      .get(`/api/v1/measurement-definitions/${definition.body.id}`)
+      .set(auth(userA.accessToken));
+    expect(getDefinition.status).toBe(404);
+
+    const getFactor = await request(app.getHttpServer())
+      .get(`/api/v1/impact-factors/${factor.body.id}`)
+      .set(auth(userA.accessToken));
+    expect(getFactor.status).toBe(404);
+
+    const dashboard = await request(app.getHttpServer())
+      .get(`/api/v1/campaigns/${campaignB.body.id}/dashboard`)
+      .set(auth(userA.accessToken));
+    expect(dashboard.status).toBe(404);
+
+    const outcomes = await request(app.getHttpServer())
+      .get(`/api/v1/campaigns/${campaignB.body.id}/outcomes`)
+      .set(auth(userA.accessToken));
+    expect(outcomes.status).toBe(404);
+  });
+
+  it('database trigger rejects a measurement definition on another tenant campaign', async () => {
+    const templateA = await request(app.getHttpServer())
+      .post('/api/v1/campaign-templates')
+      .set(auth(userA.accessToken))
+      .send({ customerId: tenantA.id, name: 'Template A3' });
+    const scopeA = await request(app.getHttpServer())
+      .post('/api/v1/campaign-scopes')
+      .set(auth(userA.accessToken))
+      .send({
+        customerId: tenantA.id,
+        templateId: templateA.body.id,
+        name: 'Scope A3',
+      });
+    const campaignA = await request(app.getHttpServer())
+      .post('/api/v1/campaigns')
+      .set(auth(userA.accessToken))
+      .send({
+        customerId: tenantA.id,
+        templateId: templateA.body.id,
+        scopeId: scopeA.body.id,
+        name: 'Campaign A3',
+        timezone: 'UTC',
+      });
+    const templateB = await request(app.getHttpServer())
+      .post('/api/v1/campaign-templates')
+      .set(auth(userB.accessToken))
+      .send({ customerId: tenantB.id, name: 'Template B4' });
+    const scopeB = await request(app.getHttpServer())
+      .post('/api/v1/campaign-scopes')
+      .set(auth(userB.accessToken))
+      .send({
+        customerId: tenantB.id,
+        templateId: templateB.body.id,
+        name: 'Scope B4',
+      });
+    const campaignB = await request(app.getHttpServer())
+      .post('/api/v1/campaigns')
+      .set(auth(userB.accessToken))
+      .send({
+        customerId: tenantB.id,
+        templateId: templateB.body.id,
+        scopeId: scopeB.body.id,
+        name: 'Campaign B4',
+        timezone: 'UTC',
+      });
+
+    await expect(
+      dataSource.query(
+        `INSERT INTO measurement_definitions (
+           tenant_id, campaign_id, key, name, source_unit, created_by_user_id
+         ) VALUES ($1, $2, 'cross', 'Cross', 'days', $3)`,
+        [tenantA.id, campaignB.body.id, userA.userId],
+      ),
+    ).rejects.toThrow(/same tenant/);
+
+    expect(campaignA.status).toBe(201);
+  });
 });

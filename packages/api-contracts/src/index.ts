@@ -676,3 +676,196 @@ export interface MilestoneEvaluationResponse {
   evaluatedAt: string;
   createdAt: string;
 }
+
+export type TimeSeriesGranularity = 'day' | 'week';
+
+export type VisualizationType = 'tree';
+
+export interface MeasurementDefinitionResponse {
+  id: string;
+  customerId: string;
+  campaignId: string;
+  key: string;
+  name: string;
+  sourceUnit: string;
+  description: string | null;
+  isActive: boolean;
+  createdByUserId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateMeasurementDefinitionRequest {
+  key?: string;
+  name: string;
+  sourceUnit: string;
+  description?: string;
+}
+
+export interface UpdateMeasurementDefinitionRequest {
+  name?: string;
+  sourceUnit?: string;
+  description?: string | null;
+  isActive?: boolean;
+}
+
+export interface ImpactFactorResponse {
+  id: string;
+  customerId: string;
+  campaignId: string | null;
+  sourceUnit: string;
+  outcomeMetric: string;
+  outcomeUnit: string;
+  factorValue: number;
+  version: number;
+  source: string;
+  effectiveFrom: string;
+  effectiveTo: string | null;
+  isActive: boolean;
+  createdByUserId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateImpactFactorRequest {
+  customerId?: string;
+  campaignId?: string | null;
+  sourceUnit: string;
+  outcomeMetric: string;
+  outcomeUnit: string;
+  factorValue: number;
+  source: string;
+  effectiveFrom: string;
+  effectiveTo?: string | null;
+}
+
+export interface UpdateImpactFactorRequest {
+  source?: string;
+  effectiveTo?: string | null;
+  isActive?: boolean;
+}
+
+export interface MeasurementTotal {
+  sourceUnit: string;
+  definitionId: string | null;
+  definitionKey: string | null;
+  quantity: number;
+  approvedActionCount: number;
+  distinctApprovedDays: number;
+}
+
+export interface OutcomeContribution {
+  impactFactorId: string;
+  campaignId: string | null;
+  version: number;
+  factorValue: number;
+  outcomeUnit: string;
+  source: string;
+  effectiveFrom: string;
+  effectiveTo: string | null;
+  sourceQuantity: number;
+  value: number;
+}
+
+export interface OutcomeTotal {
+  sourceUnit: string;
+  outcomeMetric: string;
+  outcomeUnit: string;
+  value: number;
+  sourceQuantity: number;
+  contributions: OutcomeContribution[];
+}
+
+export interface MeasurementSnapshotResponse {
+  scope: 'participant' | 'campaign' | 'community';
+  customerId: string;
+  campaignId: string;
+  participationId: string | null;
+  userId: string | null;
+  communityId: string | null;
+  timezone: string;
+  measurements: MeasurementTotal[];
+}
+
+export interface OutcomeSnapshotResponse {
+  scope: 'participant' | 'campaign' | 'community';
+  customerId: string;
+  campaignId: string;
+  participationId: string | null;
+  userId: string | null;
+  communityId: string | null;
+  timezone: string;
+  outcomes: OutcomeTotal[];
+}
+
+export interface TimeSeriesPoint {
+  periodStart: string;
+  periodEnd: string;
+  measurements: MeasurementTotal[];
+  outcomes: OutcomeTotal[];
+}
+
+export interface TimeSeriesResponse {
+  granularity: TimeSeriesGranularity;
+  timezone: string;
+  points: TimeSeriesPoint[];
+}
+
+export interface VisualizationResponse {
+  id: string;
+  customerId: string;
+  campaignId: string;
+  type: VisualizationType;
+  settings: Record<string, unknown>;
+  isActive: boolean;
+  createdByUserId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReplaceVisualizationRequest {
+  type: VisualizationType;
+  settings?: Record<string, unknown>;
+}
+
+export interface VisualizationDataResponse {
+  campaignId: string;
+  customerId: string;
+  timezone: string;
+  type: VisualizationType;
+  displayName: string;
+  isActive: boolean;
+  completionPercent: number | null;
+  completionStatus: CompletionStatus | string;
+  achievedValue: number;
+  targetValue: number;
+  unit: string | null;
+}
+
+export interface ParticipantDashboardResponse {
+  scope: 'participant';
+  customerId: string;
+  campaignId: string;
+  participationId: string;
+  userId: string;
+  communityId: string | null;
+  timezone: string;
+  progress: ParticipantProgressResponse;
+  measurements: MeasurementTotal[];
+  outcomes: OutcomeTotal[];
+  timeSeries: TimeSeriesResponse;
+  visualization: VisualizationDataResponse;
+}
+
+export interface AggregateDashboardResponse {
+  scope: 'campaign' | 'community';
+  customerId: string;
+  campaignId: string;
+  communityId: string | null;
+  timezone: string;
+  progress: AggregateProgressResponse;
+  measurements: MeasurementTotal[];
+  outcomes: OutcomeTotal[];
+  timeSeries: TimeSeriesResponse;
+  visualization: VisualizationDataResponse;
+}
