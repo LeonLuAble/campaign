@@ -6,12 +6,13 @@ import {
   JoinColumn,
   CreateDateColumn,
   Index,
+  Unique,
 } from 'typeorm';
 import { User } from './user.entity.js';
 
 @Entity('refresh_tokens')
+@Unique(['token_hash'])
 @Index(['user_id'])
-@Index(['token_hash'])
 @Index(['family_id'])
 @Index(['expires_at'])
 export class RefreshToken {
@@ -45,4 +46,8 @@ export class RefreshToken {
   @ManyToOne(() => User, (user) => user.refresh_tokens, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @ManyToOne(() => RefreshToken, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'parent_token_id' })
+  parent_token: RefreshToken | null;
 }

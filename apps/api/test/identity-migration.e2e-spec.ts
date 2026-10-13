@@ -1,7 +1,7 @@
 import { DataSource } from 'typeorm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createDatabaseOptions } from '../src/platform/database/database-options.js';
-import { CreateIdentityTables1700000000000 } from '../src/platform/database/migrations/1700000000000-CreateIdentityTables.js';
+import { CreateIdentityTables1791865103000 } from '../src/platform/database/migrations/1791865103000-CreateIdentityTables.js';
 
 interface ColumnInfo {
   column_name: string;
@@ -11,10 +11,12 @@ interface ColumnInfo {
 
 interface ConstraintInfo {
   constraint_name: string;
+  constraint_type?: string;
 }
 
 interface IndexInfo {
   indexname: string;
+  indexdef?: string;
 }
 
 describe('Identity Migration (e2e)', () => {
@@ -28,7 +30,7 @@ describe('Identity Migration (e2e)', () => {
     dataSource = new DataSource(createDatabaseOptions(databaseUrl));
     await dataSource.initialize();
 
-    const migration = new CreateIdentityTables1700000000000();
+    const migration = new CreateIdentityTables1791865103000();
     await migration.up(dataSource.createQueryRunner());
   });
 
@@ -91,7 +93,7 @@ describe('Identity Migration (e2e)', () => {
       ).toBe(true);
     });
 
-    it('should create user_credentials table with foreign key', async () => {
+    it('should create user_credentials table with foreign key and unique user_id', async () => {
       const result = await dataSource.query(`
         SELECT column_name, data_type
         FROM information_schema.columns
@@ -105,13 +107,18 @@ describe('Identity Migration (e2e)', () => {
       expect(columnNames).toContain('password_hash');
 
       const constraints = await dataSource.query(`
-        SELECT constraint_name
+        SELECT constraint_name, constraint_type
         FROM information_schema.table_constraints
         WHERE table_name = 'user_credentials'
-          AND constraint_type = 'FOREIGN KEY';
+          AND constraint_type IN ('FOREIGN KEY', 'UNIQUE');
       `);
 
-      expect(constraints.length).toBeGreaterThan(0);
+      expect(constraints.length).toBeGreaterThanOrEqual(2);
+      expect(
+        constraints.some((c: ConstraintInfo) =>
+          c.constraint_name.includes('uq_user_credentials_user_id'),
+        ),
+      ).toBe(true);
     });
 
     it('should create user_social_identities table with unique constraint on provider and subject', async () => {
@@ -146,7 +153,7 @@ describe('Identity Migration (e2e)', () => {
       ).toBe(true);
     });
 
-    it('should create refresh_tokens table with indexes', async () => {
+    it('should create refresh_tokens table with unique token_hash and self-FK', async () => {
       const result = await dataSource.query(`
         SELECT column_name, data_type
         FROM information_schema.columns
@@ -164,26 +171,39 @@ describe('Identity Migration (e2e)', () => {
       expect(columnNames).toContain('revoked_at');
       expect(columnNames).toContain('revocation_reason');
 
-      const indexes = await dataSource.query(`
-        SELECT indexname
-        FROM pg_indexes
-        WHERE tablename = 'refresh_tokens';
+      const constraints = await dataSource.query(`
+        SELECT constraint_name
+        FROM information_schema.table_constraints
+        WHERE table_name = 'refresh_tokens'
+          AND constraint_type = 'UNIQUE';
       `);
 
-      const indexNames = indexes.map((i: IndexInfo) => i.indexname);
       expect(
-        indexNames.some((name: string) =>
-          name.includes('idx_refresh_tokens_token_hash'),
+        constraints.some((c: ConstraintInfo) =>
+          c.constraint_name.includes('uq_refresh_tokens_token_hash'),
         ),
       ).toBe(true);
-      expect(
-        indexNames.some((name: string) =>
-          name.includes('idx_refresh_tokens_family_id'),
-        ),
-      ).toBe(true);
+
+      const foreignKeys = await dataSource.query(`
+        SELECT 
+          tc.constraint_name,
+          kcu.column_name,
+          ccu.table_name AS foreign_table_name
+        FROM information_schema.table_constraints AS tc
+        JOIN information_schema.key_column_usage AS kcu
+          ON tc.constraint_name = kcu.constraint_name
+        JOIN information_schema.constraint_column_usage AS ccu
+          ON ccu.constraint_name = tc.constraint_name
+        WHERE tc.constraint_type = 'FOREIGN KEY'
+          AND tc.table_name = 'refresh_tokens'
+          AND kcu.column_name = 'parent_token_id';
+      `);
+
+      expect(foreignKeys.length).toBe(1);
+      expect(foreignKeys[0].foreign_table_name).toBe('refresh_tokens');
     });
 
-    it('should create user_tokens table', async () => {
+    it('should create user_tokens table with unique token_hash and partial index', async () => {
       const result = await dataSource.query(`
         SELECT column_name, data_type
         FROM information_schema.columns
@@ -198,6 +218,30 @@ describe('Identity Migration (e2e)', () => {
       expect(columnNames).toContain('token_hash');
       expect(columnNames).toContain('expires_at');
       expect(columnNames).toContain('used_at');
+
+      const constraints = await dataSource.query(`
+        SELECT constraint_name
+        FROM information_schema.table_constraints
+        WHERE table_name = 'user_tokens'
+          AND constraint_type = 'UNIQUE';
+      `);
+
+      expect(
+        constraints.some((c: ConstraintInfo) =>
+          c.constraint_name.includes('uq_user_tokens_token_hash'),
+        ),
+      ).toBe(true);
+
+      const indexes: IndexInfo[] = await dataSource.query(`
+        SELECT indexname, indexdef
+        FROM pg_indexes
+        WHERE tablename = 'user_tokens'
+          AND indexname = 'idx_user_tokens_active_unused';
+      `);
+
+      expect(indexes.length).toBe(1);
+      expect(indexes[0].indexdef).toContain('WHERE');
+      expect(indexes[0].indexdef).toContain('used_at IS NULL');
     });
 
     it('should enforce unique constraint on user_identities', async () => {
@@ -275,11 +319,84 @@ describe('Identity Migration (e2e)', () => {
       await dataSource.query(`DELETE FROM user_social_identities;`);
       await dataSource.query(`DELETE FROM users;`);
     });
+
+    it('should prevent multiple active unused tokens of same type for a user', async () => {
+      await dataSource.query(`
+        INSERT INTO users (id, is_active, created_at, updated_at)
+        VALUES ('00000000-0000-0000-0000-000000000020', true, now(), now());
+      `);
+
+      await dataSource.query(`
+        INSERT INTO user_tokens (id, user_id, type, token_hash, expires_at, created_at)
+        VALUES (
+          '00000000-0000-0000-0000-000000000021',
+          '00000000-0000-0000-0000-000000000020',
+          'activation',
+          'hash1',
+          now() + interval '1 day',
+          now()
+        );
+      `);
+
+      await expect(
+        dataSource.query(`
+          INSERT INTO user_tokens (id, user_id, type, token_hash, expires_at, created_at)
+          VALUES (
+            '00000000-0000-0000-0000-000000000022',
+            '00000000-0000-0000-0000-000000000020',
+            'activation',
+            'hash2',
+            now() + interval '1 day',
+            now()
+          );
+        `),
+      ).rejects.toThrow();
+
+      await dataSource.query(`DELETE FROM user_tokens;`);
+      await dataSource.query(`DELETE FROM users;`);
+    });
+
+    it('should allow multiple tokens of same type if previous is used or expired', async () => {
+      await dataSource.query(`
+        INSERT INTO users (id, is_active, created_at, updated_at)
+        VALUES ('00000000-0000-0000-0000-000000000030', true, now(), now());
+      `);
+
+      await dataSource.query(`
+        INSERT INTO user_tokens (id, user_id, type, token_hash, expires_at, used_at, created_at)
+        VALUES (
+          '00000000-0000-0000-0000-000000000031',
+          '00000000-0000-0000-0000-000000000030',
+          'activation',
+          'hash3',
+          now() + interval '1 day',
+          now(),
+          now()
+        );
+      `);
+
+      await expect(
+        dataSource.query(`
+          INSERT INTO user_tokens (id, user_id, type, token_hash, expires_at, created_at)
+          VALUES (
+            '00000000-0000-0000-0000-000000000032',
+            '00000000-0000-0000-0000-000000000030',
+            'activation',
+            'hash4',
+            now() + interval '1 day',
+            now()
+          );
+        `),
+      ).resolves.toBeDefined();
+
+      await dataSource.query(`DELETE FROM user_tokens;`);
+      await dataSource.query(`DELETE FROM users;`);
+    });
   });
 
   describe('migration down', () => {
     it('should revert all tables', async () => {
-      const migration = new CreateIdentityTables1700000000000();
+      const migration = new CreateIdentityTables1791865103000();
       await migration.down(dataSource.createQueryRunner());
 
       const tables = await dataSource.query(`

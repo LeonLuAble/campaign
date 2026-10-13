@@ -19,7 +19,6 @@ export enum IdentityType {
 @Entity('user_identities')
 @Unique(['type', 'normalized_identifier'])
 @Index(['user_id'])
-@Index(['type', 'normalized_identifier'])
 export class UserIdentity {
   @PrimaryGeneratedColumn('uuid')
   id: string;

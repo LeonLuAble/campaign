@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateIdentityTables1700000000000 implements MigrationInterface {
+export class CreateIdentityTables1791865103000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       CREATE TABLE "users" (
@@ -9,7 +9,7 @@ export class CreateIdentityTables1700000000000 implements MigrationInterface {
         "last_name" varchar(100),
         "display_name" varchar(255),
         "locale" varchar(10),
-        "timezone" varchar(10),
+        "timezone" varchar(64),
         "is_active" boolean NOT NULL DEFAULT true,
         "created_at" timestamptz NOT NULL DEFAULT now(),
         "updated_at" timestamptz NOT NULL DEFAULT now()
@@ -41,22 +41,15 @@ export class CreateIdentityTables1700000000000 implements MigrationInterface {
     `);
 
     await queryRunner.query(`
-      CREATE INDEX "idx_user_identities_type_normalized" ON "user_identities"("type", "normalized_identifier");
-    `);
-
-    await queryRunner.query(`
       CREATE TABLE "user_credentials" (
         "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         "user_id" uuid NOT NULL,
         "password_hash" varchar(255) NOT NULL,
         "created_at" timestamptz NOT NULL DEFAULT now(),
         "updated_at" timestamptz NOT NULL DEFAULT now(),
-        CONSTRAINT "fk_user_credentials_user_id" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE
+        CONSTRAINT "fk_user_credentials_user_id" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE,
+        CONSTRAINT "uq_user_credentials_user_id" UNIQUE ("user_id")
       );
-    `);
-
-    await queryRunner.query(`
-      CREATE INDEX "idx_user_credentials_user_id" ON "user_credentials"("user_id");
     `);
 
     await queryRunner.query(`
@@ -83,10 +76,6 @@ export class CreateIdentityTables1700000000000 implements MigrationInterface {
     `);
 
     await queryRunner.query(`
-      CREATE INDEX "idx_user_social_identities_provider_subject" ON "user_social_identities"("provider", "provider_subject");
-    `);
-
-    await queryRunner.query(`
       CREATE TABLE "refresh_tokens" (
         "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         "user_id" uuid NOT NULL,
@@ -97,16 +86,14 @@ export class CreateIdentityTables1700000000000 implements MigrationInterface {
         "revoked_at" timestamptz,
         "revocation_reason" varchar(100),
         "created_at" timestamptz NOT NULL DEFAULT now(),
-        CONSTRAINT "fk_refresh_tokens_user_id" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE
+        CONSTRAINT "fk_refresh_tokens_user_id" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE,
+        CONSTRAINT "fk_refresh_tokens_parent_token_id" FOREIGN KEY ("parent_token_id") REFERENCES "refresh_tokens"("id") ON DELETE SET NULL,
+        CONSTRAINT "uq_refresh_tokens_token_hash" UNIQUE ("token_hash")
       );
     `);
 
     await queryRunner.query(`
       CREATE INDEX "idx_refresh_tokens_user_id" ON "refresh_tokens"("user_id");
-    `);
-
-    await queryRunner.query(`
-      CREATE INDEX "idx_refresh_tokens_token_hash" ON "refresh_tokens"("token_hash");
     `);
 
     await queryRunner.query(`
@@ -130,7 +117,8 @@ export class CreateIdentityTables1700000000000 implements MigrationInterface {
         "expires_at" timestamptz NOT NULL,
         "used_at" timestamptz,
         "created_at" timestamptz NOT NULL DEFAULT now(),
-        CONSTRAINT "fk_user_tokens_user_id" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE
+        CONSTRAINT "fk_user_tokens_user_id" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE,
+        CONSTRAINT "uq_user_tokens_token_hash" UNIQUE ("token_hash")
       );
     `);
 
@@ -139,11 +127,13 @@ export class CreateIdentityTables1700000000000 implements MigrationInterface {
     `);
 
     await queryRunner.query(`
-      CREATE INDEX "idx_user_tokens_token_hash" ON "user_tokens"("token_hash");
+      CREATE INDEX "idx_user_tokens_type_expires_at" ON "user_tokens"("type", "expires_at");
     `);
 
     await queryRunner.query(`
-      CREATE INDEX "idx_user_tokens_type_expires_at" ON "user_tokens"("type", "expires_at");
+      CREATE UNIQUE INDEX "idx_user_tokens_active_unused" 
+      ON "user_tokens"("user_id", "type") 
+      WHERE "used_at" IS NULL AND "expires_at" > now();
     `);
   }
 

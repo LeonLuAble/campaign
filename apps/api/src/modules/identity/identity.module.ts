@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './domain/user.entity.js';
 import { UserIdentity } from './domain/user-identity.entity.js';
@@ -11,6 +12,7 @@ import { CredentialService } from './application/credential.service.js';
 
 @Module({
   imports: [
+    ConfigModule,
     TypeOrmModule.forFeature([
       User,
       UserIdentity,

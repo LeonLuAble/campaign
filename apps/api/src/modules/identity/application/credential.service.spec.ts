@@ -1,14 +1,24 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { CredentialService } from './credential.service.js';
+import { ConfigService } from '@nestjs/config';
+import { CredentialService, InvalidPhoneNumberError } from './credential.service.js';
 import { PasswordHashingService } from './password-hashing.service.js';
 
 describe('CredentialService', () => {
   let service: CredentialService;
   let passwordHashingService: PasswordHashingService;
+  let configService: ConfigService;
 
   beforeEach(() => {
     passwordHashingService = new PasswordHashingService();
-    service = new CredentialService(passwordHashingService);
+    configService = {
+      get: (key: string, defaultValue?: string) => {
+        if (key === 'DEFAULT_PHONE_REGION') {
+          return defaultValue || 'MY';
+        }
+        return defaultValue;
+      },
+    } as ConfigService;
+    service = new CredentialService(passwordHashingService, configService);
   });
 
   describe('normalizeEmail', () => {
@@ -63,16 +73,48 @@ describe('CredentialService', () => {
       expect(normalized).toBe('+16502530000');
     });
 
-    it('should throw error for invalid mobile number', () => {
-      const mobile = 'not-a-phone-number';
+    it('should normalize local Malaysian mobile number without prefix', () => {
+      const mobile = '012-345 6789';
+      const normalized = service.normalizeMobile(mobile);
 
-      expect(() => service.normalizeMobile(mobile)).toThrow();
+      expect(normalized).toBe('+60123456789');
     });
 
-    it('should throw error for incomplete mobile number', () => {
+    it('should normalize local Malaysian mobile number without dashes', () => {
+      const mobile = '0123456789';
+      const normalized = service.normalizeMobile(mobile);
+
+      expect(normalized).toBe('+60123456789');
+    });
+
+    it('should throw InvalidPhoneNumberError for invalid mobile number', () => {
+      const mobile = 'not-a-phone-number';
+
+      expect(() => service.normalizeMobile(mobile)).toThrow(InvalidPhoneNumberError);
+    });
+
+    it('should throw InvalidPhoneNumberError for incomplete mobile number', () => {
       const mobile = '+1 123';
 
-      expect(() => service.normalizeMobile(mobile)).toThrow();
+      expect(() => service.normalizeMobile(mobile)).toThrow(InvalidPhoneNumberError);
+    });
+
+    it('should throw InvalidPhoneNumberError for empty string', () => {
+      const mobile = '';
+
+      expect(() => service.normalizeMobile(mobile)).toThrow(InvalidPhoneNumberError);
+    });
+
+    it('should throw InvalidPhoneNumberError with descriptive message', () => {
+      const mobile = 'invalid-number';
+
+      try {
+        service.normalizeMobile(mobile);
+        expect.fail('Should have thrown InvalidPhoneNumberError');
+      } catch (error) {
+        expect(error).toBeInstanceOf(InvalidPhoneNumberError);
+        expect((error as Error).message).toContain('Failed to normalize mobile number');
+      }
     });
   });
 

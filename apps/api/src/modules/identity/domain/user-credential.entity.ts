@@ -6,12 +6,12 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  Index,
+  Unique,
 } from 'typeorm';
 import { User } from './user.entity.js';
 
 @Entity('user_credentials')
-@Index(['user_id'])
+@Unique(['user_id'])
 export class UserCredential {
   @PrimaryGeneratedColumn('uuid')
   id: string;

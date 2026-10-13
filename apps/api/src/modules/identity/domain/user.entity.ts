@@ -28,7 +28,7 @@ export class User {
   @Column({ type: 'varchar', length: 10, nullable: true })
   locale: string | null;
 
-  @Column({ type: 'varchar', length: 10, nullable: true })
+  @Column({ type: 'varchar', length: 64, nullable: true })
   timezone: string | null;
 
   @Column({ type: 'boolean', default: true })

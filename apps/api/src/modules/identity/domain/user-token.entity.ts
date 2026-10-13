@@ -6,6 +6,7 @@ import {
   JoinColumn,
   CreateDateColumn,
   Index,
+  Unique,
 } from 'typeorm';
 import { User } from './user.entity.js';
 
@@ -15,8 +16,8 @@ export enum UserTokenType {
 }
 
 @Entity('user_tokens')
+@Unique(['token_hash'])
 @Index(['user_id'])
-@Index(['token_hash'])
 @Index(['type', 'expires_at'])
 export class UserToken {
   @PrimaryGeneratedColumn('uuid')
