@@ -13,4 +13,8 @@ export interface TenantScopeInput {
   membershipId?: string | null;
   roleId?: string | null;
   parentId?: string | null;
+  campaignId?: string | null;
+  templateId?: string | null;
+  scopeId?: string | null;
+  participationId?: string | null;
 }

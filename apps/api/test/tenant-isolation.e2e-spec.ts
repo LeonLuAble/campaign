@@ -241,4 +241,85 @@ describe('Tenant isolation (e2e)', () => {
       ),
     ).rejects.toThrow(/same tenant/);
   });
+
+  it('does not list or mutate another customer campaign', async () => {
+    const templateB = await request(app.getHttpServer())
+      .post('/api/v1/campaign-templates')
+      .set(auth(userB.accessToken))
+      .send({ customerId: tenantB.id, name: 'Template B' });
+    const scopeB = await request(app.getHttpServer())
+      .post('/api/v1/campaign-scopes')
+      .set(auth(userB.accessToken))
+      .send({
+        customerId: tenantB.id,
+        templateId: templateB.body.id,
+        name: 'Scope B',
+      });
+    const campaignB = await request(app.getHttpServer())
+      .post('/api/v1/campaigns')
+      .set(auth(userB.accessToken))
+      .send({
+        customerId: tenantB.id,
+        templateId: templateB.body.id,
+        scopeId: scopeB.body.id,
+        name: 'Campaign B',
+        timezone: 'UTC',
+      });
+    expect(campaignB.status).toBe(201);
+
+    const list = await request(app.getHttpServer())
+      .get('/api/v1/campaigns')
+      .query({ customerId: tenantB.id })
+      .set(auth(userA.accessToken));
+    expect(list.status).toBe(404);
+
+    const get = await request(app.getHttpServer())
+      .get(`/api/v1/campaigns/${campaignB.body.id}`)
+      .set(auth(userA.accessToken));
+    expect(get.status).toBe(404);
+
+    const publish = await request(app.getHttpServer())
+      .post(`/api/v1/campaigns/${campaignB.body.id}/publish`)
+      .set(auth(userA.accessToken));
+    expect(publish.status).toBe(404);
+
+    const enroll = await request(app.getHttpServer())
+      .post(`/api/v1/campaigns/${campaignB.body.id}/participations`)
+      .set(auth(userA.accessToken))
+      .send({ userId: userA.userId });
+    expect(enroll.status).toBe(404);
+  });
+
+  it('database trigger rejects a campaign community from another tenant', async () => {
+    const templateA = await request(app.getHttpServer())
+      .post('/api/v1/campaign-templates')
+      .set(auth(userA.accessToken))
+      .send({ customerId: tenantA.id, name: 'Template A' });
+    const scopeA = await request(app.getHttpServer())
+      .post('/api/v1/campaign-scopes')
+      .set(auth(userA.accessToken))
+      .send({
+        customerId: tenantA.id,
+        templateId: templateA.body.id,
+        name: 'Scope A',
+      });
+    const campaignA = await request(app.getHttpServer())
+      .post('/api/v1/campaigns')
+      .set(auth(userA.accessToken))
+      .send({
+        customerId: tenantA.id,
+        templateId: templateA.body.id,
+        scopeId: scopeA.body.id,
+        name: 'Campaign A',
+        timezone: 'UTC',
+      });
+
+    await expect(
+      dataSource.query(
+        `INSERT INTO campaign_communities (campaign_id, community_id, tenant_id)
+         VALUES ($1, $2, $3)`,
+        [campaignA.body.id, tenantB.communityId, tenantA.id],
+      ),
+    ).rejects.toThrow(/same tenant/);
+  });
 });

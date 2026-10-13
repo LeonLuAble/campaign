@@ -1,9 +1,11 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module.js';
+import { CampaignsModule } from '../campaigns/campaigns.module.js';
 import { CommunitiesModule } from '../communities/communities.module.js';
 import { CustomersModule } from '../customers/customers.module.js';
 import { MembershipsModule } from '../memberships/memberships.module.js';
+import { ParticipationModule } from '../participation/participation.module.js';
 import { AuthorizationService } from './application/authorization.service.js';
 import { TenantContextService } from './application/tenant-context.service.js';
 import { MembershipRole } from './domain/membership-role.entity.js';
@@ -27,6 +29,8 @@ import { TenantScopeGuard } from './presentation/tenant-scope.guard.js';
     forwardRef(() => CustomersModule),
     forwardRef(() => CommunitiesModule),
     forwardRef(() => MembershipsModule),
+    forwardRef(() => CampaignsModule),
+    forwardRef(() => ParticipationModule),
   ],
   controllers: [RolesController, PermissionsController],
   providers: [

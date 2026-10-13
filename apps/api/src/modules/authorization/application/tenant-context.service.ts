@@ -4,11 +4,15 @@ import {
   ResourceNotFoundException,
 } from '../../../shared/errors/domain-http.exceptions.js';
 import {
+  CAMPAIGN_READER,
   COMMUNITY_READER,
   MEMBERSHIP_READER,
+  PARTICIPATION_READER,
   TENANT_READER,
+  type CampaignReader,
   type CommunityReader,
   type MembershipReader,
+  type ParticipationReader,
   type TenantReader,
 } from './access-readers.js';
 import { AuthorizationService } from './authorization.service.js';
@@ -41,6 +45,10 @@ export class TenantContextService {
     private readonly memberships: MembershipReader,
     @Inject(forwardRef(() => AuthorizationService))
     private readonly authorization: AuthorizationService,
+    @Inject(forwardRef(() => CAMPAIGN_READER))
+    private readonly campaigns: CampaignReader,
+    @Inject(forwardRef(() => PARTICIPATION_READER))
+    private readonly participations: ParticipationReader,
   ) {}
 
   async build(userId: string, input: TenantScopeInput): Promise<TenantContext> {
@@ -50,6 +58,10 @@ export class TenantContextService {
       membershipId: requireUuid(input.membershipId, 'membershipId'),
       roleId: requireUuid(input.roleId, 'roleId'),
       parentId: requireUuid(input.parentId, 'parentId'),
+      campaignId: requireUuid(input.campaignId, 'campaignId'),
+      templateId: requireUuid(input.templateId, 'templateId'),
+      scopeId: requireUuid(input.scopeId, 'scopeId'),
+      participationId: requireUuid(input.participationId, 'participationId'),
     };
     const tenantId = await this.resolveTenantId(normalized);
     const memberships = await this.memberships.listActiveForUserInTenant(
@@ -120,6 +132,40 @@ export class TenantContextService {
         throw new ResourceNotFoundException('Resource not found');
       }
       candidates.add(role.tenant_id);
+    }
+
+    if (input.campaignId) {
+      const campaign = await this.campaigns.findCampaignById(input.campaignId);
+      if (!campaign) {
+        throw new ResourceNotFoundException('Resource not found');
+      }
+      candidates.add(campaign.tenantId);
+    }
+
+    if (input.templateId) {
+      const template = await this.campaigns.findTemplateById(input.templateId);
+      if (!template) {
+        throw new ResourceNotFoundException('Resource not found');
+      }
+      candidates.add(template.tenantId);
+    }
+
+    if (input.scopeId) {
+      const scope = await this.campaigns.findScopeById(input.scopeId);
+      if (!scope) {
+        throw new ResourceNotFoundException('Resource not found');
+      }
+      candidates.add(scope.tenantId);
+    }
+
+    if (input.participationId) {
+      const participation = await this.participations.findById(
+        input.participationId,
+      );
+      if (!participation) {
+        throw new ResourceNotFoundException('Resource not found');
+      }
+      candidates.add(participation.tenantId);
     }
 
     if (candidates.size === 0) {
