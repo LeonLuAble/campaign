@@ -256,7 +256,7 @@ describe('Commitments and actions (e2e)', () => {
         actionDefinitionId: ctx.definitionId,
         occurredOn: '2026-10-12',
       });
-    expect(otherAction.status).toBe(403);
+    expect(otherAction.status).toBe(404);
 
     const recorded = await request(app.getHttpServer())
       .post('/api/v1/actions')
