@@ -17,4 +17,8 @@ export interface TenantScopeInput {
   templateId?: string | null;
   scopeId?: string | null;
   participationId?: string | null;
+  actionId?: string | null;
+  actionDefinitionId?: string | null;
+  submissionId?: string | null;
+  commitmentId?: string | null;
 }

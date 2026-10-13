@@ -4,12 +4,16 @@ import {
   ResourceNotFoundException,
 } from '../../../shared/errors/domain-http.exceptions.js';
 import {
+  ACTION_READER,
   CAMPAIGN_READER,
+  COMMITMENT_READER,
   COMMUNITY_READER,
   MEMBERSHIP_READER,
   PARTICIPATION_READER,
   TENANT_READER,
+  type ActionReader,
   type CampaignReader,
+  type CommitmentReader,
   type CommunityReader,
   type MembershipReader,
   type ParticipationReader,
@@ -49,6 +53,10 @@ export class TenantContextService {
     private readonly campaigns: CampaignReader,
     @Inject(forwardRef(() => PARTICIPATION_READER))
     private readonly participations: ParticipationReader,
+    @Inject(forwardRef(() => ACTION_READER))
+    private readonly actions: ActionReader,
+    @Inject(forwardRef(() => COMMITMENT_READER))
+    private readonly commitments: CommitmentReader,
   ) {}
 
   async build(userId: string, input: TenantScopeInput): Promise<TenantContext> {
@@ -62,6 +70,13 @@ export class TenantContextService {
       templateId: requireUuid(input.templateId, 'templateId'),
       scopeId: requireUuid(input.scopeId, 'scopeId'),
       participationId: requireUuid(input.participationId, 'participationId'),
+      actionId: requireUuid(input.actionId, 'actionId'),
+      actionDefinitionId: requireUuid(
+        input.actionDefinitionId,
+        'actionDefinitionId',
+      ),
+      submissionId: requireUuid(input.submissionId, 'submissionId'),
+      commitmentId: requireUuid(input.commitmentId, 'commitmentId'),
     };
     const tenantId = await this.resolveTenantId(normalized);
     const memberships = await this.memberships.listActiveForUserInTenant(
@@ -166,6 +181,42 @@ export class TenantContextService {
         throw new ResourceNotFoundException('Resource not found');
       }
       candidates.add(participation.tenantId);
+    }
+
+    if (input.actionId) {
+      const action = await this.actions.findActionById(input.actionId);
+      if (!action) {
+        throw new ResourceNotFoundException('Resource not found');
+      }
+      candidates.add(action.tenantId);
+    }
+
+    if (input.actionDefinitionId) {
+      const definition = await this.actions.findDefinitionById(
+        input.actionDefinitionId,
+      );
+      if (!definition) {
+        throw new ResourceNotFoundException('Resource not found');
+      }
+      candidates.add(definition.tenantId);
+    }
+
+    if (input.submissionId) {
+      const submission = await this.actions.findSubmissionById(
+        input.submissionId,
+      );
+      if (!submission) {
+        throw new ResourceNotFoundException('Resource not found');
+      }
+      candidates.add(submission.tenantId);
+    }
+
+    if (input.commitmentId) {
+      const commitment = await this.commitments.findById(input.commitmentId);
+      if (!commitment) {
+        throw new ResourceNotFoundException('Resource not found');
+      }
+      candidates.add(commitment.tenantId);
     }
 
     if (candidates.size === 0) {

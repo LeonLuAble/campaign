@@ -86,6 +86,28 @@ export class ParticipationService {
     return this.toResponse(participation);
   }
 
+  async getParticipationRecord(
+    tenant: TenantContext,
+    participationId: string,
+  ): Promise<{
+    id: string;
+    tenantId: string;
+    campaignId: string;
+    userId: string;
+    communityId: string | null;
+    status: ParticipationStatus;
+  }> {
+    const participation = await this.requireVisible(tenant, participationId);
+    return {
+      id: participation.id,
+      tenantId: participation.tenant_id,
+      campaignId: participation.campaign_id,
+      userId: participation.user_id,
+      communityId: participation.community_id,
+      status: participation.status,
+    };
+  }
+
   async enroll(
     tenant: TenantContext,
     campaignId: string,

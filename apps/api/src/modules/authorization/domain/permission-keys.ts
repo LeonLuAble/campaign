@@ -26,6 +26,17 @@ export const PERMISSIONS = {
   PARTICIPATIONS_CREATE: 'participations.create',
   PARTICIPATIONS_READ: 'participations.read',
   PARTICIPATIONS_UPDATE: 'participations.update',
+  ACTION_DEFINITIONS_CREATE: 'action_definitions.create',
+  ACTION_DEFINITIONS_READ: 'action_definitions.read',
+  ACTION_DEFINITIONS_UPDATE: 'action_definitions.update',
+  ACTIONS_CREATE: 'actions.create',
+  ACTIONS_READ: 'actions.read',
+  ACTIONS_UPDATE: 'actions.update',
+  SUBMISSIONS_READ: 'submissions.read',
+  SUBMISSIONS_UPDATE: 'submissions.update',
+  COMMITMENTS_CREATE: 'commitments.create',
+  COMMITMENTS_READ: 'commitments.read',
+  COMMITMENTS_UPDATE: 'commitments.update',
 } as const;
 
 export type PermissionKey = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -35,6 +46,15 @@ export const ALL_PERMISSION_KEYS: PermissionKey[] = Object.values(PERMISSIONS);
 export const READ_PERMISSION_KEYS: PermissionKey[] = ALL_PERMISSION_KEYS.filter(
   (key) => key.endsWith('.read'),
 );
+
+export const MEMBER_SELF_CREATE_PERMISSION_KEYS: PermissionKey[] = [
+  PERMISSIONS.COMMITMENTS_CREATE,
+  PERMISSIONS.ACTIONS_CREATE,
+];
+
+export const MEMBER_PERMISSION_KEYS: PermissionKey[] = [
+  ...new Set([...READ_PERMISSION_KEYS, ...MEMBER_SELF_CREATE_PERMISSION_KEYS]),
+];
 
 export const SYSTEM_ROLE_TENANT_ADMIN = 'tenant_admin';
 export const SYSTEM_ROLE_MEMBER = 'member';
@@ -150,5 +170,50 @@ export const PERMISSION_CATALOG: ReadonlyArray<{
   {
     key: PERMISSIONS.PARTICIPATIONS_UPDATE,
     description: 'Withdraw campaign participations in the current tenant',
+  },
+  {
+    key: PERMISSIONS.ACTION_DEFINITIONS_CREATE,
+    description:
+      'Create action definitions for campaigns in the current tenant',
+  },
+  {
+    key: PERMISSIONS.ACTION_DEFINITIONS_READ,
+    description: 'View action definitions in the current tenant',
+  },
+  {
+    key: PERMISSIONS.ACTION_DEFINITIONS_UPDATE,
+    description: 'Update action definitions in the current tenant',
+  },
+  {
+    key: PERMISSIONS.ACTIONS_CREATE,
+    description: 'Record actions against own campaign participations',
+  },
+  {
+    key: PERMISSIONS.ACTIONS_READ,
+    description: 'View own recorded actions in the current tenant',
+  },
+  {
+    key: PERMISSIONS.ACTIONS_UPDATE,
+    description: "Correct or cancel another participant's recorded actions",
+  },
+  {
+    key: PERMISSIONS.SUBMISSIONS_READ,
+    description: 'View action submissions in the current tenant',
+  },
+  {
+    key: PERMISSIONS.SUBMISSIONS_UPDATE,
+    description: 'Approve or reject action submissions in the current tenant',
+  },
+  {
+    key: PERMISSIONS.COMMITMENTS_CREATE,
+    description: 'Create a commitment on own campaign participations',
+  },
+  {
+    key: PERMISSIONS.COMMITMENTS_READ,
+    description: 'View own campaign commitments in the current tenant',
+  },
+  {
+    key: PERMISSIONS.COMMITMENTS_UPDATE,
+    description: "Correct another participant's campaign commitment",
   },
 ];

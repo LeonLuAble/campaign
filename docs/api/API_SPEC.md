@@ -61,13 +61,27 @@ Participation:
 - GET /participations/:participationId → requires `participations.read`
 - POST /participations/:participationId/withdraw → self-withdraw is allowed for the participant. Withdrawing another user requires `participations.update`. Idempotent if already withdrawn. Re-enroll restores the same row.
 
-Actions:
-- action definitions
-- POST `/actions`
-- list/get/cancel
-- submissions approve/reject
+Actions (tenant-scoped via campaign/participation/action ids; generic recording, no vegetarian schema in this module):
+- POST /campaigns/:campaignId/action-definitions `{ key?, name, unit, description?, settings? }` → 201. Requires `action_definitions.create`.
+- GET /campaigns/:campaignId/action-definitions → requires `action_definitions.read`
+- GET /action-definitions/:actionDefinitionId → requires `action_definitions.read`
+- PATCH /action-definitions/:actionDefinitionId → requires `action_definitions.update`; locked after campaign completion
+- POST /actions `{ participationId, actionDefinitionId, occurredOn?, quantity?, privacyLevel?, idempotencyKey?, payload? }` → 201. Members record only their own participation (`actions.create`). Recording for another user requires `actions.update`. `occurredOn` is a campaign-timezone calendar date and defaults to today in that timezone; future dates are rejected. Duplicate recorded (participation, definition, day) is 409. Reusing `idempotencyKey` with the same payload returns the original action.
+- GET /campaigns/:campaignId/actions → requires `actions.read`. Members see only their own rows; `actions.update` sees all. Privacy is stored (default `private`) but does not expand member visibility in this phase.
+- GET /participations/:participationId/actions → requires `actions.read`
+- GET /actions/:actionId → requires `actions.read`
+- PATCH /actions/:actionId → admin correction; requires `actions.update`
+- POST /actions/:actionId/cancel → owner may cancel their own row; cancelling another user requires `actions.update`. Cancel is idempotent and preserves the row (`status=cancelled`). A new recorded action may then be created for that day.
+- GET /actions/:actionId/submissions → requires `submissions.read`. Recording an action also creates a `submitted` submission.
+- POST /submissions/:submissionId/approve|reject `{ note? }` → requires `submissions.update`
 
-Commitments: `/participations/{id}/commitments`
+Commitments:
+- POST /participations/:participationId/commitments `{ typeKey?, targetValue, unit, payload? }` → 201 create-or-replace (one commitment per participation). Members may pledge only on their own enrolled participation (`commitments.create`). Acting on another user requires `commitments.update`. Allowed while the campaign is published or started.
+- GET /participations/:participationId/commitments → requires `commitments.read`. Members see only their own.
+- GET /commitments/:commitmentId → requires `commitments.read`
+- PATCH /commitments/:commitmentId → admin correction; requires `commitments.update`
+
+Vegetarian campaign rules (速素数数) are not hardcoded in commitments/actions. Campaigns with `configuration.rulesStrategy = "vegetarian"` are validated by the vegetarian module (seven choices, days/meals units).
 Goals: `/goals`
 Achievements: campaign/participant endpoints
 Progress: participant/community/campaign endpoints

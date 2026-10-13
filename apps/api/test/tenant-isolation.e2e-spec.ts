@@ -322,4 +322,74 @@ describe('Tenant isolation (e2e)', () => {
       ),
     ).rejects.toThrow(/same tenant/);
   });
+
+  it('does not list or mutate another customer action or commitment', async () => {
+    const templateB = await request(app.getHttpServer())
+      .post('/api/v1/campaign-templates')
+      .set(auth(userB.accessToken))
+      .send({ customerId: tenantB.id, name: 'Template B' });
+    const scopeB = await request(app.getHttpServer())
+      .post('/api/v1/campaign-scopes')
+      .set(auth(userB.accessToken))
+      .send({
+        customerId: tenantB.id,
+        templateId: templateB.body.id,
+        name: 'Scope B',
+      });
+    const campaignB = await request(app.getHttpServer())
+      .post('/api/v1/campaigns')
+      .set(auth(userB.accessToken))
+      .send({
+        customerId: tenantB.id,
+        templateId: templateB.body.id,
+        scopeId: scopeB.body.id,
+        name: 'Campaign B',
+        timezone: 'UTC',
+        startsOn: '2020-01-01',
+        endsOn: '2099-12-31',
+      });
+    const definitionB = await request(app.getHttpServer())
+      .post(`/api/v1/campaigns/${campaignB.body.id}/action-definitions`)
+      .set(auth(userB.accessToken))
+      .send({ name: 'Day', unit: 'days' });
+    await request(app.getHttpServer())
+      .post(`/api/v1/campaigns/${campaignB.body.id}/publish`)
+      .set(auth(userB.accessToken));
+    await request(app.getHttpServer())
+      .post(`/api/v1/campaigns/${campaignB.body.id}/start`)
+      .set(auth(userB.accessToken));
+    const enrolledB = await request(app.getHttpServer())
+      .post(`/api/v1/campaigns/${campaignB.body.id}/participations`)
+      .set(auth(userB.accessToken))
+      .send({});
+    const commitmentB = await request(app.getHttpServer())
+      .post(`/api/v1/participations/${enrolledB.body.id}/commitments`)
+      .set(auth(userB.accessToken))
+      .send({ targetValue: 10, unit: 'days' });
+    const actionB = await request(app.getHttpServer())
+      .post('/api/v1/actions')
+      .set(auth(userB.accessToken))
+      .send({
+        participationId: enrolledB.body.id,
+        actionDefinitionId: definitionB.body.id,
+        occurredOn: '2026-10-12',
+      });
+    expect(commitmentB.status).toBe(201);
+    expect(actionB.status).toBe(201);
+
+    const getAction = await request(app.getHttpServer())
+      .get(`/api/v1/actions/${actionB.body.id}`)
+      .set(auth(userA.accessToken));
+    expect(getAction.status).toBe(404);
+
+    const getCommitment = await request(app.getHttpServer())
+      .get(`/api/v1/commitments/${commitmentB.body.id}`)
+      .set(auth(userA.accessToken));
+    expect(getCommitment.status).toBe(404);
+
+    const listActions = await request(app.getHttpServer())
+      .get(`/api/v1/campaigns/${campaignB.body.id}/actions`)
+      .set(auth(userA.accessToken));
+    expect(listActions.status).toBe(404);
+  });
 });

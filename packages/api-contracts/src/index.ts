@@ -420,3 +420,128 @@ export interface ParticipationResponse {
 export interface CreateParticipationRequest {
   userId?: string;
 }
+
+export type PrivacyLevel =
+  | 'private'
+  | 'group'
+  | 'community'
+  | 'customer'
+  | 'public';
+
+export type ActionStatus = 'recorded' | 'cancelled';
+
+export type SubmissionStatus = 'submitted' | 'approved' | 'rejected';
+
+export interface ActionDefinitionResponse {
+  id: string;
+  customerId: string;
+  campaignId: string;
+  key: string;
+  name: string;
+  unit: string;
+  description: string | null;
+  isActive: boolean;
+  settings: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateActionDefinitionRequest {
+  key?: string;
+  name: string;
+  unit: string;
+  description?: string;
+  settings?: Record<string, unknown>;
+}
+
+export interface UpdateActionDefinitionRequest {
+  name?: string;
+  unit?: string;
+  description?: string | null;
+  isActive?: boolean;
+  settings?: Record<string, unknown>;
+}
+
+export interface CommitmentResponse {
+  id: string;
+  customerId: string;
+  campaignId: string;
+  participationId: string;
+  typeKey: string | null;
+  targetValue: number;
+  unit: string;
+  payload: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCommitmentRequest {
+  typeKey?: string;
+  targetValue: number;
+  unit: string;
+  payload?: Record<string, unknown>;
+}
+
+export interface UpdateCommitmentRequest {
+  typeKey?: string | null;
+  targetValue?: number;
+  unit?: string;
+  payload?: Record<string, unknown>;
+}
+
+export interface SubmissionResponse {
+  id: string;
+  customerId: string;
+  actionId: string;
+  status: SubmissionStatus;
+  submittedByUserId: string;
+  reviewedByUserId: string | null;
+  reviewedAt: string | null;
+  reviewNote: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ActionResponse {
+  id: string;
+  customerId: string;
+  campaignId: string;
+  participationId: string;
+  userId: string;
+  actionDefinitionId: string;
+  occurredOn: string;
+  quantity: number;
+  privacyLevel: PrivacyLevel;
+  status: ActionStatus;
+  payload: Record<string, unknown>;
+  idempotencyKey: string | null;
+  recordedByUserId: string;
+  cancelledAt: string | null;
+  cancelledByUserId: string | null;
+  correctedAt: string | null;
+  correctedByUserId: string | null;
+  submission: SubmissionResponse | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateActionRequest {
+  participationId: string;
+  actionDefinitionId: string;
+  occurredOn?: string;
+  quantity?: number;
+  privacyLevel?: PrivacyLevel;
+  idempotencyKey?: string;
+  payload?: Record<string, unknown>;
+}
+
+export interface UpdateActionRequest {
+  occurredOn?: string;
+  quantity?: number;
+  privacyLevel?: PrivacyLevel;
+  payload?: Record<string, unknown>;
+}
+
+export interface ReviewSubmissionRequest {
+  note?: string;
+}

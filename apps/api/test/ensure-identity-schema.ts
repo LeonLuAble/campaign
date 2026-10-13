@@ -5,6 +5,7 @@ import { CreateTenantCommunityMembershipTables1792065305000 } from '../src/platf
 import { AddUserPlatformAdmin1792165406000 } from '../src/platform/database/migrations/1792165406000-AddUserPlatformAdmin.js';
 import { CreateUserImportTables1792265507000 } from '../src/platform/database/migrations/1792265507000-CreateUserImportTables.js';
 import { CreateCampaignTables1792365608000 } from '../src/platform/database/migrations/1792365608000-CreateCampaignTables.js';
+import { CreateCommitmentActionTables1792465709000 } from '../src/platform/database/migrations/1792465709000-CreateCommitmentActionTables.js';
 
 type MigrationCtor = new () => MigrationInterface;
 
@@ -16,6 +17,7 @@ const SCHEMA_MIGRATIONS: MigrationCtor[] = [
   AddUserPlatformAdmin1792165406000,
   CreateUserImportTables1792265507000,
   CreateCampaignTables1792365608000,
+  CreateCommitmentActionTables1792465709000,
 ];
 
 export async function revertSchemaMigrationsNewestFirst(
@@ -82,6 +84,10 @@ export async function clearTenantData(dataSource: DataSource): Promise<void> {
     return;
   }
   const tables = [
+    'submissions',
+    'actions',
+    'commitments',
+    'action_definitions',
     'participations',
     'campaign_communities',
     'campaign_configurations',
@@ -128,6 +134,9 @@ export async function ensureTenantSchema(
   const hasTenants = await tableExists(dataSource, 'tenants');
   const hasMembershipRoles = await tableExists(dataSource, 'membership_roles');
   if (hasTenants && !hasMembershipRoles) {
+    if (await tableExists(dataSource, 'commitments')) {
+      await new CreateCommitmentActionTables1792465709000().down(queryRunner);
+    }
     if (await tableExists(dataSource, 'campaigns')) {
       await new CreateCampaignTables1792365608000().down(queryRunner);
     }
@@ -148,6 +157,9 @@ export async function ensureTenantSchema(
   }
   if (!(await tableExists(dataSource, 'campaigns'))) {
     await new CreateCampaignTables1792365608000().up(queryRunner);
+  }
+  if (!(await tableExists(dataSource, 'commitments'))) {
+    await new CreateCommitmentActionTables1792465709000().up(queryRunner);
   }
 }
 

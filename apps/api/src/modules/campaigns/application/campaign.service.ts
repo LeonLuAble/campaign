@@ -642,13 +642,24 @@ export class CampaignService {
     id: string;
     tenantId: string;
     status: CampaignStatus;
+    timezone: string;
+    startsOn: string | null;
+    endsOn: string | null;
+    configuration: Record<string, unknown>;
     communityIds: string[];
   }> {
     const campaign = await this.requireVisibleCampaign(tenant, campaignId);
+    const configuration = await this.configurationRepository.findOne({
+      where: { campaign_id: campaign.id },
+    });
     return {
       id: campaign.id,
       tenantId: campaign.tenant_id,
       status: campaign.status,
+      timezone: campaign.timezone,
+      startsOn: toIsoDate(campaign.starts_on),
+      endsOn: toIsoDate(campaign.ends_on),
+      configuration: configuration?.settings ?? {},
       communityIds: await this.communityIdsFor(campaign.id),
     };
   }
