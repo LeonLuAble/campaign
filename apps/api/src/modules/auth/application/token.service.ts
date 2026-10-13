@@ -108,37 +108,50 @@ export class TokenService {
   }
 
   async rotateRefreshToken(rawToken: string): Promise<TokenPair> {
-    return this.refreshTokenService.withTransaction(async (tx) => {
-      const existingToken = await tx.findByHash(this.hashToken(rawToken));
-      if (!existingToken) {
-        throw new TokenInvalidException();
-      }
+    const outcome = await this.refreshTokenService.withTransaction(
+      async (tx) => {
+        const existingToken = await tx.findByHash(this.hashToken(rawToken));
+        if (!existingToken) {
+          return { type: 'invalid' as const };
+        }
 
-      if (existingToken.revokedAt) {
-        await tx.revokeFamily(existingToken.familyId, 'TOKEN_REUSE_DETECTED');
-        throw new TokenReusedException();
-      }
+        if (existingToken.revokedAt) {
+          await tx.revokeFamily(existingToken.familyId, 'TOKEN_REUSE_DETECTED');
+          return { type: 'reused' as const };
+        }
 
-      if (existingToken.expiresAt < new Date()) {
-        throw new TokenInvalidException();
-      }
+        if (existingToken.expiresAt < new Date()) {
+          return { type: 'invalid' as const };
+        }
 
-      const isActive = await this.identityAccountService.isUserActive(
-        existingToken.userId,
-      );
-      if (!isActive) {
-        await tx.revokeFamily(existingToken.familyId, 'USER_INACTIVE');
-        throw new TokenInvalidException();
-      }
+        const isActive = await this.identityAccountService.isUserActive(
+          existingToken.userId,
+        );
+        if (!isActive) {
+          await tx.revokeFamily(existingToken.familyId, 'USER_INACTIVE');
+          return { type: 'invalid' as const };
+        }
 
-      const revoked = await tx.revokeIfActive(existingToken.id, 'ROTATED');
-      if (!revoked) {
-        await tx.revokeFamily(existingToken.familyId, 'TOKEN_REUSE_DETECTED');
-        throw new TokenReusedException();
-      }
+        const revoked = await tx.revokeIfActive(existingToken.id, 'ROTATED');
+        if (!revoked) {
+          await tx.revokeFamily(existingToken.familyId, 'TOKEN_REUSE_DETECTED');
+          return { type: 'reused' as const };
+        }
 
-      return this.issueChildToken(existingToken, tx);
-    });
+        return {
+          type: 'rotated' as const,
+          tokens: await this.issueChildToken(existingToken, tx),
+        };
+      },
+    );
+
+    if (outcome.type === 'reused') {
+      throw new TokenReusedException();
+    }
+    if (outcome.type === 'invalid') {
+      throw new TokenInvalidException();
+    }
+    return outcome.tokens;
   }
 
   async findByRawToken(rawToken: string): Promise<StoredRefreshToken | null> {
