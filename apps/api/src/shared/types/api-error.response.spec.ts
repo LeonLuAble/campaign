@@ -23,6 +23,7 @@ describe('ApiErrorResponse type sync', () => {
       'TOKEN_EXPIRED',
       'IDENTITY_ALREADY_EXISTS',
       'WEAK_PASSWORD',
+      'SOCIAL_TOKEN_INVALID',
     ];
 
     const contractCodes: ContractErrorCode[] = [
@@ -41,6 +42,7 @@ describe('ApiErrorResponse type sync', () => {
       'TOKEN_EXPIRED',
       'IDENTITY_ALREADY_EXISTS',
       'WEAK_PASSWORD',
+      'SOCIAL_TOKEN_INVALID',
     ];
 
     expect(apiCodes.sort()).toEqual(contractCodes.sort());

@@ -1,5 +1,6 @@
 import { DataSource } from 'typeorm';
 import { CreateIdentityTables1791865103000 } from '../src/platform/database/migrations/1791865103000-CreateIdentityTables.js';
+import { AddIdentityIdToUserTokens1791965204000 } from '../src/platform/database/migrations/1791965204000-AddIdentityIdToUserTokens.js';
 
 export async function clearIdentityData(dataSource: DataSource): Promise<void> {
   await dataSource.query('DELETE FROM refresh_tokens');
@@ -22,11 +23,26 @@ export async function ensureIdentitySchema(
   )) as Array<{ exists: boolean | string }>;
 
   const exists = rows[0]?.exists;
-  if (exists === true || exists === 't') {
-    return;
+  if (!(exists === true || exists === 't')) {
+    await new CreateIdentityTables1791865103000().up(
+      dataSource.createQueryRunner(),
+    );
   }
 
-  await new CreateIdentityTables1791865103000().up(
-    dataSource.createQueryRunner(),
-  );
+  const identityIdColumn = (await dataSource.query(
+    `SELECT EXISTS (
+       SELECT 1
+       FROM information_schema.columns
+       WHERE table_schema = 'public'
+         AND table_name = 'user_tokens'
+         AND column_name = 'identity_id'
+     ) AS exists`,
+  )) as Array<{ exists: boolean | string }>;
+
+  const hasIdentityId = identityIdColumn[0]?.exists;
+  if (!(hasIdentityId === true || hasIdentityId === 't')) {
+    await new AddIdentityIdToUserTokens1791965204000().up(
+      dataSource.createQueryRunner(),
+    );
+  }
 }

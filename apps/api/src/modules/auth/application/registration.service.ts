@@ -97,7 +97,12 @@ export class RegistrationService {
       throw error;
     }
 
-    await this.issueActivationToken(created.userId, storedIdentifier, type);
+    await this.issueActivationToken(
+      created.userId,
+      created.identityId,
+      storedIdentifier,
+      type,
+    );
 
     return {
       id: created.userId,
@@ -114,8 +119,11 @@ export class RegistrationService {
       throw new ActivationTokenInvalidException();
     }
 
-    const alreadyVerified =
-      await this.identityAccountService.areAllIdentitiesVerified(stored.userId);
+    const alreadyVerified = stored.identityId
+      ? await this.identityAccountService.isIdentityVerified(stored.identityId)
+      : await this.identityAccountService.areAllIdentitiesVerified(
+          stored.userId,
+        );
 
     if (stored.usedAt) {
       if (alreadyVerified) {
@@ -131,13 +139,17 @@ export class RegistrationService {
     const consumed = await this.identityAccountService.consumeActivation(
       stored.id,
       stored.userId,
+      stored.identityId,
     );
     if (consumed) {
       return;
     }
 
-    const verifiedAfterRace =
-      await this.identityAccountService.areAllIdentitiesVerified(stored.userId);
+    const verifiedAfterRace = stored.identityId
+      ? await this.identityAccountService.isIdentityVerified(stored.identityId)
+      : await this.identityAccountService.areAllIdentitiesVerified(
+          stored.userId,
+        );
     if (verifiedAfterRace) {
       return;
     }
@@ -153,6 +165,7 @@ export class RegistrationService {
 
     await this.issueActivationToken(
       identity.userId,
+      identity.identityId,
       identity.identifier,
       identity.type,
     );
@@ -160,12 +173,14 @@ export class RegistrationService {
 
   private async issueActivationToken(
     userId: string,
+    identityId: string,
     to: string,
     type: string,
   ): Promise<void> {
     const rawToken = generateOneTimeToken();
     await this.userTokenService.supersedeUnusedAndCreate({
       userId,
+      identityId,
       type: UserTokenType.ACTIVATION,
       tokenHash: hashOneTimeToken(rawToken),
       expiresAt: new Date(Date.now() + this.activationTtlSeconds * 1000),

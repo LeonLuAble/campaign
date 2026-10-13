@@ -11,6 +11,7 @@ import { PasswordResetConfirmDto } from '../dto/password-reset-confirm.dto.js';
 import { PasswordResetRequestDto } from '../dto/password-reset-request.dto.js';
 import { RefreshTokenDto } from '../dto/refresh.dto.js';
 import { RegisterDto } from '../dto/register.dto.js';
+import { SocialLoginDto } from '../dto/social-login.dto.js';
 
 @Controller('auth')
 export class AuthController {
@@ -68,6 +69,13 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto.identifier, loginDto.password);
+  }
+
+  // TODO: add social login rate limiting.
+  @Post('social')
+  @HttpCode(HttpStatus.OK)
+  socialLogin(@Body() socialDto: SocialLoginDto) {
+    return this.authService.socialLogin(socialDto.provider, socialDto.idToken);
   }
 
   @Post('refresh')

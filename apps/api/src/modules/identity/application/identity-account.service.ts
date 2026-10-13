@@ -4,6 +4,10 @@ import { DataSource, IsNull, QueryFailedError, Repository } from 'typeorm';
 import { RefreshToken } from '../domain/refresh-token.entity.js';
 import { UserCredential } from '../domain/user-credential.entity.js';
 import { IdentityType, UserIdentity } from '../domain/user-identity.entity.js';
+import {
+  SocialProvider,
+  UserSocialIdentity,
+} from '../domain/user-social-identity.entity.js';
 import { UserToken } from '../domain/user-token.entity.js';
 import { User } from '../domain/user.entity.js';
 
@@ -65,6 +69,19 @@ export interface CreateLocalAccountInput {
 export interface CreatedLocalAccount {
   userId: string;
   identityId: string;
+}
+
+export interface ResolveSocialAccountInput {
+  provider: SocialProvider;
+  subject: string;
+  email: string | null;
+  emailVerified: boolean;
+  normalizedEmail: string | null;
+}
+
+export interface ResolvedSocialAccount {
+  userId: string;
+  isActive: boolean;
 }
 
 @Injectable()
@@ -222,7 +239,18 @@ export class IdentityAccountService {
     );
   }
 
-  async consumeActivation(tokenId: string, userId: string): Promise<boolean> {
+  async isIdentityVerified(identityId: string): Promise<boolean> {
+    const identity = await this.userIdentityRepository.findOne({
+      where: { id: identityId },
+    });
+    return identity?.is_verified === true;
+  }
+
+  async consumeActivation(
+    tokenId: string,
+    userId: string,
+    identityId: string | null,
+  ): Promise<boolean> {
     return this.dataSource.transaction(async (manager) => {
       const tokenRepository = manager.getRepository(UserToken);
       const identityRepository = manager.getRepository(UserIdentity);
@@ -235,12 +263,118 @@ export class IdentityAccountService {
         return false;
       }
 
-      await identityRepository.update(
-        { user_id: userId, is_verified: false },
-        { is_verified: true, verified_at: new Date() },
-      );
+      if (identityId) {
+        await identityRepository.update(
+          { id: identityId, user_id: userId, is_verified: false },
+          { is_verified: true, verified_at: new Date() },
+        );
+      }
+
       return true;
     });
+  }
+
+  async resolveSocialAccount(
+    input: ResolveSocialAccountInput,
+  ): Promise<ResolvedSocialAccount> {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        return await this.dataSource.transaction(async (manager) => {
+          const userRepository = manager.getRepository(User);
+          const identityRepository = manager.getRepository(UserIdentity);
+          const socialRepository = manager.getRepository(UserSocialIdentity);
+
+          const existingSocial = await socialRepository.findOne({
+            where: {
+              provider: input.provider,
+              provider_subject: input.subject,
+            },
+            relations: ['user'],
+          });
+          if (existingSocial?.user) {
+            existingSocial.last_used_at = new Date();
+            if (input.email) {
+              existingSocial.provider_email = input.email;
+            }
+            await socialRepository.save(existingSocial);
+            return {
+              userId: existingSocial.user.id,
+              isActive: existingSocial.user.is_active,
+            };
+          }
+
+          if (input.emailVerified && input.normalizedEmail) {
+            const verifiedEmail = await identityRepository.findOne({
+              where: {
+                type: IdentityType.EMAIL,
+                normalized_identifier: input.normalizedEmail,
+                is_verified: true,
+              },
+              relations: ['user'],
+            });
+            if (verifiedEmail?.user) {
+              await socialRepository.save(
+                socialRepository.create({
+                  user_id: verifiedEmail.user.id,
+                  provider: input.provider,
+                  provider_subject: input.subject,
+                  provider_email: input.email,
+                  last_used_at: new Date(),
+                }),
+              );
+              return {
+                userId: verifiedEmail.user.id,
+                isActive: verifiedEmail.user.is_active,
+              };
+            }
+          }
+
+          const user = await userRepository.save(
+            userRepository.create({ is_active: true }),
+          );
+
+          await socialRepository.save(
+            socialRepository.create({
+              user_id: user.id,
+              provider: input.provider,
+              provider_subject: input.subject,
+              provider_email: input.email,
+              last_used_at: new Date(),
+            }),
+          );
+
+          if (input.email && input.normalizedEmail) {
+            const collidingEmail = await identityRepository.findOne({
+              where: {
+                type: IdentityType.EMAIL,
+                normalized_identifier: input.normalizedEmail,
+              },
+            });
+            if (!collidingEmail) {
+              await identityRepository.save(
+                identityRepository.create({
+                  user_id: user.id,
+                  type: IdentityType.EMAIL,
+                  identifier: input.email,
+                  normalized_identifier: input.normalizedEmail,
+                  is_verified: input.emailVerified,
+                  verified_at: input.emailVerified ? new Date() : null,
+                }),
+              );
+            }
+          }
+
+          return { userId: user.id, isActive: true };
+        });
+      } catch (error) {
+        if (isUniqueViolation(error) && attempt < 2) {
+          continue;
+        }
+        throw error;
+      }
+    }
+
+    throw new Error('Unable to resolve social account');
   }
 
   async completePasswordReset(

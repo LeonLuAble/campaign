@@ -2,6 +2,7 @@ import { DataSource } from 'typeorm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createDatabaseOptions } from '../src/platform/database/database-options.js';
 import { CreateIdentityTables1791865103000 } from '../src/platform/database/migrations/1791865103000-CreateIdentityTables.js';
+import { AddIdentityIdToUserTokens1791965204000 } from '../src/platform/database/migrations/1791965204000-AddIdentityIdToUserTokens.js';
 import {
   clearIdentityData,
   ensureIdentitySchema,
@@ -220,6 +221,7 @@ describe('Identity Migration (e2e)', () => {
       expect(columnNames).toContain('token_hash');
       expect(columnNames).toContain('expires_at');
       expect(columnNames).toContain('used_at');
+      expect(columnNames).toContain('identity_id');
 
       const constraints = await dataSource.query(`
         SELECT constraint_name
@@ -399,10 +401,39 @@ describe('Identity Migration (e2e)', () => {
       await dataSource.query(`DELETE FROM user_tokens;`);
       await dataSource.query(`DELETE FROM users;`);
     });
+
+    it('should keep user_tokens.identity_id nullable with a foreign key', async () => {
+      const columns = (await dataSource.query(`
+        SELECT column_name, is_nullable
+        FROM information_schema.columns
+        WHERE table_name = 'user_tokens' AND column_name = 'identity_id'
+      `)) as Array<{ column_name: string; is_nullable: string }>;
+
+      expect(columns).toHaveLength(1);
+      expect(columns[0].is_nullable).toBe('YES');
+
+      const foreignKeys = await dataSource.query(`
+        SELECT ccu.table_name AS foreign_table_name
+        FROM information_schema.table_constraints AS tc
+        JOIN information_schema.key_column_usage AS kcu
+          ON tc.constraint_name = kcu.constraint_name
+        JOIN information_schema.constraint_column_usage AS ccu
+          ON ccu.constraint_name = tc.constraint_name
+        WHERE tc.constraint_type = 'FOREIGN KEY'
+          AND tc.table_name = 'user_tokens'
+          AND kcu.column_name = 'identity_id'
+      `);
+
+      expect(foreignKeys).toHaveLength(1);
+      expect(foreignKeys[0].foreign_table_name).toBe('user_identities');
+    });
   });
 
   describe('migration down', () => {
     it('should revert all tables', async () => {
+      await new AddIdentityIdToUserTokens1791965204000().down(
+        dataSource.createQueryRunner(),
+      );
       const migration = new CreateIdentityTables1791865103000();
       await migration.down(dataSource.createQueryRunner());
 

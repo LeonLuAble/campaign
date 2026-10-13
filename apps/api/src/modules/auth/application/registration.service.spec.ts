@@ -30,6 +30,7 @@ describe('RegistrationService', () => {
     createLocalAccount: vi.fn(),
     findIdentity: vi.fn(),
     areAllIdentitiesVerified: vi.fn(),
+    isIdentityVerified: vi.fn(),
     consumeActivation: vi.fn(),
   };
 
@@ -115,6 +116,7 @@ describe('RegistrationService', () => {
       ).toHaveBeenCalledWith(
         expect.objectContaining({
           userId: 'user-id',
+          identityId: 'identity-id',
           type: UserTokenType.ACTIVATION,
         }),
       );
@@ -161,6 +163,7 @@ describe('RegistrationService', () => {
     const stored = {
       id: 'token-id',
       userId: 'user-id',
+      identityId: 'identity-id',
       type: UserTokenType.ACTIVATION,
       expiresAt: new Date(Date.now() + 60_000),
       usedAt: null,
@@ -168,9 +171,7 @@ describe('RegistrationService', () => {
 
     it('consumes a valid unused token', async () => {
       mockUserTokenService.findByHash.mockResolvedValue(stored);
-      mockIdentityAccountService.areAllIdentitiesVerified.mockResolvedValue(
-        false,
-      );
+      mockIdentityAccountService.isIdentityVerified.mockResolvedValue(false);
       mockIdentityAccountService.consumeActivation.mockResolvedValue(true);
 
       await service.activate('raw-token');
@@ -181,6 +182,7 @@ describe('RegistrationService', () => {
       expect(mockIdentityAccountService.consumeActivation).toHaveBeenCalledWith(
         'token-id',
         'user-id',
+        'identity-id',
       );
     });
 
@@ -189,9 +191,7 @@ describe('RegistrationService', () => {
         ...stored,
         usedAt: new Date(),
       });
-      mockIdentityAccountService.areAllIdentitiesVerified.mockResolvedValue(
-        true,
-      );
+      mockIdentityAccountService.isIdentityVerified.mockResolvedValue(true);
 
       await expect(service.activate('raw-token')).resolves.toBeUndefined();
       expect(
@@ -204,9 +204,7 @@ describe('RegistrationService', () => {
         ...stored,
         usedAt: new Date(),
       });
-      mockIdentityAccountService.areAllIdentitiesVerified.mockResolvedValue(
-        false,
-      );
+      mockIdentityAccountService.isIdentityVerified.mockResolvedValue(false);
 
       await expect(service.activate('raw-token')).rejects.toBeInstanceOf(
         ActivationTokenInvalidException,
@@ -218,9 +216,7 @@ describe('RegistrationService', () => {
         ...stored,
         expiresAt: new Date(Date.now() - 1000),
       });
-      mockIdentityAccountService.areAllIdentitiesVerified.mockResolvedValue(
-        false,
-      );
+      mockIdentityAccountService.isIdentityVerified.mockResolvedValue(false);
 
       await expect(service.activate('raw-token')).rejects.toBeInstanceOf(
         TokenExpiredException,
@@ -257,6 +253,7 @@ describe('RegistrationService', () => {
       ).toHaveBeenCalledWith(
         expect.objectContaining({
           userId: 'user-id',
+          identityId: 'identity-id',
           type: UserTokenType.ACTIVATION,
         }),
       );

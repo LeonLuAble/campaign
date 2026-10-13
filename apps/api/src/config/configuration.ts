@@ -22,6 +22,10 @@ export interface AppConfiguration {
     passwordResetTtlSeconds: number;
     passwordMinLength: number;
   };
+  social: {
+    googleClientId?: string;
+    appleClientId?: string;
+  };
   objectStorage: {
     endpoint?: string;
     bucket?: string;
@@ -66,6 +70,10 @@ export default function configuration(): AppConfiguration {
         process.env.PASSWORD_RESET_TOKEN_TTL_SECONDS ?? 3600,
       ),
       passwordMinLength: Number(process.env.PASSWORD_MIN_LENGTH ?? 8),
+    },
+    social: {
+      googleClientId: emptyToUndefined(process.env.GOOGLE_CLIENT_ID),
+      appleClientId: emptyToUndefined(process.env.APPLE_CLIENT_ID),
     },
     objectStorage: {
       endpoint: emptyToUndefined(process.env.OBJECT_STORAGE_ENDPOINT),

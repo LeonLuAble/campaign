@@ -198,6 +198,44 @@ describe('Auth account lifecycle (e2e)', () => {
     expect(activate.status).toBe(204);
   });
 
+  it('stores identity_id on activation tokens and verifies only that identity', async () => {
+    const registered = await register();
+    expect(registered.status).toBe(201);
+
+    const identities = (await dataSource.query(
+      `SELECT id FROM user_identities WHERE user_id = $1`,
+      [registered.body.id],
+    )) as Array<{ id: string }>;
+    expect(identities).toHaveLength(1);
+
+    await dataSource.query(
+      `INSERT INTO user_identities (user_id, type, identifier, normalized_identifier, is_verified)
+       VALUES ($1, 'mobile', '+60123456789', '+60123456789', false)`,
+      [registered.body.id],
+    );
+
+    const tokenRows = (await dataSource.query(
+      `SELECT identity_id FROM user_tokens WHERE type = 'activation' AND used_at IS NULL`,
+    )) as Array<{ identity_id: string | null }>;
+    expect(tokenRows).toHaveLength(1);
+    expect(tokenRows[0].identity_id).toBe(identities[0].id);
+
+    const token = lastToken();
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/activate')
+      .send({ token })
+      .expect(204);
+
+    const after = (await dataSource.query(
+      `SELECT type, is_verified FROM user_identities WHERE user_id = $1 ORDER BY type`,
+      [registered.body.id],
+    )) as Array<{ type: string; is_verified: boolean }>;
+    expect(after).toEqual([
+      { type: 'email', is_verified: true },
+      { type: 'mobile', is_verified: false },
+    ]);
+  });
+
   it('returns IDENTITY_ALREADY_EXISTS when the identifier is taken', async () => {
     await register();
     const again = await register();
