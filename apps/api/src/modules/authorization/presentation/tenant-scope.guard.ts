@@ -65,6 +65,7 @@ export class TenantScopeGuard implements CanActivate {
         readId(request.body, 'actionDefinitionId'),
       submissionId: request.params.submissionId ?? null,
       commitmentId: request.params.commitmentId ?? null,
+      milestoneId: request.params.milestoneId ?? null,
     });
     return true;
   }

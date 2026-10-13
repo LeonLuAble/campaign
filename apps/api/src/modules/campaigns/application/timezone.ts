@@ -110,6 +110,23 @@ export function assertDateOrder(
   }
 }
 
+export function inclusiveIsoDateCount(
+  startsOn: string,
+  endsOn: string,
+): number {
+  const start = Date.UTC(
+    Number(startsOn.slice(0, 4)),
+    Number(startsOn.slice(5, 7)) - 1,
+    Number(startsOn.slice(8, 10)),
+  );
+  const end = Date.UTC(
+    Number(endsOn.slice(0, 4)),
+    Number(endsOn.slice(5, 7)) - 1,
+    Number(endsOn.slice(8, 10)),
+  );
+  return Math.floor((end - start) / 86_400_000) + 1;
+}
+
 const MAX_SETTINGS_BYTES = 16_384;
 
 export function normalizeSettings(value: unknown): Record<string, unknown> {

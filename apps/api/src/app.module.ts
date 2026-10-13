@@ -16,6 +16,8 @@ import { ParticipationModule } from './modules/participation/participation.modul
 import { CommitmentsModule } from './modules/commitments/commitments.module.js';
 import { ActionsModule } from './modules/actions/actions.module.js';
 import { VegetarianModule } from './modules/vegetarian/vegetarian.module.js';
+import { ProgressModule } from './modules/progress/progress.module.js';
+import { MilestonesModule } from './modules/milestones/milestones.module.js';
 import { DatabaseModule } from './platform/database/database.module.js';
 import { RedisModule } from './platform/redis/redis.module.js';
 
@@ -40,6 +42,8 @@ import { RedisModule } from './platform/redis/redis.module.js';
     CommitmentsModule,
     ActionsModule,
     VegetarianModule,
+    ProgressModule,
+    MilestonesModule,
     AuthorizationModule,
   ],
 })

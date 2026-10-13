@@ -37,6 +37,12 @@ export const PERMISSIONS = {
   COMMITMENTS_CREATE: 'commitments.create',
   COMMITMENTS_READ: 'commitments.read',
   COMMITMENTS_UPDATE: 'commitments.update',
+  ACHIEVEMENTS_READ: 'achievements.read',
+  PROGRESS_READ: 'progress.read',
+  MILESTONES_CREATE: 'milestones.create',
+  MILESTONES_READ: 'milestones.read',
+  MILESTONES_UPDATE: 'milestones.update',
+  MILESTONES_EVALUATE: 'milestones.evaluate',
 } as const;
 
 export type PermissionKey = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -215,5 +221,31 @@ export const PERMISSION_CATALOG: ReadonlyArray<{
   {
     key: PERMISSIONS.COMMITMENTS_UPDATE,
     description: "Correct another participant's campaign commitment",
+  },
+  {
+    key: PERMISSIONS.ACHIEVEMENTS_READ,
+    description: 'View own campaign achievements in the current tenant',
+  },
+  {
+    key: PERMISSIONS.PROGRESS_READ,
+    description:
+      'View own progress and allowed campaign or community aggregates',
+  },
+  {
+    key: PERMISSIONS.MILESTONES_CREATE,
+    description: 'Create campaign milestones in the current tenant',
+  },
+  {
+    key: PERMISSIONS.MILESTONES_READ,
+    description:
+      'View campaign milestones and evaluations in the current tenant',
+  },
+  {
+    key: PERMISSIONS.MILESTONES_UPDATE,
+    description: 'Update campaign milestones in the current tenant',
+  },
+  {
+    key: PERMISSIONS.MILESTONES_EVALUATE,
+    description: 'Evaluate campaign milestones in the current tenant',
   },
 ];

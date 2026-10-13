@@ -391,5 +391,85 @@ describe('Tenant isolation (e2e)', () => {
       .get(`/api/v1/campaigns/${campaignB.body.id}/actions`)
       .set(auth(userA.accessToken));
     expect(listActions.status).toBe(404);
+
+    const progressB = await request(app.getHttpServer())
+      .get(`/api/v1/campaigns/${campaignB.body.id}/progress`)
+      .set(auth(userA.accessToken));
+    expect(progressB.status).toBe(404);
+
+    const achievementB = await request(app.getHttpServer())
+      .get(`/api/v1/participations/${enrolledB.body.id}/progress`)
+      .set(auth(userA.accessToken));
+    expect(achievementB.status).toBe(404);
+
+    const milestoneB = await request(app.getHttpServer())
+      .post(`/api/v1/campaigns/${campaignB.body.id}/milestones`)
+      .set(auth(userA.accessToken))
+      .send({
+        name: 'Halfway',
+        metric: 'completion_percent',
+        thresholdValue: 50,
+        unit: 'days',
+      });
+    expect(milestoneB.status).toBe(404);
+  });
+
+  it('database trigger rejects a milestone that points at another tenant campaign', async () => {
+    const templateA = await request(app.getHttpServer())
+      .post('/api/v1/campaign-templates')
+      .set(auth(userA.accessToken))
+      .send({ customerId: tenantA.id, name: 'Template A' });
+    const scopeA = await request(app.getHttpServer())
+      .post('/api/v1/campaign-scopes')
+      .set(auth(userA.accessToken))
+      .send({
+        customerId: tenantA.id,
+        templateId: templateA.body.id,
+        name: 'Scope A',
+      });
+    const campaignA = await request(app.getHttpServer())
+      .post('/api/v1/campaigns')
+      .set(auth(userA.accessToken))
+      .send({
+        customerId: tenantA.id,
+        templateId: templateA.body.id,
+        scopeId: scopeA.body.id,
+        name: 'Campaign A',
+        timezone: 'UTC',
+      });
+    const templateB = await request(app.getHttpServer())
+      .post('/api/v1/campaign-templates')
+      .set(auth(userB.accessToken))
+      .send({ customerId: tenantB.id, name: 'Template B2' });
+    const scopeB = await request(app.getHttpServer())
+      .post('/api/v1/campaign-scopes')
+      .set(auth(userB.accessToken))
+      .send({
+        customerId: tenantB.id,
+        templateId: templateB.body.id,
+        name: 'Scope B2',
+      });
+    const campaignB = await request(app.getHttpServer())
+      .post('/api/v1/campaigns')
+      .set(auth(userB.accessToken))
+      .send({
+        customerId: tenantB.id,
+        templateId: templateB.body.id,
+        scopeId: scopeB.body.id,
+        name: 'Campaign B2',
+        timezone: 'UTC',
+      });
+
+    await expect(
+      dataSource.query(
+        `INSERT INTO milestones (
+           tenant_id, campaign_id, key, name, metric, threshold_value, unit,
+           created_by_user_id
+         ) VALUES ($1, $2, 'cross', 'Cross', 'completion_percent', 50, 'days', $3)`,
+        [tenantA.id, campaignB.body.id, userA.userId],
+      ),
+    ).rejects.toThrow(/same tenant/);
+
+    expect(campaignA.status).toBe(201);
   });
 });
