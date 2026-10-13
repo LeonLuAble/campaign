@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomBytes } from 'node:crypto';
 import { Repository } from 'typeorm';
@@ -18,6 +18,10 @@ import type { TenantContext } from '../../authorization/application/tenant-conte
 import { CampaignService } from '../../campaigns/application/campaign.service.js';
 import { CustomerService } from '../../customers/application/customer.service.js';
 import { milestoneCrossed } from '../../progress/application/completion.js';
+import {
+  CAMPAIGN_NOTIFICATIONS,
+  type CampaignNotifications,
+} from '../../notifications/application/campaign-notifications.js';
 import { ProgressService } from '../../progress/application/progress.service.js';
 import { Milestone, MilestoneMetric } from '../domain/milestone.entity.js';
 import { MilestoneEvaluation } from '../domain/milestone-evaluation.entity.js';
@@ -87,6 +91,9 @@ export class MilestoneService {
     private readonly progress: ProgressService,
     @Inject(forwardRef(() => CustomerService))
     private readonly customers: CustomerService,
+    @Optional()
+    @Inject(forwardRef(() => CAMPAIGN_NOTIFICATIONS))
+    private readonly campaignNotifications: CampaignNotifications | null,
   ) {}
 
   async findById(id: string): Promise<CampaignAccessRecord | null> {
@@ -210,6 +217,11 @@ export class MilestoneService {
   ): Promise<MilestoneEvaluationResponse> {
     await this.assertCanManage(tenant);
     const milestone = await this.requireVisible(tenant, milestoneId);
+    const previouslyCrossed = Boolean(
+      await this.evaluationRepository.findOne({
+        where: { milestone_id: milestone.id, crossed: true },
+      }),
+    );
     const current = await this.computeProgress(tenant, milestone, now);
     await this.upsertProgressSnapshot(tenant.tenantId, milestone.id, current);
 
@@ -236,6 +248,32 @@ export class MilestoneService {
       evaluationId: saved.id,
       crossed: saved.crossed,
     });
+    if (
+      saved.crossed &&
+      !previouslyCrossed &&
+      this.campaignNotifications
+    ) {
+      try {
+        const campaign = await this.campaigns.getCampaignRecord(
+          tenant,
+          milestone.campaign_id,
+        );
+        await this.campaignNotifications.notifyMilestoneAchieved({
+          tenantId: tenant.tenantId,
+          campaignId: campaign.id,
+          campaignName: campaign.name,
+          milestoneId: milestone.id,
+          milestoneName: milestone.name,
+        });
+      } catch (error) {
+        this.logger.error({
+          msg: 'milestone_achieved_notification_failed',
+          tenantId: tenant.tenantId,
+          milestoneId: milestone.id,
+          error: error instanceof Error ? error.message : 'unknown',
+        });
+      }
+    }
     return this.toEvaluationResponse(saved);
   }
 

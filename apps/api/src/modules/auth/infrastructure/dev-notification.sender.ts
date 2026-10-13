@@ -19,10 +19,15 @@ export class DevNotificationSender implements NotificationSender {
       this.configService.get<string>('NODE_ENV') ??
       this.configService.get<string>('nodeEnv');
 
-    if (nodeEnv === 'production') {
-      this.logger.log(
-        `Sent ${message.template} ${message.channel} notification to ${message.to}`,
-      );
+    if (nodeEnv === 'production' || !message.token) {
+      this.logger.log({
+        msg: 'notification_sent',
+        provider: 'dev',
+        template: message.template,
+        channel: message.channel,
+        to: message.to,
+        locale: message.locale ?? null,
+      });
       return;
     }
 

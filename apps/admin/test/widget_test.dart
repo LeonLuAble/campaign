@@ -19,6 +19,7 @@ void main() {
     expect(find.text('Community Campaign Admin'), findsOneWidget);
     expect(find.text('Administration shell'), findsOneWidget);
     expect(find.text('Environment: test'), findsOneWidget);
+    expect(find.text('Language'), findsOneWidget);
   });
 
   testWidgets('shows the Simplified Chinese administration shell', (

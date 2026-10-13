@@ -69,6 +69,46 @@ export function calendarDateInTimeZone(now: Date, timeZone: string): string {
   return `${year}-${month}-${day}`;
 }
 
+const LOCAL_TIME = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
+export function parseLocalTimeToMinutes(value: string, field = 'time'): number {
+  const match = LOCAL_TIME.exec(value.trim());
+  if (!match) {
+    throw new InvalidRequestException(
+      `${field} must be a 24-hour time in HH:mm`,
+    );
+  }
+  return Number(match[1]) * 60 + Number(match[2]);
+}
+
+export function localMinutesInTimeZone(now: Date, timeZone: string): number {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(now);
+  const hour = Number(parts.find((part) => part.type === 'hour')?.value);
+  const minute = Number(parts.find((part) => part.type === 'minute')?.value);
+  if (!Number.isFinite(hour) || !Number.isFinite(minute)) {
+    throw new InvalidRequestException(
+      'Unable to resolve a local time for the timezone',
+    );
+  }
+  return hour * 60 + minute;
+}
+
+export function isAtOrAfterLocalTime(
+  now: Date,
+  timeZone: string,
+  localTime: string,
+): boolean {
+  return (
+    localMinutesInTimeZone(now, timeZone) >=
+    parseLocalTimeToMinutes(localTime, 'reminderLocalTime')
+  );
+}
+
 export function resolveOccurredOn(
   value: string | undefined,
   timeZone: string,

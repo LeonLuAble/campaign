@@ -130,6 +130,22 @@ Dashboards (compose progress, measurements, outcomes, campaign-local day/week ti
 - GET `/campaigns/:campaignId/dashboard` → requires `dashboards.read`. Anonymous campaign totals.
 - GET `/campaigns/:campaignId/communities/:communityId/dashboard` → community/group subtree; TREE still reflects the campaign aggregate.
 
-Notifications, localization, reporting exports (Phase 8), audit.
+Notifications (in-app inbox plus reminder scheduling; SMTP/SMS/push stay behind env-selected interfaces with `dev` implementations; auth activation/reset still use NotificationSender):
+- GET `/notifications?customerId=` → requires `notifications.read`. Own inbox only, newest first.
+- GET `/notifications/:notificationId?customerId=` → requires `notifications.read`
+- POST `/notifications/:notificationId/read?customerId=` → requires `notifications.update`. Own row only.
+- GET/PUT `/me/notification-preferences` `{ inAppEnabled?, emailEnabled?, smsEnabled?, pushEnabled?, remindersEnabled?, reminderLocalTime? }` — user-level opt-out. SMS and push default off. Daily action reminders default on at `09:00` in the user timezone (campaign timezone if unset).
+- Campaign events that notify enrolled participants: `campaign_started` on start, `milestone_achieved` on the first evaluation that crosses, `action_reminder` once per campaign-local day when no approved action exists after the local reminder time. Activation and password-reset messages are unchanged transactional auth mail and ignore campaign opt-out.
+
+Localization (MVP languages are `en` and `zh-Hans`; Malay is not in the MVP):
+- PATCH `/me` `{ locale?: 'en' | 'zh-Hans', timezone?: IANA }` — user locale preference used for notification templates.
+- GET `/locales` and GET `/translations?locale=&namespace?` — JWT required. Templates are also stored in `translations`.
+
+Reporting (reuses Phase 6/7 aggregate privacy: no private individual rows in campaign/community reports, no rankings; contact PII is never exported):
+- GET `/participations/:participationId/report` → requires `reports.read`. Members see only their own.
+- GET `/campaigns/:campaignId/report` and `/campaigns/:campaignId/communities/:communityId/report` → anonymous aggregates.
+- GET `.../report/export` → `text/csv`; requires `reports.export`. Structured log `report_exported`. Campaign/community CSV omit `userId` and `participationId`.
+
+Authorization must enforce authentication, tenant scope, permission, community scope, privacy and ownership where applicable. Never trust client-supplied tenantId.
 
 Authorization must enforce authentication, tenant scope, permission, community scope, privacy and ownership where applicable. Never trust client-supplied tenantId.

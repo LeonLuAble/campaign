@@ -46,6 +46,7 @@ import { MeController } from './presentation/me.controller.js';
     JwtAuthGuard,
     DevNotificationSender,
     RegistrationService,
+    NOTIFICATION_SENDER,
   ],
 })
 export class AuthModule {}

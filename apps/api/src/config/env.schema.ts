@@ -42,4 +42,20 @@ export const envValidationSchema = Joi.object({
   OBJECT_STORAGE_BUCKET: Joi.string().allow('').optional(),
   OBJECT_STORAGE_ACCESS_KEY: Joi.string().allow('').optional(),
   OBJECT_STORAGE_SECRET_KEY: Joi.string().allow('').optional(),
+  NOTIFICATION_EMAIL_PROVIDER: Joi.string()
+    .valid('dev', 'smtp')
+    .default('dev'),
+  NOTIFICATION_SMS_PROVIDER: Joi.string().valid('dev', 'noop').default('dev'),
+  NOTIFICATION_PUSH_PROVIDER: Joi.string().valid('dev', 'noop').default('dev'),
+  SMTP_HOST: Joi.string().allow('').default(''),
+  SMTP_PORT: Joi.number().integer().min(1).max(65535).default(587),
+  SMTP_USER: Joi.string().allow('').default(''),
+  SMTP_PASSWORD: Joi.string().allow('').default(''),
+  SMTP_FROM: Joi.string().allow('').default(''),
+  SMS_FROM: Joi.string().allow('').default(''),
+  REMINDER_SCHEDULER_ENABLED: Joi.boolean().default(true),
+  REMINDER_SCHEDULER_INTERVAL_MS: Joi.number()
+    .integer()
+    .min(1000)
+    .default(60_000),
 });

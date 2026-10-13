@@ -8,6 +8,7 @@ import { CreateCampaignTables1792365608000 } from '../src/platform/database/migr
 import { CreateCommitmentActionTables1792465709000 } from '../src/platform/database/migrations/1792465709000-CreateCommitmentActionTables.js';
 import { CreateProgressMilestoneTables1792565810000 } from '../src/platform/database/migrations/1792565810000-CreateProgressMilestoneTables.js';
 import { CreateMeasurementOutcomeVisualizationTables1792665911000 } from '../src/platform/database/migrations/1792665911000-CreateMeasurementOutcomeVisualizationTables.js';
+import { CreateNotificationLocalizationReportTables1792766012000 } from '../src/platform/database/migrations/1792766012000-CreateNotificationLocalizationReportTables.js';
 
 type MigrationCtor = new () => MigrationInterface;
 
@@ -22,6 +23,7 @@ const SCHEMA_MIGRATIONS: MigrationCtor[] = [
   CreateCommitmentActionTables1792465709000,
   CreateProgressMilestoneTables1792565810000,
   CreateMeasurementOutcomeVisualizationTables1792665911000,
+  CreateNotificationLocalizationReportTables1792766012000,
 ];
 
 export async function revertSchemaMigrationsNewestFirst(
@@ -88,6 +90,9 @@ export async function clearTenantData(dataSource: DataSource): Promise<void> {
     return;
   }
   const tables = [
+    'notification_deliveries',
+    'notifications',
+    'user_notification_preferences',
     'visualizations',
     'impact_factors',
     'measurement_definitions',
@@ -144,6 +149,11 @@ export async function ensureTenantSchema(
   const hasTenants = await tableExists(dataSource, 'tenants');
   const hasMembershipRoles = await tableExists(dataSource, 'membership_roles');
   if (hasTenants && !hasMembershipRoles) {
+    if (await tableExists(dataSource, 'notifications')) {
+      await new CreateNotificationLocalizationReportTables1792766012000().down(
+        queryRunner,
+      );
+    }
     if (await tableExists(dataSource, 'measurement_definitions')) {
       await new CreateMeasurementOutcomeVisualizationTables1792665911000().down(
         queryRunner,
@@ -184,6 +194,11 @@ export async function ensureTenantSchema(
   }
   if (!(await tableExists(dataSource, 'measurement_definitions'))) {
     await new CreateMeasurementOutcomeVisualizationTables1792665911000().up(
+      queryRunner,
+    );
+  }
+  if (!(await tableExists(dataSource, 'notifications'))) {
+    await new CreateNotificationLocalizationReportTables1792766012000().up(
       queryRunner,
     );
   }

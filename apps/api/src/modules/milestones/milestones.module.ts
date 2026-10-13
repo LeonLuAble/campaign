@@ -5,6 +5,7 @@ import { AuthorizationModule } from '../authorization/authorization.module.js';
 import { AuthModule } from '../auth/auth.module.js';
 import { CampaignsModule } from '../campaigns/campaigns.module.js';
 import { CustomersModule } from '../customers/customers.module.js';
+import { NotificationsModule } from '../notifications/notifications.module.js';
 import { ProgressModule } from '../progress/progress.module.js';
 import { MilestoneService } from './application/milestone.service.js';
 import { MilestoneEvaluation } from './domain/milestone-evaluation.entity.js';
@@ -25,6 +26,7 @@ import { MilestonesController } from './presentation/milestones.controller.js';
     forwardRef(() => CampaignsModule),
     forwardRef(() => CustomersModule),
     forwardRef(() => ProgressModule),
+    forwardRef(() => NotificationsModule),
   ],
   controllers: [CampaignMilestonesController, MilestonesController],
   providers: [

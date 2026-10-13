@@ -135,6 +135,15 @@ abstract class AppLocalizations {
   String periodLabel(String start, String end);
   String get treeInactive;
   String get anonymousTotalsNote;
+  String get languageLabel;
+  String get languageEnglish;
+  String get languageChinese;
+  String get openCampaignReport;
+  String get campaignReportTitle;
+  String get emptyReport;
+  String get exportCsv;
+  String get exportRequiresPermission;
+  String get anonymousReportNote;
 }
 
 class _AppLocalizationsDelegate

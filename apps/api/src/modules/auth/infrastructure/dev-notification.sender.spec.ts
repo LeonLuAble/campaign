@@ -49,8 +49,14 @@ describe('DevNotificationSender', () => {
 
     expect(sender.last()?.token).toBe('secret-token');
     expect(logSpy).toHaveBeenCalledTimes(1);
-    const logged = String(logSpy.mock.calls[0]?.[0] ?? '');
-    expect(logged).toContain('password_reset');
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        msg: 'notification_sent',
+        template: 'password_reset',
+        channel: 'sms',
+      }),
+    );
+    const logged = JSON.stringify(logSpy.mock.calls[0]?.[0] ?? {});
     expect(logged).not.toContain('secret-token');
   });
 });

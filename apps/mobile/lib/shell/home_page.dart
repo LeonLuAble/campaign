@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../config/app_config_scope.dart';
 import '../l10n/app_localizations.dart';
+import '../locale/locale_scope.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -11,6 +12,7 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final config = AppConfigScope.of(context);
+    final localeScope = LocaleScope.of(context);
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.appTitle)),
@@ -25,6 +27,29 @@ class HomePage extends StatelessWidget {
             FilledButton(
               onPressed: () => context.go('/dashboard'),
               child: Text(l10n.openDashboard),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton(
+              onPressed: () => context.go('/notifications'),
+              child: Text(l10n.openNotifications),
+            ),
+            const SizedBox(height: 24),
+            Text(l10n.languageLabel),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              children: [
+                OutlinedButton(
+                  onPressed: () =>
+                      localeScope.onLocaleChanged(const Locale('en')),
+                  child: Text(l10n.languageEnglish),
+                ),
+                OutlinedButton(
+                  onPressed: () =>
+                      localeScope.onLocaleChanged(const Locale('zh')),
+                  child: Text(l10n.languageChinese),
+                ),
+              ],
             ),
           ],
         ),

@@ -63,5 +63,14 @@
     }
   },
   "treeInactive": "Campaign visualization is not configured.",
-  "anonymousTotalsNote": "Totals are anonymous. People are not ranked or compared."
+  "anonymousTotalsNote": "Totals are anonymous. People are not ranked or compared.",
+  "languageLabel": "Language",
+  "languageEnglish": "English",
+  "languageChinese": "简体中文",
+  "openCampaignReport": "Campaign report",
+  "campaignReportTitle": "Campaign report",
+  "emptyReport": "No report data yet.",
+  "exportCsv": "Export CSV",
+  "exportRequiresPermission": "CSV export requires reports.export and is audited.",
+  "anonymousReportNote": "Aggregate reports exclude contact details and do not rank people."
 }

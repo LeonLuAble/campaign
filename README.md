@@ -97,7 +97,7 @@ flutter pub get
 flutter run --dart-define=APP_ENV=development --dart-define=API_BASE_URL=http://localhost:3000/api/v1
 ```
 
-Supported locales are English and Simplified Chinese. The device locale selects the language, with English as the template.
+Supported locales are English and Simplified Chinese (`en`, `zh-Hans`). The apps expose an in-app language preference; English is the template. Malay is not in the MVP.
 
 ## Start admin web
 
