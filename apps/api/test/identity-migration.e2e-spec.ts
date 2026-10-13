@@ -24,7 +24,11 @@ describe('Identity Migration (e2e)', () => {
       process.env.DATABASE_URL ||
       'postgresql://campaign:campaign@localhost:5432/campaign';
 
-    dataSource = new DataSource(createDatabaseOptions(databaseUrl));
+    const options = createDatabaseOptions(databaseUrl);
+    dataSource = new DataSource({
+      ...options,
+      migrations: ['src/platform/database/migrations/*.ts'],
+    });
     await dataSource.initialize();
 
     await dataSource.runMigrations();
