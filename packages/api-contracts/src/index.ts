@@ -869,3 +869,103 @@ export interface AggregateDashboardResponse {
   timeSeries: TimeSeriesResponse;
   visualization: VisualizationDataResponse;
 }
+
+export type SupportedLocale = 'en' | 'zh-Hans';
+
+export interface LocaleResponse {
+  code: SupportedLocale;
+  name: string;
+}
+
+export interface TranslationResponse {
+  locale: string;
+  namespace: string;
+  key: string;
+  value: string;
+}
+
+export interface UpdateProfileRequest {
+  locale?: SupportedLocale;
+  timezone?: string;
+}
+
+export interface NotificationPreferenceResponse {
+  userId: string;
+  inAppEnabled: boolean;
+  emailEnabled: boolean;
+  smsEnabled: boolean;
+  pushEnabled: boolean;
+  remindersEnabled: boolean;
+  reminderLocalTime: string;
+}
+
+export interface UpdateNotificationPreferencesRequest {
+  inAppEnabled?: boolean;
+  emailEnabled?: boolean;
+  smsEnabled?: boolean;
+  pushEnabled?: boolean;
+  remindersEnabled?: boolean;
+  reminderLocalTime?: string;
+}
+
+export interface NotificationResponse {
+  id: string;
+  customerId: string;
+  type: string;
+  locale: string;
+  title: string;
+  body: string;
+  payload: Record<string, string>;
+  readAt: string | null;
+  createdAt: string;
+}
+
+export interface ReportUnit {
+  unit: string;
+  achievedValue: number;
+  targetValue: number;
+  completionPercent: number | null;
+  completionStatus: string;
+}
+
+export interface ReportMeasurement {
+  sourceUnit: string;
+  quantity: number;
+}
+
+export interface ReportOutcome {
+  sourceUnit: string;
+  outcomeMetric: string;
+  outcomeUnit: string;
+  value: number;
+}
+
+export interface ParticipantReportResponse {
+  scope: 'participant';
+  customerId: string;
+  campaignId: string;
+  participationId: string;
+  userId: string;
+  communityId: string | null;
+  timezone: string;
+  generatedAt: string;
+  progress: { units: ReportUnit[] };
+  measurements: ReportMeasurement[];
+  outcomes: ReportOutcome[];
+}
+
+export interface AggregateReportResponse {
+  scope: 'campaign' | 'community';
+  customerId: string;
+  campaignId: string;
+  communityId: string | null;
+  timezone: string;
+  generatedAt: string;
+  progress: {
+    participantCount: number;
+    committedParticipantCount: number;
+    units: ReportUnit[];
+  };
+  measurements: ReportMeasurement[];
+  outcomes: ReportOutcome[];
+}

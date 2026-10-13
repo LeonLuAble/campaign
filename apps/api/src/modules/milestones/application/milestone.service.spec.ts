@@ -88,6 +88,7 @@ describe('MilestoneService', () => {
   };
   const evaluationRepository = {
     find: vi.fn(),
+    findOne: vi.fn(),
     save: vi.fn(),
     create: vi.fn((value: unknown) => value),
   };
@@ -101,6 +102,7 @@ describe('MilestoneService', () => {
     campaigns.getCampaignRecord.mockResolvedValue({
       id: campaignId,
       tenantId: tenantA,
+      name: '速素数数',
       status: CampaignStatus.STARTED,
       timezone: 'Asia/Kuala_Lumpur',
       startsOn: '2026-01-01',
@@ -108,6 +110,7 @@ describe('MilestoneService', () => {
       configuration: {},
       communityIds: [],
     });
+    evaluationRepository.findOne.mockResolvedValue(null);
     milestoneRepository.findOne.mockResolvedValue(milestone());
     milestoneRepository.save.mockImplementation(async (value: Milestone) => ({
       ...milestone(),

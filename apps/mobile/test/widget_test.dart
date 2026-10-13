@@ -19,6 +19,7 @@ void main() {
     expect(find.text('Community Campaign'), findsOneWidget);
     expect(find.text('Community Campaign Platform'), findsOneWidget);
     expect(find.text('Environment: test'), findsOneWidget);
+    expect(find.text('Language'), findsOneWidget);
   });
 
   testWidgets('shows the Simplified Chinese application shell', (tester) async {

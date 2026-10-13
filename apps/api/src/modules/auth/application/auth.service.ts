@@ -122,4 +122,11 @@ export class AuthService {
     }
     return profile;
   }
+
+  async updateUserProfile(
+    userId: string,
+    input: { locale?: string; timezone?: string },
+  ): Promise<UserProfile> {
+    return this.identityAccountService.updateProfile(userId, input);
+  }
 }

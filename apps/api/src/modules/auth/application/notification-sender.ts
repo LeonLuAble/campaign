@@ -1,14 +1,23 @@
 export const NOTIFICATION_SENDER = Symbol('NOTIFICATION_SENDER');
 
-export type NotificationChannel = 'email' | 'sms';
+export type NotificationChannel = 'email' | 'sms' | 'push';
 
-export type NotificationTemplate = 'activation' | 'password_reset';
+export type NotificationTemplate =
+  | 'activation'
+  | 'password_reset'
+  | 'campaign_started'
+  | 'action_reminder'
+  | 'milestone_achieved';
 
 export interface NotificationMessage {
   channel: NotificationChannel;
   to: string;
   template: NotificationTemplate;
-  token: string;
+  token?: string;
+  locale?: string;
+  subject?: string;
+  body?: string;
+  payload?: Record<string, string>;
 }
 
 export interface NotificationSender {

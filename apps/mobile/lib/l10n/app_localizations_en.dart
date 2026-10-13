@@ -85,4 +85,31 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get anonymousTotalsNote =>
       'Totals are anonymous. People are not ranked.';
+
+  @override
+  String get languageLabel => 'Language';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languageChinese => '简体中文';
+
+  @override
+  String get openNotifications => 'Notifications';
+
+  @override
+  String get notificationsTitle => 'Notifications';
+
+  @override
+  String get emptyNotifications => 'No notifications yet.';
+
+  @override
+  String get markRead => 'Mark read';
+
+  @override
+  String get unreadLabel => 'Unread';
+
+  @override
+  String get readLabel => 'Read';
 }

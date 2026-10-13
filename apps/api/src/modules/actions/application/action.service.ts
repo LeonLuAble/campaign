@@ -123,6 +123,30 @@ export class ActionService {
     private readonly strategies: CampaignRuleStrategy[] | null,
   ) {}
 
+  async hasApprovedActionOn(
+    tenantId: string,
+    participationId: string,
+    occurredOn: string,
+  ): Promise<boolean> {
+    const actions = await this.actionRepository.find({
+      where: {
+        tenant_id: tenantId,
+        participation_id: participationId,
+        occurred_on: occurredOn,
+        status: ActionStatus.RECORDED,
+      },
+    });
+    if (actions.length === 0) {
+      return false;
+    }
+    const submissions = await this.submissionRepository.find({
+      where: { action_id: In(actions.map((action) => action.id)) },
+    });
+    return submissions.some(
+      (submission) => submission.status === SubmissionStatus.APPROVED,
+    );
+  }
+
   async findActionById(id: string): Promise<CampaignAccessRecord | null> {
     const action = await this.actionRepository.findOne({ where: { id } });
     return action ? { id: action.id, tenantId: action.tenant_id } : null;

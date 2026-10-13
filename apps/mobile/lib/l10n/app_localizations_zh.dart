@@ -82,4 +82,31 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get anonymousTotalsNote => '合计为匿名统计，不对个人进行排名。';
+
+  @override
+  String get languageLabel => '语言';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languageChinese => '简体中文';
+
+  @override
+  String get openNotifications => '通知';
+
+  @override
+  String get notificationsTitle => '通知';
+
+  @override
+  String get emptyNotifications => '暂无通知。';
+
+  @override
+  String get markRead => '标为已读';
+
+  @override
+  String get unreadLabel => '未读';
+
+  @override
+  String get readLabel => '已读';
 }

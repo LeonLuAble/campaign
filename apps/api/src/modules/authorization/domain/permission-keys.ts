@@ -55,6 +55,10 @@ export const PERMISSIONS = {
   VISUALIZATIONS_READ: 'visualizations.read',
   VISUALIZATIONS_UPDATE: 'visualizations.update',
   DASHBOARDS_READ: 'dashboards.read',
+  NOTIFICATIONS_READ: 'notifications.read',
+  NOTIFICATIONS_UPDATE: 'notifications.update',
+  REPORTS_READ: 'reports.read',
+  REPORTS_EXPORT: 'reports.export',
 } as const;
 
 export type PermissionKey = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -68,6 +72,7 @@ export const READ_PERMISSION_KEYS: PermissionKey[] = ALL_PERMISSION_KEYS.filter(
 export const MEMBER_SELF_CREATE_PERMISSION_KEYS: PermissionKey[] = [
   PERMISSIONS.COMMITMENTS_CREATE,
   PERMISSIONS.ACTIONS_CREATE,
+  PERMISSIONS.NOTIFICATIONS_UPDATE,
 ];
 
 export const MEMBER_PERMISSION_KEYS: PermissionKey[] = [
@@ -312,5 +317,22 @@ export const PERMISSION_CATALOG: ReadonlyArray<{
     key: PERMISSIONS.DASHBOARDS_READ,
     description:
       'View own dashboards and allowed campaign or community aggregates',
+  },
+  {
+    key: PERMISSIONS.NOTIFICATIONS_READ,
+    description: 'View own in-app notifications in the current tenant',
+  },
+  {
+    key: PERMISSIONS.NOTIFICATIONS_UPDATE,
+    description: 'Mark own in-app notifications as read in the current tenant',
+  },
+  {
+    key: PERMISSIONS.REPORTS_READ,
+    description:
+      'View own reports and allowed campaign or community aggregates',
+  },
+  {
+    key: PERMISSIONS.REPORTS_EXPORT,
+    description: 'Export campaign, community or participant reports as CSV',
   },
 ];

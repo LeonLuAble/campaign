@@ -54,6 +54,33 @@ export class ParticipationService {
     private readonly identities: IdentityAccountService,
   ) {}
 
+  async listEnrolledByCampaign(
+    tenantId: string,
+    campaignId: string,
+  ): Promise<
+    Array<{
+      id: string;
+      tenantId: string;
+      campaignId: string;
+      userId: string;
+    }>
+  > {
+    const rows = await this.participationRepository.find({
+      where: {
+        tenant_id: tenantId,
+        campaign_id: campaignId,
+        status: ParticipationStatus.ENROLLED,
+      },
+      order: { created_at: 'ASC' },
+    });
+    return rows.map((row) => ({
+      id: row.id,
+      tenantId: row.tenant_id,
+      campaignId: row.campaign_id,
+      userId: row.user_id,
+    }));
+  }
+
   async findById(id: string): Promise<CampaignAccessRecord | null> {
     const participation = await this.participationRepository.findOne({
       where: { id },

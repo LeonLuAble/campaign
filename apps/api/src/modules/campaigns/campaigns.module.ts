@@ -13,6 +13,7 @@ import { CampaignTemplate } from './domain/campaign-template.entity.js';
 import { Campaign } from './domain/campaign.entity.js';
 import { CampaignScopesController } from './presentation/campaign-scopes.controller.js';
 import { CampaignTemplatesController } from './presentation/campaign-templates.controller.js';
+import { NotificationsModule } from '../notifications/notifications.module.js';
 import { CampaignsController } from './presentation/campaigns.controller.js';
 
 @Module({
@@ -28,6 +29,7 @@ import { CampaignsController } from './presentation/campaigns.controller.js';
     forwardRef(() => AuthorizationModule),
     forwardRef(() => CustomersModule),
     forwardRef(() => CommunitiesModule),
+    forwardRef(() => NotificationsModule),
   ],
   controllers: [
     CampaignTemplatesController,

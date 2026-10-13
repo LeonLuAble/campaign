@@ -16,7 +16,7 @@ import { IdentityAccountService } from './identity-account.service.js';
 describe('IdentityAccountService', () => {
   let service: IdentityAccountService;
 
-  const mockUserRepository = { findOne: vi.fn(), update: vi.fn() };
+  const mockUserRepository = { findOne: vi.fn(), update: vi.fn(), save: vi.fn() };
   const mockIdentityRepository = { findOne: vi.fn(), find: vi.fn() };
   const mockCredentialRepository = { findOne: vi.fn() };
   const mockDataSource = { transaction: vi.fn() };
@@ -106,6 +106,46 @@ describe('IdentityAccountService', () => {
     });
     expect(JSON.stringify(profile)).not.toContain('normalized_identifier');
     expect(JSON.stringify(profile)).not.toContain('password_hash');
+  });
+
+  it('updates locale and timezone on the user profile', async () => {
+    const user = {
+      id: 'user-id',
+      first_name: null,
+      last_name: null,
+      display_name: null,
+      locale: null,
+      timezone: null,
+      is_active: true,
+      identities: [],
+    };
+    mockUserRepository.findOne.mockResolvedValue(user);
+    mockUserRepository.save.mockImplementation(async (value: unknown) => value);
+
+    const profile = await service.updateProfile('user-id', {
+      locale: 'zh-Hans',
+      timezone: 'Asia/Kuala_Lumpur',
+    });
+
+    expect(user.locale).toBe('zh-Hans');
+    expect(user.timezone).toBe('Asia/Kuala_Lumpur');
+    expect(profile.locale).toBe('zh-Hans');
+    expect(profile.timezone).toBe('Asia/Kuala_Lumpur');
+  });
+
+  it('lists identity destinations without normalized values', async () => {
+    mockIdentityRepository.find.mockResolvedValue([
+      {
+        type: IdentityType.EMAIL,
+        identifier: 'test@example.com',
+        normalized_identifier: 'test@example.com',
+      },
+    ]);
+    const identities = await service.listIdentitiesForUser('user-id');
+    expect(identities).toEqual([
+      { type: IdentityType.EMAIL, identifier: 'test@example.com' },
+    ]);
+    expect(JSON.stringify(identities)).not.toContain('normalized');
   });
 
   it('treats only active platform-admin users as platform admins', async () => {

@@ -6,6 +6,8 @@ import {
   assertOccurredOnInCampaignWindow,
   calendarDateInTimeZone,
   inclusiveIsoDateCount,
+  isAtOrAfterLocalTime,
+  localMinutesInTimeZone,
   normalizeSettings,
   parseIsoDate,
   resolveOccurredOn,
@@ -49,6 +51,17 @@ describe('timezone and campaign value helpers', () => {
     expect(() => normalizeSettings(['vegetarian'])).toThrow(
       InvalidRequestException,
     );
+  });
+
+  it('compares reminder local time in the user timezone', () => {
+    const morningUtc = new Date('2026-10-13T01:00:00.000Z');
+    expect(localMinutesInTimeZone(morningUtc, 'Asia/Kuala_Lumpur')).toBe(9 * 60);
+    expect(
+      isAtOrAfterLocalTime(morningUtc, 'Asia/Kuala_Lumpur', '09:00'),
+    ).toBe(true);
+    expect(
+      isAtOrAfterLocalTime(morningUtc, 'Asia/Kuala_Lumpur', '09:01'),
+    ).toBe(false);
   });
 
   it('resolves campaign-local calendar dates around UTC midnight', () => {

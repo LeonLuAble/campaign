@@ -91,4 +91,33 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get anonymousTotalsNote =>
       'Totals are anonymous. People are not ranked or compared.';
+
+  @override
+  String get languageLabel => 'Language';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languageChinese => '简体中文';
+
+  @override
+  String get openCampaignReport => 'Campaign report';
+
+  @override
+  String get campaignReportTitle => 'Campaign report';
+
+  @override
+  String get emptyReport => 'No report data yet.';
+
+  @override
+  String get exportCsv => 'Export CSV';
+
+  @override
+  String get exportRequiresPermission =>
+      'CSV export requires reports.export and is audited.';
+
+  @override
+  String get anonymousReportNote =>
+      'Aggregate reports exclude contact details and do not rank people.';
 }

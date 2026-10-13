@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomBytes } from 'node:crypto';
 import { In, Repository } from 'typeorm';
@@ -30,6 +30,10 @@ import {
 } from './campaign-lifecycle.js';
 import { campaignVisibleToMemberships } from './campaign-visibility.js';
 import { readSubmissionReview } from './campaign-settings.js';
+import {
+  CAMPAIGN_NOTIFICATIONS,
+  type CampaignNotifications,
+} from '../../notifications/application/campaign-notifications.js';
 import {
   assertDateOrder,
   assertIanaTimeZone,
@@ -109,7 +113,34 @@ export class CampaignService {
     private readonly customers: CustomerService,
     @Inject(forwardRef(() => CommunityService))
     private readonly communities: CommunityService,
+    @Optional()
+    @Inject(forwardRef(() => CAMPAIGN_NOTIFICATIONS))
+    private readonly campaignNotifications: CampaignNotifications | null,
   ) {}
+
+  async listStartedCampaigns(): Promise<
+    Array<{
+      id: string;
+      tenantId: string;
+      name: string;
+      timezone: string;
+      startsOn: string | null;
+      endsOn: string | null;
+    }>
+  > {
+    const rows = await this.campaignRepository.find({
+      where: { status: CampaignStatus.STARTED },
+      order: { created_at: 'ASC' },
+    });
+    return rows.map((campaign) => ({
+      id: campaign.id,
+      tenantId: campaign.tenant_id,
+      name: campaign.name,
+      timezone: campaign.timezone,
+      startsOn: toIsoDate(campaign.starts_on),
+      endsOn: toIsoDate(campaign.ends_on),
+    }));
+  }
 
   async findTemplateById(id: string): Promise<CampaignAccessRecord | null> {
     const template = await this.templateRepository.findOne({ where: { id } });
@@ -642,6 +673,7 @@ export class CampaignService {
   ): Promise<{
     id: string;
     tenantId: string;
+    name: string;
     status: CampaignStatus;
     timezone: string;
     startsOn: string | null;
@@ -656,6 +688,7 @@ export class CampaignService {
     return {
       id: campaign.id,
       tenantId: campaign.tenant_id,
+      name: campaign.name,
       status: campaign.status,
       timezone: campaign.timezone,
       startsOn: toIsoDate(campaign.starts_on),
@@ -700,6 +733,22 @@ export class CampaignService {
       tenantId: tenant.tenantId,
       campaignId: campaign.id,
     });
+    if (next === CampaignStatus.STARTED && this.campaignNotifications) {
+      try {
+        await this.campaignNotifications.notifyCampaignStarted({
+          tenantId: tenant.tenantId,
+          campaignId: campaign.id,
+          campaignName: campaign.name,
+        });
+      } catch (error) {
+        this.logger.error({
+          msg: 'campaign_started_notification_failed',
+          tenantId: tenant.tenantId,
+          campaignId: campaign.id,
+          error: error instanceof Error ? error.message : 'unknown',
+        });
+      }
+    }
     const [mapped] = await this.toCampaignResponses([campaign]);
     return mapped;
   }

@@ -21,8 +21,12 @@ import { MilestonesModule } from './modules/milestones/milestones.module.js';
 import { MeasurementsModule } from './modules/measurements/measurements.module.js';
 import { OutcomesModule } from './modules/outcomes/outcomes.module.js';
 import { VisualizationsModule } from './modules/visualizations/visualizations.module.js';
+import { LocalizationModule } from './modules/localization/localization.module.js';
+import { NotificationsModule } from './modules/notifications/notifications.module.js';
+import { ReportsModule } from './modules/reports/reports.module.js';
 import { DatabaseModule } from './platform/database/database.module.js';
 import { RedisModule } from './platform/redis/redis.module.js';
+import { OutboundNotificationsModule } from './platform/notifications/outbound-notifications.module.js';
 
 @Module({
   imports: [
@@ -33,6 +37,7 @@ import { RedisModule } from './platform/redis/redis.module.js';
     }),
     DatabaseModule,
     RedisModule,
+    OutboundNotificationsModule,
     HealthModule,
     IdentityModule,
     AuthModule,
@@ -50,6 +55,9 @@ import { RedisModule } from './platform/redis/redis.module.js';
     MeasurementsModule,
     OutcomesModule,
     VisualizationsModule,
+    LocalizationModule,
+    NotificationsModule,
+    ReportsModule,
     AuthorizationModule,
   ],
 })

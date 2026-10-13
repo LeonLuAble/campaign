@@ -43,4 +43,13 @@ export class RedisService implements OnModuleInit, OnApplicationShutdown {
       return false;
     }
   }
+
+  async tryAcquireLock(key: string, ttlSeconds: number): Promise<boolean> {
+    const result = await this.client.set(key, '1', 'EX', ttlSeconds, 'NX');
+    return result === 'OK';
+  }
+
+  async releaseLock(key: string): Promise<void> {
+    await this.client.del(key);
+  }
 }

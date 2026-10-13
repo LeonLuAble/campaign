@@ -32,6 +32,19 @@ export interface AppConfiguration {
     accessKey?: string;
     secretKey?: string;
   };
+  notifications: {
+    emailProvider: 'dev' | 'smtp';
+    smsProvider: 'dev' | 'noop';
+    pushProvider: 'dev' | 'noop';
+    smtpHost?: string;
+    smtpPort: number;
+    smtpUser?: string;
+    smtpPassword?: string;
+    smtpFrom?: string;
+    smsFrom?: string;
+    reminderSchedulerEnabled: boolean;
+    reminderSchedulerIntervalMs: number;
+  };
 }
 
 function emptyToUndefined(value: string | undefined): string | undefined {
@@ -80,6 +93,27 @@ export default function configuration(): AppConfiguration {
       bucket: emptyToUndefined(process.env.OBJECT_STORAGE_BUCKET),
       accessKey: emptyToUndefined(process.env.OBJECT_STORAGE_ACCESS_KEY),
       secretKey: emptyToUndefined(process.env.OBJECT_STORAGE_SECRET_KEY),
+    },
+    notifications: {
+      emailProvider:
+        process.env.NOTIFICATION_EMAIL_PROVIDER === 'smtp' ? 'smtp' : 'dev',
+      smsProvider:
+        process.env.NOTIFICATION_SMS_PROVIDER === 'noop' ? 'noop' : 'dev',
+      pushProvider:
+        process.env.NOTIFICATION_PUSH_PROVIDER === 'noop' ? 'noop' : 'dev',
+      smtpHost: emptyToUndefined(process.env.SMTP_HOST),
+      smtpPort: Number(process.env.SMTP_PORT ?? 587),
+      smtpUser: emptyToUndefined(process.env.SMTP_USER),
+      smtpPassword: emptyToUndefined(process.env.SMTP_PASSWORD),
+      smtpFrom: emptyToUndefined(process.env.SMTP_FROM),
+      smsFrom: emptyToUndefined(process.env.SMS_FROM),
+      reminderSchedulerEnabled:
+        process.env.NODE_ENV === 'test'
+          ? process.env.REMINDER_SCHEDULER_ENABLED === 'true'
+          : process.env.REMINDER_SCHEDULER_ENABLED !== 'false',
+      reminderSchedulerIntervalMs: Number(
+        process.env.REMINDER_SCHEDULER_INTERVAL_MS ?? 60_000,
+      ),
     },
   };
 }

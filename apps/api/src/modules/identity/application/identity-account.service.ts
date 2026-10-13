@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, IsNull, QueryFailedError, Repository } from 'typeorm';
+import { InvalidRequestException } from '../../../shared/errors/domain-http.exceptions.js';
+import { assertStoredLocale } from '../../localization/application/locale-catalog.js';
 import { RefreshToken } from '../domain/refresh-token.entity.js';
 import { UserCredential } from '../domain/user-credential.entity.js';
 import { IdentityType, UserIdentity } from '../domain/user-identity.entity.js';
@@ -171,6 +173,40 @@ export class IdentityAccountService {
       { is_platform_admin: isPlatformAdmin },
     );
     return (result.affected ?? 0) > 0;
+  }
+
+  async updateProfile(
+    userId: string,
+    input: { locale?: string; timezone?: string },
+  ): Promise<PublicUserProfile> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new InvalidRequestException('User not found');
+    }
+    if (input.locale !== undefined) {
+      user.locale = assertStoredLocale(input.locale);
+    }
+    if (input.timezone !== undefined) {
+      user.timezone = assertUserTimeZone(input.timezone);
+    }
+    await this.userRepository.save(user);
+    const profile = await this.getProfile(userId);
+    if (!profile) {
+      throw new Error('User profile missing after update');
+    }
+    return profile;
+  }
+
+  async listIdentitiesForUser(
+    userId: string,
+  ): Promise<Array<{ type: IdentityType; identifier: string }>> {
+    const identities = await this.userIdentityRepository.find({
+      where: { user_id: userId },
+    });
+    return identities.map((identity) => ({
+      type: identity.type,
+      identifier: identity.identifier,
+    }));
   }
 
   async getProfile(userId: string): Promise<PublicUserProfile | null> {
@@ -549,4 +585,19 @@ export class IdentityAccountService {
       return true;
     });
   }
+}
+
+function assertUserTimeZone(value: string): string {
+  const timezone = value.trim();
+  if (!timezone) {
+    throw new InvalidRequestException('timezone is required');
+  }
+  try {
+    Intl.DateTimeFormat('en-US', { timeZone: timezone });
+  } catch {
+    throw new InvalidRequestException(
+      'timezone must be a valid IANA time zone',
+    );
+  }
+  return timezone;
 }

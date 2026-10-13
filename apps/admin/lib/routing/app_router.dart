@@ -2,11 +2,13 @@ import 'package:go_router/go_router.dart';
 
 import '../dashboards/aggregate_dashboard_page.dart';
 import '../dashboards/dashboard_models.dart';
+import '../reports/campaign_report_page.dart';
 import '../shell/home_page.dart';
 
 GoRouter createRouter({
   AggregateDashboardData? campaignDashboard,
   AggregateDashboardData? communityDashboard,
+  AggregateDashboardData? campaignReport,
 }) {
   return GoRouter(
     routes: [
@@ -30,6 +32,11 @@ GoRouter createRouter({
           scope: 'community',
           data: communityDashboard,
         ),
+      ),
+      GoRoute(
+        path: '/campaigns/report',
+        name: 'campaignReport',
+        builder: (context, state) => CampaignReportPage(data: campaignReport),
       ),
     ],
   );

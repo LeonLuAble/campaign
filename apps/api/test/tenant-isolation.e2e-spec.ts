@@ -535,6 +535,22 @@ describe('Tenant isolation (e2e)', () => {
       .get(`/api/v1/campaigns/${campaignB.body.id}/outcomes`)
       .set(auth(userA.accessToken));
     expect(outcomes.status).toBe(404);
+
+    const inbox = await request(app.getHttpServer())
+      .get('/api/v1/notifications')
+      .query({ customerId: tenantB.id })
+      .set(auth(userA.accessToken));
+    expect(inbox.status).toBe(404);
+
+    const report = await request(app.getHttpServer())
+      .get(`/api/v1/campaigns/${campaignB.body.id}/report`)
+      .set(auth(userA.accessToken));
+    expect(report.status).toBe(404);
+
+    const exported = await request(app.getHttpServer())
+      .get(`/api/v1/campaigns/${campaignB.body.id}/report/export`)
+      .set(auth(userA.accessToken));
+    expect(exported.status).toBe(404);
   });
 
   it('database trigger rejects a measurement definition on another tenant campaign', async () => {

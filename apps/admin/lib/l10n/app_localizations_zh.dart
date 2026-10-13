@@ -88,4 +88,32 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get anonymousTotalsNote => '合计为匿名统计，不对个人进行比较或排名。';
+
+  @override
+  String get languageLabel => '语言';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languageChinese => '简体中文';
+
+  @override
+  String get openCampaignReport => '活动报告';
+
+  @override
+  String get campaignReportTitle => '活动报告';
+
+  @override
+  String get emptyReport => '暂无报告数据。';
+
+  @override
+  String get exportCsv => '导出 CSV';
+
+  @override
+  String get exportRequiresPermission =>
+      'CSV 导出需要 reports.export 权限，并会写入审计日志。';
+
+  @override
+  String get anonymousReportNote => '合计报告不含联系方式，也不对个人排名。';
 }
