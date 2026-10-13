@@ -17,6 +17,7 @@ describe('TenantContextService', () => {
   const communities = {
     findById: vi.fn(),
     listAncestorIds: vi.fn(),
+    listDescendantIds: vi.fn(),
   };
   const memberships = {
     listActiveForUserInTenant: vi.fn(),
@@ -26,6 +27,12 @@ describe('TenantContextService', () => {
     resolvePermissionKeys: vi.fn(),
     findRoleById: vi.fn(),
   };
+  const campaigns = {
+    findCampaignById: vi.fn(),
+    findTemplateById: vi.fn(),
+    findScopeById: vi.fn(),
+  };
+  const participations = { findById: vi.fn() };
 
   let service: TenantContextService;
 
@@ -36,6 +43,8 @@ describe('TenantContextService', () => {
       communities,
       memberships,
       authorization as unknown as AuthorizationService,
+      campaigns,
+      participations,
     );
   });
 
@@ -101,5 +110,28 @@ describe('TenantContextService', () => {
       service.build('user-1', { customerId: 'not-a-uuid' }),
     ).rejects.toBeInstanceOf(InvalidRequestException);
     expect(tenants.findById).not.toHaveBeenCalled();
+  });
+
+  it('resolves tenant from a campaign id', async () => {
+    const campaignId = '66666666-6666-4666-8666-666666666666';
+    campaigns.findCampaignById.mockResolvedValue({
+      id: campaignId,
+      tenantId: tenantA,
+    });
+    memberships.listActiveForUserInTenant.mockResolvedValue([
+      {
+        id: membershipId,
+        tenantId: tenantA,
+        userId,
+        communityId: null,
+        isActive: true,
+      },
+    ]);
+    authorization.resolvePermissionKeys.mockResolvedValue(
+      new Set(['campaigns.read']),
+    );
+
+    const context = await service.build(userId, { campaignId });
+    expect(context.tenantId).toBe(tenantA);
   });
 });

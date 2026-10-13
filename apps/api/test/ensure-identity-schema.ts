@@ -4,6 +4,7 @@ import { AddIdentityIdToUserTokens1791965204000 } from '../src/platform/database
 import { CreateTenantCommunityMembershipTables1792065305000 } from '../src/platform/database/migrations/1792065305000-CreateTenantCommunityMembershipTables.js';
 import { AddUserPlatformAdmin1792165406000 } from '../src/platform/database/migrations/1792165406000-AddUserPlatformAdmin.js';
 import { CreateUserImportTables1792265507000 } from '../src/platform/database/migrations/1792265507000-CreateUserImportTables.js';
+import { CreateCampaignTables1792365608000 } from '../src/platform/database/migrations/1792365608000-CreateCampaignTables.js';
 
 async function tableExists(
   dataSource: DataSource,
@@ -45,6 +46,12 @@ export async function clearTenantData(dataSource: DataSource): Promise<void> {
     return;
   }
   const tables = [
+    'participations',
+    'campaign_communities',
+    'campaign_configurations',
+    'campaigns',
+    'campaign_scopes',
+    'campaign_templates',
     'user_import_rows',
     'user_imports',
     'membership_roles',
@@ -85,6 +92,9 @@ export async function ensureTenantSchema(
   const hasTenants = await tableExists(dataSource, 'tenants');
   const hasMembershipRoles = await tableExists(dataSource, 'membership_roles');
   if (hasTenants && !hasMembershipRoles) {
+    if (await tableExists(dataSource, 'campaigns')) {
+      await new CreateCampaignTables1792365608000().down(queryRunner);
+    }
     if (await tableExists(dataSource, 'user_imports')) {
       await new CreateUserImportTables1792265507000().down(queryRunner);
     }
@@ -99,6 +109,9 @@ export async function ensureTenantSchema(
   }
   if (!(await tableExists(dataSource, 'user_imports'))) {
     await new CreateUserImportTables1792265507000().up(queryRunner);
+  }
+  if (!(await tableExists(dataSource, 'campaigns'))) {
+    await new CreateCampaignTables1792365608000().up(queryRunner);
   }
 }
 

@@ -11,6 +11,8 @@ import { CustomersModule } from './modules/customers/customers.module.js';
 import { CommunitiesModule } from './modules/communities/communities.module.js';
 import { MembershipsModule } from './modules/memberships/memberships.module.js';
 import { UserImportsModule } from './modules/user-imports/user-imports.module.js';
+import { CampaignsModule } from './modules/campaigns/campaigns.module.js';
+import { ParticipationModule } from './modules/participation/participation.module.js';
 import { DatabaseModule } from './platform/database/database.module.js';
 import { RedisModule } from './platform/redis/redis.module.js';
 
@@ -30,6 +32,8 @@ import { RedisModule } from './platform/redis/redis.module.js';
     CommunitiesModule,
     MembershipsModule,
     UserImportsModule,
+    CampaignsModule,
+    ParticipationModule,
     AuthorizationModule,
   ],
 })

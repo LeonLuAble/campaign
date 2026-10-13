@@ -14,6 +14,18 @@ export const PERMISSIONS = {
   ROLES_ASSIGN: 'roles.assign',
   USER_IMPORTS_CREATE: 'user_imports.create',
   USER_IMPORTS_READ: 'user_imports.read',
+  CAMPAIGN_TEMPLATES_CREATE: 'campaign_templates.create',
+  CAMPAIGN_TEMPLATES_READ: 'campaign_templates.read',
+  CAMPAIGN_TEMPLATES_UPDATE: 'campaign_templates.update',
+  CAMPAIGN_SCOPES_CREATE: 'campaign_scopes.create',
+  CAMPAIGN_SCOPES_READ: 'campaign_scopes.read',
+  CAMPAIGN_SCOPES_UPDATE: 'campaign_scopes.update',
+  CAMPAIGNS_CREATE: 'campaigns.create',
+  CAMPAIGNS_READ: 'campaigns.read',
+  CAMPAIGNS_UPDATE: 'campaigns.update',
+  PARTICIPATIONS_CREATE: 'participations.create',
+  PARTICIPATIONS_READ: 'participations.read',
+  PARTICIPATIONS_UPDATE: 'participations.update',
 } as const;
 
 export type PermissionKey = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -90,5 +102,53 @@ export const PERMISSION_CATALOG: ReadonlyArray<{
   {
     key: PERMISSIONS.USER_IMPORTS_READ,
     description: 'View user imports and per-row results',
+  },
+  {
+    key: PERMISSIONS.CAMPAIGN_TEMPLATES_CREATE,
+    description: 'Create campaign templates in the current tenant',
+  },
+  {
+    key: PERMISSIONS.CAMPAIGN_TEMPLATES_READ,
+    description: 'View campaign templates in the current tenant',
+  },
+  {
+    key: PERMISSIONS.CAMPAIGN_TEMPLATES_UPDATE,
+    description: 'Update campaign templates in the current tenant',
+  },
+  {
+    key: PERMISSIONS.CAMPAIGN_SCOPES_CREATE,
+    description: 'Create campaign scopes in the current tenant',
+  },
+  {
+    key: PERMISSIONS.CAMPAIGN_SCOPES_READ,
+    description: 'View campaign scopes in the current tenant',
+  },
+  {
+    key: PERMISSIONS.CAMPAIGN_SCOPES_UPDATE,
+    description: 'Update campaign scopes in the current tenant',
+  },
+  {
+    key: PERMISSIONS.CAMPAIGNS_CREATE,
+    description: 'Create campaigns in the current tenant',
+  },
+  {
+    key: PERMISSIONS.CAMPAIGNS_READ,
+    description: 'View campaigns in the current tenant',
+  },
+  {
+    key: PERMISSIONS.CAMPAIGNS_UPDATE,
+    description: 'Update campaigns and drive lifecycle in the current tenant',
+  },
+  {
+    key: PERMISSIONS.PARTICIPATIONS_CREATE,
+    description: 'Enroll users in campaigns in the current tenant',
+  },
+  {
+    key: PERMISSIONS.PARTICIPATIONS_READ,
+    description: 'View campaign participations in the current tenant',
+  },
+  {
+    key: PERMISSIONS.PARTICIPATIONS_UPDATE,
+    description: 'Withdraw campaign participations in the current tenant',
   },
 ];

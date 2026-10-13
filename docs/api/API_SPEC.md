@@ -38,17 +38,28 @@ User import: `/user-imports` (tenant-scoped via `customerId` query; requires `us
 
 Imported users activate through POST /auth/activate with a password. Invitation delivery reuses the existing activation token + NotificationSender path (no `/invitations` resource in this phase).
 
-Campaign:
-- `/campaign-templates`
-- `/campaign-scopes`
-- `/campaigns`
-- publish/start/complete
-- configuration
-- target communities
+Campaign (tenant-scoped via `customerId` query/body or resource id; generic configuration, no vegetarian schema in this module):
+- POST /campaign-templates `{ customerId, key?, name, description? }` → 201. Requires `campaign_templates.create`.
+- GET /campaign-templates?customerId= → requires `campaign_templates.read`
+- GET /campaign-templates/:templateId → requires `campaign_templates.read`
+- PATCH /campaign-templates/:templateId `{ name?, description?, isActive? }` → requires `campaign_templates.update`
+- POST /campaign-scopes `{ customerId, templateId, key?, name, description? }` → 201. Requires `campaign_scopes.create`.
+- GET /campaign-scopes?customerId=&templateId? → requires `campaign_scopes.read`
+- GET /campaign-scopes/:scopeId → requires `campaign_scopes.read`
+- PATCH /campaign-scopes/:scopeId `{ name?, description?, isActive? }` → requires `campaign_scopes.update`
+- POST /campaigns `{ customerId, templateId, scopeId, name, timezone, description?, startsOn?, endsOn?, communityIds?, configuration? }` → 201 draft. Requires `campaigns.create`.
+- GET /campaigns?customerId= → requires `campaigns.read`
+- GET /campaigns/:campaignId → requires `campaigns.read`
+- PATCH /campaigns/:campaignId → draft only; requires `campaigns.update`
+- POST /campaigns/:campaignId/publish|start|complete → one-step forward lifecycle; requires `campaigns.update`
+- GET/PUT /campaigns/:campaignId/configuration `{ settings }` → GET `campaigns.read`; PUT draft only, `campaigns.update`
+- GET/PUT /campaigns/:campaignId/communities `{ communityIds }` → empty list means tenant-wide; PUT draft only
 
 Participation:
-- `/campaigns/{id}/participations`
-- `/participations/{id}`
+- POST /campaigns/:campaignId/participations `{ userId? }` → 201. Requires `participations.create`. Omitting `userId` enrolls the caller. Campaign must be published or started. Target user must be an active tenant member in a targeted community (or any membership if tenant-wide).
+- GET /campaigns/:campaignId/participations → requires `participations.read`. Members see only their own row; tenant admins see all.
+- GET /participations/:participationId → requires `participations.read`
+- POST /participations/:participationId/withdraw → requires `participations.update`. Idempotent if already withdrawn. Re-enroll restores the same row.
 
 Actions:
 - action definitions

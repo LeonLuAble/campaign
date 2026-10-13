@@ -289,3 +289,134 @@ export interface UserImportPreviewResponse {
   import: UserImportResponse;
   rows: UserImportRowResponse[];
 }
+
+export type CampaignStatus = 'draft' | 'published' | 'started' | 'completed';
+
+export type ParticipationStatus = 'enrolled' | 'withdrawn';
+
+export interface CampaignTemplateResponse {
+  id: string;
+  customerId: string;
+  key: string;
+  name: string;
+  description: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCampaignTemplateRequest {
+  customerId: string;
+  key?: string;
+  name: string;
+  description?: string;
+}
+
+export interface UpdateCampaignTemplateRequest {
+  name?: string;
+  description?: string | null;
+  isActive?: boolean;
+}
+
+export interface CampaignScopeResponse {
+  id: string;
+  customerId: string;
+  templateId: string;
+  key: string;
+  name: string;
+  description: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCampaignScopeRequest {
+  customerId: string;
+  templateId: string;
+  key?: string;
+  name: string;
+  description?: string;
+}
+
+export interface UpdateCampaignScopeRequest {
+  name?: string;
+  description?: string | null;
+  isActive?: boolean;
+}
+
+export interface CampaignResponse {
+  id: string;
+  customerId: string;
+  templateId: string;
+  scopeId: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  status: CampaignStatus;
+  timezone: string;
+  startsOn: string | null;
+  endsOn: string | null;
+  communityIds: string[];
+  configuration: Record<string, unknown>;
+  createdByUserId: string;
+  publishedAt: string | null;
+  startedAt: string | null;
+  completedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCampaignRequest {
+  customerId: string;
+  templateId: string;
+  scopeId: string;
+  name: string;
+  description?: string;
+  timezone: string;
+  startsOn?: string;
+  endsOn?: string;
+  communityIds?: string[];
+  configuration?: Record<string, unknown>;
+}
+
+export interface UpdateCampaignRequest {
+  name?: string;
+  description?: string | null;
+  timezone?: string;
+  startsOn?: string | null;
+  endsOn?: string | null;
+  communityIds?: string[];
+  configuration?: Record<string, unknown>;
+}
+
+export interface CampaignConfigurationResponse {
+  campaignId: string;
+  customerId: string;
+  settings: Record<string, unknown>;
+  updatedAt: string;
+}
+
+export interface ReplaceCampaignConfigurationRequest {
+  settings: Record<string, unknown>;
+}
+
+export interface ReplaceCampaignCommunitiesRequest {
+  communityIds: string[];
+}
+
+export interface ParticipationResponse {
+  id: string;
+  customerId: string;
+  campaignId: string;
+  userId: string;
+  communityId: string | null;
+  status: ParticipationStatus;
+  enrolledAt: string;
+  withdrawnAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateParticipationRequest {
+  userId?: string;
+}

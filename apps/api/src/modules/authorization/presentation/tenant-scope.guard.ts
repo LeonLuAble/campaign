@@ -48,6 +48,11 @@ export class TenantScopeGuard implements CanActivate {
       membershipId: request.params.membershipId ?? null,
       roleId: request.params.roleId ?? null,
       parentId: readId(request.body, 'parentId'),
+      campaignId: request.params.campaignId ?? null,
+      templateId:
+        request.params.templateId ?? readId(request.body, 'templateId'),
+      scopeId: request.params.scopeId ?? readId(request.body, 'scopeId'),
+      participationId: request.params.participationId ?? null,
     });
     return true;
   }
