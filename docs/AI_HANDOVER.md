@@ -12,8 +12,9 @@ Current stack: Flutter/Dart, Flutter Web, NestJS/TypeScript, PostgreSQL, Redis, 
 
 Phase 0 (repository foundation) is complete.
 Phase 1 (Identity + Authentication) is complete: users, identities, credentials, social identities, refresh tokens, email/mobile password login, Google/Apple authentication boundary, registration, activation, password reset, secure token handling, migrations, and tests.
+Phase 2 (Customer/community/membership/authorization) is complete: `tenants` (API: customers), arbitrary-depth `community_nodes`, memberships, tenant-scoped roles, a global permission catalog, backend guards/policies, tenant isolation tests, additive TypeORM migrations, and API contracts.
 
-Next phase: Phase 2 — Customer/community/membership/authorization.
+Next phase: Phase 3 — User import/activation.
 
 ## Canonical Documents
 1. PRODUCT_VISION.md
@@ -63,6 +64,7 @@ Phase 1:
 - tests
 
 Do not implement campaign, vegetarian business logic, community or import during Phase 1.
+Do not implement user import, invitations, campaigns, or vegetarian logic during Phase 2.
 
 ## Orchestration Workflow
 1. Read canonical docs.

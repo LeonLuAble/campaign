@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createDatabaseOptions } from '../src/platform/database/database-options.js';
 import { CreateIdentityTables1791865103000 } from '../src/platform/database/migrations/1791865103000-CreateIdentityTables.js';
 import { AddIdentityIdToUserTokens1791965204000 } from '../src/platform/database/migrations/1791965204000-AddIdentityIdToUserTokens.js';
+import { CreateTenantCommunityMembershipTables1792065305000 } from '../src/platform/database/migrations/1792065305000-CreateTenantCommunityMembershipTables.js';
 import {
   clearIdentityData,
   ensureIdentitySchema,
@@ -431,11 +432,13 @@ describe('Identity Migration (e2e)', () => {
 
   describe('migration down', () => {
     it('should revert all tables', async () => {
-      await new AddIdentityIdToUserTokens1791965204000().down(
-        dataSource.createQueryRunner(),
+      const queryRunner = dataSource.createQueryRunner();
+      await new CreateTenantCommunityMembershipTables1792065305000().down(
+        queryRunner,
       );
+      await new AddIdentityIdToUserTokens1791965204000().down(queryRunner);
       const migration = new CreateIdentityTables1791865103000();
-      await migration.down(dataSource.createQueryRunner());
+      await migration.down(queryRunner);
 
       const tables = await dataSource.query(`
         SELECT table_name
@@ -445,6 +448,8 @@ describe('Identity Migration (e2e)', () => {
       `);
 
       expect(tables.length).toBe(0);
+
+      await ensureIdentitySchema(dataSource);
     });
   });
 });
