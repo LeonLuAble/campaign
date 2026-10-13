@@ -17,6 +17,11 @@ export interface AppConfiguration {
     issuer: string;
     audience: string;
   };
+  tokens: {
+    activationTtlSeconds: number;
+    passwordResetTtlSeconds: number;
+    passwordMinLength: number;
+  };
   objectStorage: {
     endpoint?: string;
     bucket?: string;
@@ -52,6 +57,15 @@ export default function configuration(): AppConfiguration {
       refreshTtlSeconds: Number(process.env.JWT_REFRESH_TTL_SECONDS ?? 604800),
       issuer: process.env.JWT_ISSUER || 'campaign-api',
       audience: process.env.JWT_AUDIENCE || 'campaign-clients',
+    },
+    tokens: {
+      activationTtlSeconds: Number(
+        process.env.ACTIVATION_TOKEN_TTL_SECONDS ?? 86400,
+      ),
+      passwordResetTtlSeconds: Number(
+        process.env.PASSWORD_RESET_TOKEN_TTL_SECONDS ?? 3600,
+      ),
+      passwordMinLength: Number(process.env.PASSWORD_MIN_LENGTH ?? 8),
     },
     objectStorage: {
       endpoint: emptyToUndefined(process.env.OBJECT_STORAGE_ENDPOINT),
