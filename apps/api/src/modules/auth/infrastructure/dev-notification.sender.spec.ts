@@ -1,11 +1,19 @@
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DevNotificationSender } from './dev-notification.sender.js';
 
 describe('DevNotificationSender', () => {
+  let logSpy: ReturnType<typeof vi.spyOn>;
+
   beforeEach(() => {
-    vi.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
+    logSpy = vi
+      .spyOn(Logger.prototype, 'log')
+      .mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    logSpy.mockRestore();
   });
 
   it('captures the message for tests and logs the token outside production', async () => {
@@ -21,7 +29,8 @@ describe('DevNotificationSender', () => {
     });
 
     expect(sender.last()?.token).toBe('secret-token');
-    expect(Logger.prototype.log).toHaveBeenCalledWith(
+    expect(logSpy).toHaveBeenCalledTimes(1);
+    expect(logSpy).toHaveBeenCalledWith(
       expect.stringContaining('secret-token'),
     );
   });
@@ -39,11 +48,9 @@ describe('DevNotificationSender', () => {
     });
 
     expect(sender.last()?.token).toBe('secret-token');
-    expect(Logger.prototype.log).toHaveBeenCalledWith(
-      expect.stringContaining('password_reset'),
-    );
-    expect(Logger.prototype.log).not.toHaveBeenCalledWith(
-      expect.stringContaining('secret-token'),
-    );
+    expect(logSpy).toHaveBeenCalledTimes(1);
+    const logged = String(logSpy.mock.calls[0]?.[0] ?? '');
+    expect(logged).toContain('password_reset');
+    expect(logged).not.toContain('secret-token');
   });
 });
