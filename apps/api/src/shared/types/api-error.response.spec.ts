@@ -3,10 +3,7 @@ import type {
   ApiErrorResponse as ContractApiErrorResponse,
   ErrorCode as ContractErrorCode,
 } from '../../../../packages/api-contracts/src/index.js';
-import type {
-  ApiErrorResponse,
-  ErrorCode,
-} from './api-error.response.js';
+import type { ApiErrorResponse, ErrorCode } from './api-error.response.js';
 
 describe('ApiErrorResponse type sync', () => {
   it('ErrorCode in api-contracts matches apps/api', () => {
@@ -20,6 +17,9 @@ describe('ApiErrorResponse type sync', () => {
       'INTERNAL_ERROR',
       'SERVICE_UNAVAILABLE',
       'VALIDATION_FAILED',
+      'INVALID_CREDENTIALS',
+      'TOKEN_INVALID',
+      'TOKEN_REUSED',
     ];
 
     const contractCodes: ContractErrorCode[] = [
@@ -32,6 +32,9 @@ describe('ApiErrorResponse type sync', () => {
       'INTERNAL_ERROR',
       'SERVICE_UNAVAILABLE',
       'VALIDATION_FAILED',
+      'INVALID_CREDENTIALS',
+      'TOKEN_INVALID',
+      'TOKEN_REUSED',
     ];
 
     expect(apiCodes.sort()).toEqual(contractCodes.sort());

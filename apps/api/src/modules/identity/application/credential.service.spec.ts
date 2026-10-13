@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ConfigService } from '@nestjs/config';
-import { CredentialService, InvalidPhoneNumberError } from './credential.service.js';
+import {
+  CredentialService,
+  InvalidPhoneNumberError,
+} from './credential.service.js';
 import { PasswordHashingService } from './password-hashing.service.js';
 
 describe('CredentialService', () => {
@@ -90,19 +93,25 @@ describe('CredentialService', () => {
     it('should throw InvalidPhoneNumberError for invalid mobile number', () => {
       const mobile = 'not-a-phone-number';
 
-      expect(() => service.normalizeMobile(mobile)).toThrow(InvalidPhoneNumberError);
+      expect(() => service.normalizeMobile(mobile)).toThrow(
+        InvalidPhoneNumberError,
+      );
     });
 
     it('should throw InvalidPhoneNumberError for incomplete mobile number', () => {
       const mobile = '+1 123';
 
-      expect(() => service.normalizeMobile(mobile)).toThrow(InvalidPhoneNumberError);
+      expect(() => service.normalizeMobile(mobile)).toThrow(
+        InvalidPhoneNumberError,
+      );
     });
 
     it('should throw InvalidPhoneNumberError for empty string', () => {
       const mobile = '';
 
-      expect(() => service.normalizeMobile(mobile)).toThrow(InvalidPhoneNumberError);
+      expect(() => service.normalizeMobile(mobile)).toThrow(
+        InvalidPhoneNumberError,
+      );
     });
 
     it('should throw InvalidPhoneNumberError with descriptive message', () => {
@@ -113,8 +122,24 @@ describe('CredentialService', () => {
         expect.fail('Should have thrown InvalidPhoneNumberError');
       } catch (error) {
         expect(error).toBeInstanceOf(InvalidPhoneNumberError);
-        expect((error as Error).message).toContain('Failed to normalize mobile number');
+        expect((error as Error).message).toContain(
+          'Failed to normalize mobile number',
+        );
       }
+    });
+  });
+
+  describe('normalizeIdentifier', () => {
+    it('should treat values containing @ as email', () => {
+      expect(service.detectIdentifierType('Test@Example.COM')).toBe('email');
+      expect(service.normalizeIdentifier('  TeSt@ExAmPlE.cOm  ')).toBe(
+        'test@example.com',
+      );
+    });
+
+    it('should treat values without @ as mobile numbers', () => {
+      expect(service.detectIdentifierType('0123456789')).toBe('mobile');
+      expect(service.normalizeIdentifier('0123456789')).toBe('+60123456789');
     });
   });
 

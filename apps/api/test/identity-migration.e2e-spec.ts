@@ -2,6 +2,7 @@ import { DataSource } from 'typeorm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createDatabaseOptions } from '../src/platform/database/database-options.js';
 import { CreateIdentityTables1791865103000 } from '../src/platform/database/migrations/1791865103000-CreateIdentityTables.js';
+import { ensureIdentitySchema } from './ensure-identity-schema.js';
 
 interface ColumnInfo {
   column_name: string;
@@ -29,9 +30,7 @@ describe('Identity Migration (e2e)', () => {
 
     dataSource = new DataSource(createDatabaseOptions(databaseUrl));
     await dataSource.initialize();
-
-    const migration = new CreateIdentityTables1791865103000();
-    await migration.up(dataSource.createQueryRunner());
+    await ensureIdentitySchema(dataSource);
   });
 
   afterAll(async () => {

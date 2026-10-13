@@ -16,8 +16,10 @@ export const envValidationSchema = Joi.object({
     .uppercase()
     .default('MY')
     .description('ISO 3166-1 alpha-2 country code for phone number parsing'),
-  JWT_ACCESS_SECRET: Joi.string().allow('').optional(),
-  JWT_REFRESH_SECRET: Joi.string().allow('').optional(),
+  JWT_ACCESS_SECRET: Joi.string().min(32).required(),
+  JWT_REFRESH_SECRET: Joi.string().min(32).required(),
+  JWT_ACCESS_TTL_SECONDS: Joi.number().integer().min(60).default(900),
+  JWT_REFRESH_TTL_SECONDS: Joi.number().integer().min(3600).default(604800),
   OBJECT_STORAGE_ENDPOINT: Joi.string().uri().allow('').optional(),
   OBJECT_STORAGE_BUCKET: Joi.string().allow('').optional(),
   OBJECT_STORAGE_ACCESS_KEY: Joi.string().allow('').optional(),

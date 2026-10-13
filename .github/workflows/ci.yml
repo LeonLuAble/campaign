@@ -39,6 +39,10 @@ jobs:
       PORT: "3000"
       DATABASE_URL: postgresql://campaign:campaign@localhost:5432/campaign
       REDIS_URL: redis://localhost:6379
+      JWT_ACCESS_SECRET: test-access-secret-min-32-characters-xx
+      JWT_REFRESH_SECRET: test-refresh-secret-min-32-characters-x
+      JWT_ACCESS_TTL_SECONDS: "900"
+      JWT_REFRESH_TTL_SECONDS: "604800"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
