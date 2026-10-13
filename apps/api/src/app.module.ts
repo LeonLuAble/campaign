@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { createLoggerParams } from './bootstrap/logger.config.js';
 import { AppConfigModule } from './config/app-config.module.js';
+import { isAuthRateLimitEnabled } from './config/security-config.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { IdentityModule } from './modules/identity/identity.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
@@ -34,6 +36,23 @@ import { OutboundNotificationsModule } from './platform/notifications/outbound-n
     LoggerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => createLoggerParams(config),
+    }),
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        throttlers: [
+          {
+            name: 'auth',
+            ttl: config.get<number>('security.authRateLimitTtlMs') ?? 60_000,
+            limit: config.get<number>('security.authRateLimitMax') ?? 20,
+          },
+        ],
+        skipIf: () =>
+          !isAuthRateLimitEnabled(
+            process.env.NODE_ENV ?? 'development',
+            process.env.AUTH_RATE_LIMIT_ENABLED,
+          ),
+      }),
     }),
     DatabaseModule,
     RedisModule,

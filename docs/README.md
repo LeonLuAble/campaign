@@ -18,6 +18,11 @@ This directory contains the product vision, domain model, architecture, and deve
 
 - `api/API_SPEC.md` — API design, endpoints, and conventions
 
+## Release
+
+- `release/MVP_READINESS.md` — MVP specification checklist vs the codebase
+- `release/DEPLOYMENT.md` — env vars, migrations, and human release decisions (no cloud provider)
+
 ## Development
 
 - `development/CURSOR_DEVELOPMENT_GUIDE.md` — Development workflow and Cursor usage guide

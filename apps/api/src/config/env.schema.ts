@@ -1,4 +1,5 @@
 import Joi from 'joi';
+import { EXAMPLE_JWT_SECRETS } from './security-config.js';
 
 export const envValidationSchema = Joi.object({
   NODE_ENV: Joi.string()
@@ -16,8 +17,22 @@ export const envValidationSchema = Joi.object({
     .uppercase()
     .default('MY')
     .description('ISO 3166-1 alpha-2 country code for phone number parsing'),
-  JWT_ACCESS_SECRET: Joi.string().min(32).required(),
-  JWT_REFRESH_SECRET: Joi.string().min(32).required(),
+  JWT_ACCESS_SECRET: Joi.when('NODE_ENV', {
+    is: 'production',
+    then: Joi.string()
+      .min(32)
+      .invalid(...EXAMPLE_JWT_SECRETS)
+      .required(),
+    otherwise: Joi.string().min(32).required(),
+  }),
+  JWT_REFRESH_SECRET: Joi.when('NODE_ENV', {
+    is: 'production',
+    then: Joi.string()
+      .min(32)
+      .invalid(...EXAMPLE_JWT_SECRETS)
+      .required(),
+    otherwise: Joi.string().min(32).required(),
+  }),
   JWT_ACCESS_TTL_SECONDS: Joi.number().integer().min(60).default(900),
   JWT_REFRESH_TTL_SECONDS: Joi.number().integer().min(3600).default(604800),
   JWT_ISSUER: Joi.string().min(1).default('campaign-api'),
@@ -42,20 +57,31 @@ export const envValidationSchema = Joi.object({
   OBJECT_STORAGE_BUCKET: Joi.string().allow('').optional(),
   OBJECT_STORAGE_ACCESS_KEY: Joi.string().allow('').optional(),
   OBJECT_STORAGE_SECRET_KEY: Joi.string().allow('').optional(),
-  NOTIFICATION_EMAIL_PROVIDER: Joi.string()
-    .valid('dev', 'smtp')
-    .default('dev'),
+  NOTIFICATION_EMAIL_PROVIDER: Joi.string().valid('dev', 'smtp').default('dev'),
   NOTIFICATION_SMS_PROVIDER: Joi.string().valid('dev', 'noop').default('dev'),
   NOTIFICATION_PUSH_PROVIDER: Joi.string().valid('dev', 'noop').default('dev'),
-  SMTP_HOST: Joi.string().allow('').default(''),
+  SMTP_HOST: Joi.when('NOTIFICATION_EMAIL_PROVIDER', {
+    is: 'smtp',
+    then: Joi.string().min(1).required(),
+    otherwise: Joi.string().allow('').default(''),
+  }),
   SMTP_PORT: Joi.number().integer().min(1).max(65535).default(587),
   SMTP_USER: Joi.string().allow('').default(''),
   SMTP_PASSWORD: Joi.string().allow('').default(''),
-  SMTP_FROM: Joi.string().allow('').default(''),
+  SMTP_FROM: Joi.when('NOTIFICATION_EMAIL_PROVIDER', {
+    is: 'smtp',
+    then: Joi.string().min(1).required(),
+    otherwise: Joi.string().allow('').default(''),
+  }),
   SMS_FROM: Joi.string().allow('').default(''),
   REMINDER_SCHEDULER_ENABLED: Joi.boolean().default(true),
   REMINDER_SCHEDULER_INTERVAL_MS: Joi.number()
     .integer()
     .min(1000)
     .default(60_000),
+  CORS_ORIGINS: Joi.string().allow('').default(''),
+  HELMET_ENABLED: Joi.boolean().default(true),
+  AUTH_RATE_LIMIT_ENABLED: Joi.boolean().optional(),
+  AUTH_RATE_LIMIT_TTL_SECONDS: Joi.number().integer().min(1).default(60),
+  AUTH_RATE_LIMIT_MAX: Joi.number().integer().min(1).default(20),
 });

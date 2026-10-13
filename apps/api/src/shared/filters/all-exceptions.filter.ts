@@ -25,6 +25,7 @@ const STATUS_PHRASES: Record<number, string> = {
   [HttpStatus.NOT_FOUND]: 'Not Found',
   [HttpStatus.CONFLICT]: 'Conflict',
   [HttpStatus.UNPROCESSABLE_ENTITY]: 'Unprocessable Entity',
+  [HttpStatus.TOO_MANY_REQUESTS]: 'Too Many Requests',
   [HttpStatus.INTERNAL_SERVER_ERROR]: 'Internal Server Error',
   [HttpStatus.SERVICE_UNAVAILABLE]: 'Service Unavailable',
 };
@@ -36,6 +37,7 @@ const ERROR_CODES: Record<number, ErrorCode> = {
   [HttpStatus.NOT_FOUND]: 'NOT_FOUND',
   [HttpStatus.CONFLICT]: 'CONFLICT',
   [HttpStatus.UNPROCESSABLE_ENTITY]: 'UNPROCESSABLE_ENTITY',
+  [HttpStatus.TOO_MANY_REQUESTS]: 'RATE_LIMITED',
   [HttpStatus.INTERNAL_SERVER_ERROR]: 'INTERNAL_ERROR',
   [HttpStatus.SERVICE_UNAVAILABLE]: 'SERVICE_UNAVAILABLE',
 };

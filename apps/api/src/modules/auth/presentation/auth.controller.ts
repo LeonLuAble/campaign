@@ -1,4 +1,12 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { AuthService } from '../application/auth.service.js';
 import { PasswordResetService } from '../application/password-reset.service.js';
 import { RegistrationService } from '../application/registration.service.js';
@@ -14,6 +22,7 @@ import { RegisterDto } from '../dto/register.dto.js';
 import { SocialLoginDto } from '../dto/social-login.dto.js';
 
 @Controller('auth')
+@UseGuards(ThrottlerGuard)
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
@@ -22,7 +31,6 @@ export class AuthController {
     private readonly passwordResetService: PasswordResetService,
   ) {}
 
-  // TODO: add registration rate limiting.
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   register(@Body() registerDto: RegisterDto) {
@@ -32,7 +40,6 @@ export class AuthController {
     );
   }
 
-  // TODO: add activation rate limiting.
   @Post('activate')
   @HttpCode(HttpStatus.NO_CONTENT)
   activate(@Body() activateDto: ActivateDto) {
@@ -42,7 +49,6 @@ export class AuthController {
     );
   }
 
-  // TODO: add activation resend rate limiting.
   @Post('activate/resend')
   @HttpCode(HttpStatus.ACCEPTED)
   async resendActivation(@Body() resendDto: ActivateResendDto) {
@@ -50,7 +56,6 @@ export class AuthController {
     return { accepted: true };
   }
 
-  // TODO: add password-reset request rate limiting.
   @Post('password-reset/request')
   @HttpCode(HttpStatus.ACCEPTED)
   async requestPasswordReset(@Body() requestDto: PasswordResetRequestDto) {
@@ -67,14 +72,12 @@ export class AuthController {
     );
   }
 
-  // TODO: add login rate limiting to reduce credential stuffing.
   @Post('login')
   @HttpCode(HttpStatus.OK)
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto.identifier, loginDto.password);
   }
 
-  // TODO: add social login rate limiting.
   @Post('social')
   @HttpCode(HttpStatus.OK)
   socialLogin(@Body() socialDto: SocialLoginDto) {

@@ -19,8 +19,11 @@ Phase 5 (Commitment/action recording) is complete: generic `commitments`, `actio
 Phase 6 (Achievement/progress/milestones) is complete: progress and achievements are computed from source data on read (approved submissions on non-cancelled actions only), so reject and cancel immediately change totals; campaign-timezone `occurredOn` dates; per-participant progress plus anonymous aggregates per community subtree and per campaign; vegetarian choice-to-target mapping (including 已全素 campaign-duration days) stays in `modules/vegetarian`; campaign-scoped milestones with live progress and append-only evaluations; additive migration granting new keys to `tenant_admin` and member `.read` keys.
 Phase 7 (Measurement/outcome/visualization) is complete: campaign measurement definitions; versioned, source-attributed impact factors (tenant-wide or campaign override, effective dates, no seeded numeric values); measurements and outcomes computed on read from approved non-cancelled actions using the factor in force on `occurredOn`; generic TREE visualization (display name such as 素心树 is settings, not a domain type); participant / community / campaign dashboard APIs with campaign-local day/week time series; Flutter participant (mobile) and campaign/community (admin web) dashboard views that only render backend payloads. Additive migration grants new keys to `tenant_admin` and member `.read` keys.
 Phase 8 (Notifications/localization/reporting) is complete: tenant-scoped in-app notifications and `notification_deliveries` with Redis-locked daily action reminders; campaign-started and first-cross milestone notifications to enrolled participants; user notification preferences/opt-out and IANA timezone; NotificationSender plus env-selected SMTP/SMS/push interfaces with `dev` implementations (no new brokers); MVP locales `en` and `zh-Hans` for Flutter shells, GET `/locales`/`/translations`, PATCH `/me` locale, and notification templates; participant/community/campaign JSON reports and permission-guarded CSV export that reuse Phase 6/7 anonymous aggregates (no rankings, no contact PII) and structured `report_exported` logs. Additive migration grants `notifications.*` and `reports.read` to `member` and `reports.export` to `tenant_admin`.
+Phase 9 (End-to-end validation / MVP release readiness) is complete: a full API e2e journey for Tzu Chi Malaysia's 速素数数; `docs/release/MVP_READINESS.md`; auth rate limiting, Helmet, CORS via env, log redaction, production env checks, and an npm audit; idempotent `npm run seed:demo` (dev-only, invented identities); `apps/api/Dockerfile`; `docs/release/DEPLOYMENT.md`. No cloud provider, Terraform, or production hosting was selected.
 
-Next phase: Phase 9 — End-to-end validation/MVP release.
+**The MVP is feature-complete pending human release decisions** (hosting, SMTP/SMS/push vendors, impact factor values and sources, Google/Apple client IDs). See `docs/release/MVP_READINESS.md` and `docs/release/DEPLOYMENT.md`. Remaining gaps such as Flutter HTTP wiring, tags, a dedicated goals resource, `audit_logs`, and real mail delivery are listed there rather than built.
+
+Next: human release decisions. Do not start excluded MVP work (billing, marketplace, runtime AI, microservices) without an explicit new phase.
 
 ## Canonical Documents
 1. PRODUCT_VISION.md
@@ -78,6 +81,7 @@ Do not implement commitments, actions, submissions, or vegetarian business rules
 Do not implement measurement, outcome, visualization, or notifications during Phase 6.
 Do not implement notifications, localization workflows, or reporting exports during Phase 7.
 Do not implement Phase 9 release work, advanced BI, or third-party integrations during Phase 8.
+Do not pick a cloud provider, add Terraform, or treat Flutter HTTP wiring as in-scope during Phase 9.
 
 ## Orchestration Workflow
 1. Read canonical docs.
