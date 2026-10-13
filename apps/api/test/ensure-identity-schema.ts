@@ -93,7 +93,6 @@ export async function clearTenantData(dataSource: DataSource): Promise<void> {
     'notification_deliveries',
     'notifications',
     'user_notification_preferences',
-    'translations',
     'visualizations',
     'impact_factors',
     'measurement_definitions',

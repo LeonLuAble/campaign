@@ -228,8 +228,15 @@ describe('Notifications (e2e)', () => {
       .post(`/api/v1/campaigns/${ctx.campaignId}/start`)
       .set(auth(ctx.admin.accessToken));
 
-    const now = new Date('2026-10-13T12:00:00.000Z');
-    const first = await reminders.processDueReminders(now);
+    const utcNow = new Date();
+    const year = utcNow.getUTCFullYear();
+    const month = utcNow.getUTCMonth();
+    const day = utcNow.getUTCDate();
+    const yesterdayNoon = new Date(Date.UTC(year, month, day - 1, 12, 0, 0));
+    const todayNoon = new Date(Date.UTC(year, month, day, 12, 0, 0));
+    const todayIso = todayNoon.toISOString().slice(0, 10);
+
+    const first = await reminders.processDueReminders(yesterdayNoon);
     expect(first).toBeGreaterThanOrEqual(1);
 
     const inbox = await request(app.getHttpServer())
@@ -242,20 +249,19 @@ describe('Notifications (e2e)', () => {
       ),
     ).toBe(true);
 
-    const second = await reminders.processDueReminders(now);
+    const second = await reminders.processDueReminders(yesterdayNoon);
     expect(second).toBe(0);
 
-    await request(app.getHttpServer())
+    const recorded = await request(app.getHttpServer())
       .post('/api/v1/actions')
       .set(auth(ctx.member.accessToken))
       .send({
         participationId: ctx.participationId,
         actionDefinitionId: ctx.definitionId,
-        occurredOn: '2026-10-14',
+        occurredOn: todayIso,
       });
-    const skipped = await reminders.processDueReminders(
-      new Date('2026-10-14T12:00:00.000Z'),
-    );
+    expect(recorded.status).toBe(201);
+    const skipped = await reminders.processDueReminders(todayNoon);
     expect(skipped).toBe(0);
   });
 });
