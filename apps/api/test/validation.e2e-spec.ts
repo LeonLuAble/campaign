@@ -1,16 +1,37 @@
+import { Body, Controller, Module, Post } from '@nestjs/common';
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { IsString } from 'class-validator';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { AppModule } from '../src/app.module.js';
+import { AppConfigModule } from '../src/config/app-config.module.js';
 import { configureApp } from '../src/bootstrap/configure-app.js';
+
+class TestValidationDto {
+  @IsString()
+  name!: string;
+}
+
+@Controller('test')
+class TestValidationController {
+  @Post('validate')
+  validate(@Body() dto: TestValidationDto) {
+    return { success: true, name: dto.name };
+  }
+}
+
+@Module({
+  imports: [AppConfigModule],
+  controllers: [TestValidationController],
+})
+class TestValidationModule {}
 
 describe('Validation (e2e)', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [TestValidationModule],
     }).compile();
 
     app = moduleRef.createNestApplication({ bufferLogs: true });
