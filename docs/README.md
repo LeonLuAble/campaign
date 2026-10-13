@@ -1,14 +1,26 @@
 # Documentation
 
-These product and architecture documents were not in the repository when Phase 0 was bootstrapped. Their contents were not invented:
+This directory contains the product vision, domain model, architecture, and development guides for the Community Campaign Platform.
 
-- `docs/product/PRODUCT_VISION.md`
-- `docs/product/DOMAIN_MODEL.md`
-- `docs/product/MVP_SPECIFICATION.md`
-- `docs/architecture/ARCHITECTURE.md`
-- `docs/architecture/PROJECT_STRUCTURE.md`
-- `docs/architecture/DATABASE.md`
-- `docs/api/API_SPEC.md`
-- `docs/development/CURSOR_DEVELOPMENT_GUIDE.md`
+## Product
 
-Until those documents are added, the implemented structure and constraints live in the root `README.md` and `.cursor/rules/`.
+- `product/PRODUCT_VISION.md` — Product vision and goals
+- `product/DOMAIN_MODEL.md` — Domain model and core concepts
+- `product/MVP_SPECIFICATION.md` — MVP scope and features
+
+## Architecture
+
+- `architecture/ARCHITECTURE.md` — System architecture and design decisions
+- `architecture/PROJECT_STRUCTURE.md` — Code organization and module boundaries
+- `architecture/DATABASE.md` — Database schema and conventions
+
+## API
+
+- `api/API_SPEC.md` — API design, endpoints, and conventions
+
+## Development
+
+- `development/CURSOR_DEVELOPMENT_GUIDE.md` — Development workflow and Cursor usage guide
+- `AI_HANDOVER.md` — AI orchestration contract and phase guidelines
+
+Working constraints and conventions also live in `.cursor/rules/`.
