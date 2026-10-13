@@ -83,28 +83,28 @@ describe('MVP 速素数数 journey (e2e)', () => {
       .set(auth(platform.accessToken))
       .attach(
         'file',
-        Buffer.from(
-          'Email Address,Mobile,Staff ID,Given Name\n' +
-            'alex.member@example.test,0123456701,DEMO-001,Alex\n' +
-            'mei.member@example.test,0123456702,DEMO-002,Mei\n',
-        ),
-        'members.csv',
-      );
-    expect(uploaded.status).toBe(201);
-    expect(uploaded.body.status).toBe('uploaded');
+          Buffer.from(
+            'Email Address,Phone,Staff ID,Given Name\n' +
+              'alex.member@example.test,0123456701,DEMO-001,Alex\n' +
+              'mei.member@example.test,0123456702,DEMO-002,Mei\n',
+          ),
+          'members.csv',
+        );
+      expect(uploaded.status).toBe(201);
+      expect(uploaded.body.status).toBe('uploaded');
 
-    const mapped = await request(app.getHttpServer())
-      .patch(`/api/v1/user-imports/${uploaded.body.id}/mapping`)
-      .query({ customerId })
-      .set(auth(platform.accessToken))
-      .send({
-        mapping: {
-          email: 'Email Address',
-          mobile: 'Mobile',
-          externalId: 'Staff ID',
-          firstName: 'Given Name',
-        },
-      });
+      const mapped = await request(app.getHttpServer())
+        .patch(`/api/v1/user-imports/${uploaded.body.id}/mapping`)
+        .query({ customerId })
+        .set(auth(platform.accessToken))
+        .send({
+          mapping: {
+            email: 'Email Address',
+            mobile: 'Phone',
+            externalId: 'Staff ID',
+            firstName: 'Given Name',
+          },
+        });
     expect(mapped.status).toBe(200);
 
     const validated = await request(app.getHttpServer())
