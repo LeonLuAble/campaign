@@ -133,6 +133,24 @@ export class IdentityAccountService {
     return user?.is_active === true;
   }
 
+  async isPlatformAdmin(userId: string): Promise<boolean> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+    return user?.is_active === true && user.is_platform_admin === true;
+  }
+
+  async setPlatformAdmin(
+    userId: string,
+    isPlatformAdmin: boolean,
+  ): Promise<boolean> {
+    const result = await this.userRepository.update(
+      { id: userId },
+      { is_platform_admin: isPlatformAdmin },
+    );
+    return (result.affected ?? 0) > 0;
+  }
+
   async getProfile(userId: string): Promise<PublicUserProfile | null> {
     const user = await this.userRepository.findOne({
       where: { id: userId },

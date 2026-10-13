@@ -108,3 +108,108 @@ export interface UserProfileResponse {
   isActive: boolean;
   identities: UserIdentityResponse[];
 }
+
+export interface CustomerResponse {
+  id: string;
+  name: string;
+  slug: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCustomerRequest {
+  name: string;
+  initialAdminUserId?: string;
+}
+
+export interface UpdateCustomerRequest {
+  name?: string;
+  isActive?: boolean;
+}
+
+export interface CommunityResponse {
+  id: string;
+  customerId: string;
+  parentId: string | null;
+  name: string;
+  slug: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCommunityRequest {
+  customerId: string;
+  parentId?: string;
+  name: string;
+}
+
+export interface UpdateCommunityRequest {
+  name?: string;
+  parentId?: string | null;
+  isActive?: boolean;
+}
+
+export interface RoleSummary {
+  id: string;
+  key: string;
+  name: string;
+}
+
+export interface RoleResponse {
+  id: string;
+  customerId: string;
+  key: string;
+  name: string;
+  description: string | null;
+  isSystem: boolean;
+  permissionKeys: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PermissionResponse {
+  id: string;
+  key: string;
+  description: string;
+}
+
+export interface CreateRoleRequest {
+  customerId: string;
+  key?: string;
+  name: string;
+  description?: string;
+  permissionKeys: string[];
+}
+
+export interface UpdateRoleRequest {
+  name?: string;
+  description?: string;
+  permissionKeys?: string[];
+}
+
+export interface MembershipResponse {
+  id: string;
+  customerId: string;
+  userId: string;
+  communityId: string | null;
+  isActive: boolean;
+  roles: RoleSummary[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateMembershipRequest {
+  customerId: string;
+  userId: string;
+  communityId?: string | null;
+}
+
+export interface UpdateMembershipRequest {
+  isActive?: boolean;
+}
+
+export interface AssignRoleRequest {
+  roleId: string;
+}

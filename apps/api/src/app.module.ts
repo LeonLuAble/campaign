@@ -6,6 +6,10 @@ import { AppConfigModule } from './config/app-config.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { IdentityModule } from './modules/identity/identity.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { AuthorizationModule } from './modules/authorization/authorization.module.js';
+import { CustomersModule } from './modules/customers/customers.module.js';
+import { CommunitiesModule } from './modules/communities/communities.module.js';
+import { MembershipsModule } from './modules/memberships/memberships.module.js';
 import { DatabaseModule } from './platform/database/database.module.js';
 import { RedisModule } from './platform/redis/redis.module.js';
 
@@ -21,6 +25,10 @@ import { RedisModule } from './platform/redis/redis.module.js';
     HealthModule,
     IdentityModule,
     AuthModule,
+    CustomersModule,
+    CommunitiesModule,
+    MembershipsModule,
+    AuthorizationModule,
   ],
 })
 export class AppModule {}

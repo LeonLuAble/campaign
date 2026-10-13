@@ -21,7 +21,8 @@
     "test:e2e": "vitest run --config ./vitest.config.e2e.ts",
     "migration:run": "npm run build && typeorm migration:run -d dist/platform/database/data-source.js",
     "migration:revert": "npm run build && typeorm migration:revert -d dist/platform/database/data-source.js",
-    "migration:show": "npm run build && typeorm migration:show -d dist/platform/database/data-source.js"
+    "migration:show": "npm run build && typeorm migration:show -d dist/platform/database/data-source.js",
+    "seed:tzu-chi": "npm run build && node dist/scripts/seed-tzu-chi.js"
   },
   "dependencies": {
     "@nestjs/common": "^12.1.2",

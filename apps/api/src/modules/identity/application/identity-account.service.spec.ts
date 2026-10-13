@@ -16,7 +16,7 @@ import { IdentityAccountService } from './identity-account.service.js';
 describe('IdentityAccountService', () => {
   let service: IdentityAccountService;
 
-  const mockUserRepository = { findOne: vi.fn() };
+  const mockUserRepository = { findOne: vi.fn(), update: vi.fn() };
   const mockIdentityRepository = { findOne: vi.fn(), find: vi.fn() };
   const mockCredentialRepository = { findOne: vi.fn() };
   const mockDataSource = { transaction: vi.fn() };
@@ -106,6 +106,38 @@ describe('IdentityAccountService', () => {
     });
     expect(JSON.stringify(profile)).not.toContain('normalized_identifier');
     expect(JSON.stringify(profile)).not.toContain('password_hash');
+  });
+
+  it('treats only active platform-admin users as platform admins', async () => {
+    mockUserRepository.findOne.mockResolvedValue({
+      id: 'user-id',
+      is_active: true,
+      is_platform_admin: true,
+    });
+    await expect(service.isPlatformAdmin('user-id')).resolves.toBe(true);
+
+    mockUserRepository.findOne.mockResolvedValue({
+      id: 'user-id',
+      is_active: false,
+      is_platform_admin: true,
+    });
+    await expect(service.isPlatformAdmin('user-id')).resolves.toBe(false);
+
+    mockUserRepository.findOne.mockResolvedValue({
+      id: 'user-id',
+      is_active: true,
+      is_platform_admin: false,
+    });
+    await expect(service.isPlatformAdmin('user-id')).resolves.toBe(false);
+  });
+
+  it('updates the platform-admin flag', async () => {
+    mockUserRepository.update.mockResolvedValue({ affected: 1 });
+    await expect(service.setPlatformAdmin('user-id', true)).resolves.toBe(true);
+    expect(mockUserRepository.update).toHaveBeenCalledWith(
+      { id: 'user-id' },
+      { is_platform_admin: true },
+    );
   });
 
   it('finds an identity record by type and normalized identifier', async () => {
