@@ -44,18 +44,21 @@ export async function clearTenantData(dataSource: DataSource): Promise<void> {
   if (!(await tableExists(dataSource, 'tenants'))) {
     return;
   }
-  if (await tableExists(dataSource, 'user_import_rows')) {
-    await dataSource.query('DELETE FROM user_import_rows');
+  const tables = [
+    'user_import_rows',
+    'user_imports',
+    'membership_roles',
+    'role_permissions',
+    'roles',
+    'memberships',
+    'community_nodes',
+    'tenants',
+  ];
+  for (const table of tables) {
+    if (await tableExists(dataSource, table)) {
+      await dataSource.query(`DELETE FROM ${table}`);
+    }
   }
-  if (await tableExists(dataSource, 'user_imports')) {
-    await dataSource.query('DELETE FROM user_imports');
-  }
-  await dataSource.query('DELETE FROM membership_roles');
-  await dataSource.query('DELETE FROM role_permissions');
-  await dataSource.query('DELETE FROM roles');
-  await dataSource.query('DELETE FROM memberships');
-  await dataSource.query('DELETE FROM community_nodes');
-  await dataSource.query('DELETE FROM tenants');
 }
 
 export async function clearIdentityData(dataSource: DataSource): Promise<void> {
@@ -78,15 +81,24 @@ export async function ensureTenantSchema(
   dataSource: DataSource,
 ): Promise<void> {
   await ensureIdentitySchemaWithoutTenant(dataSource);
+  const queryRunner = dataSource.createQueryRunner();
+  const hasTenants = await tableExists(dataSource, 'tenants');
+  const hasMembershipRoles = await tableExists(dataSource, 'membership_roles');
+  if (hasTenants && !hasMembershipRoles) {
+    if (await tableExists(dataSource, 'user_imports')) {
+      await new CreateUserImportTables1792265507000().down(queryRunner);
+    }
+    await new CreateTenantCommunityMembershipTables1792065305000().down(
+      queryRunner,
+    );
+  }
   if (!(await tableExists(dataSource, 'tenants'))) {
     await new CreateTenantCommunityMembershipTables1792065305000().up(
-      dataSource.createQueryRunner(),
+      queryRunner,
     );
   }
   if (!(await tableExists(dataSource, 'user_imports'))) {
-    await new CreateUserImportTables1792265507000().up(
-      dataSource.createQueryRunner(),
-    );
+    await new CreateUserImportTables1792265507000().up(queryRunner);
   }
 }
 

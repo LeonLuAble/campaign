@@ -5,6 +5,7 @@ import { CreateIdentityTables1791865103000 } from '../src/platform/database/migr
 import { AddIdentityIdToUserTokens1791965204000 } from '../src/platform/database/migrations/1791965204000-AddIdentityIdToUserTokens.js';
 import { CreateTenantCommunityMembershipTables1792065305000 } from '../src/platform/database/migrations/1792065305000-CreateTenantCommunityMembershipTables.js';
 import { AddUserPlatformAdmin1792165406000 } from '../src/platform/database/migrations/1792165406000-AddUserPlatformAdmin.js';
+import { CreateUserImportTables1792265507000 } from '../src/platform/database/migrations/1792265507000-CreateUserImportTables.js';
 import {
   clearIdentityData,
   ensureIdentitySchema,
@@ -435,6 +436,7 @@ describe('Identity Migration (e2e)', () => {
   describe('migration down', () => {
     it('should revert all tables', async () => {
       const queryRunner = dataSource.createQueryRunner();
+      await new CreateUserImportTables1792265507000().down(queryRunner);
       await new CreateTenantCommunityMembershipTables1792065305000().down(
         queryRunner,
       );

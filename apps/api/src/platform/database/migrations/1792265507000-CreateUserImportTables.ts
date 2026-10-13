@@ -135,16 +135,6 @@ export class CreateUserImportTables1792265507000 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`
-      DELETE FROM "role_permissions" rp
-      USING "permissions" p
-      WHERE rp.permission_id = p.id
-        AND p.key IN ('user_imports.create', 'user_imports.read');
-    `);
-    await queryRunner.query(`
-      DELETE FROM "permissions"
-      WHERE "key" IN ('user_imports.create', 'user_imports.read');
-    `);
     await queryRunner.query(
       `DROP TRIGGER IF EXISTS trg_user_import_community_same_tenant ON user_imports;`,
     );
@@ -157,5 +147,26 @@ export class CreateUserImportTables1792265507000 implements MigrationInterface {
       `DROP TYPE IF EXISTS "user_import_row_status_enum";`,
     );
     await queryRunner.query(`DROP TYPE IF EXISTS "user_import_status_enum";`);
+    await queryRunner.query(`
+      DO $$
+      BEGIN
+        IF EXISTS (
+          SELECT 1 FROM information_schema.tables
+          WHERE table_schema = 'public' AND table_name = 'role_permissions'
+        ) THEN
+          DELETE FROM "role_permissions" rp
+          USING "permissions" p
+          WHERE rp.permission_id = p.id
+            AND p.key IN ('user_imports.create', 'user_imports.read');
+        END IF;
+        IF EXISTS (
+          SELECT 1 FROM information_schema.tables
+          WHERE table_schema = 'public' AND table_name = 'permissions'
+        ) THEN
+          DELETE FROM "permissions"
+          WHERE "key" IN ('user_imports.create', 'user_imports.read');
+        END IF;
+      END $$;
+    `);
   }
 }
