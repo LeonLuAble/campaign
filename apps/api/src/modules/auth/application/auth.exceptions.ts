@@ -1,4 +1,8 @@
-import { UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  UnauthorizedException,
+} from '@nestjs/common';
 
 export class InvalidCredentialsException extends UnauthorizedException {
   constructor() {
@@ -26,6 +30,56 @@ export class TokenReusedException extends UnauthorizedException {
       code: 'TOKEN_REUSED',
       error: 'Unauthorized',
       message: 'Refresh token has been reused',
+    });
+  }
+}
+
+export class TokenExpiredException extends BadRequestException {
+  constructor(message = 'Token has expired') {
+    super({
+      code: 'TOKEN_EXPIRED',
+      error: 'Bad Request',
+      message,
+    });
+  }
+}
+
+export class ActivationTokenInvalidException extends BadRequestException {
+  constructor(message = 'Invalid activation or reset token') {
+    super({
+      code: 'TOKEN_INVALID',
+      error: 'Bad Request',
+      message,
+    });
+  }
+}
+
+export class IdentityAlreadyExistsException extends ConflictException {
+  constructor() {
+    super({
+      code: 'IDENTITY_ALREADY_EXISTS',
+      error: 'Conflict',
+      message: 'An account with this identifier already exists',
+    });
+  }
+}
+
+export class WeakPasswordException extends BadRequestException {
+  constructor(message = 'Password does not meet the minimum policy') {
+    super({
+      code: 'WEAK_PASSWORD',
+      error: 'Bad Request',
+      message,
+    });
+  }
+}
+
+export class InvalidIdentifierException extends BadRequestException {
+  constructor(message = 'Invalid identifier') {
+    super({
+      code: 'BAD_REQUEST',
+      error: 'Bad Request',
+      message,
     });
   }
 }

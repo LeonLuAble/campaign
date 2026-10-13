@@ -5,6 +5,7 @@ import { CredentialService } from './application/credential.service.js';
 import { IdentityAccountService } from './application/identity-account.service.js';
 import { PasswordHashingService } from './application/password-hashing.service.js';
 import { RefreshTokenService } from './application/refresh-token.service.js';
+import { UserTokenService } from './application/user-token.service.js';
 import { RefreshToken } from './domain/refresh-token.entity.js';
 import { UserCredential } from './domain/user-credential.entity.js';
 import { UserIdentity } from './domain/user-identity.entity.js';
@@ -29,12 +30,14 @@ import { User } from './domain/user.entity.js';
     CredentialService,
     IdentityAccountService,
     RefreshTokenService,
+    UserTokenService,
   ],
   exports: [
     PasswordHashingService,
     CredentialService,
     IdentityAccountService,
     RefreshTokenService,
+    UserTokenService,
   ],
 })
 export class IdentityModule {}

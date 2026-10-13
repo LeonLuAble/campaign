@@ -21,7 +21,13 @@ export function createLoggerParams(config: ConfigService) {
       customProps: (request: IncomingMessage & { id?: string }) => ({
         correlationId: request.id,
       }),
-      redact: ['req.headers.authorization', 'req.headers.cookie'],
+      redact: [
+        'req.headers.authorization',
+        'req.headers.cookie',
+        'req.body.password',
+        'req.body.token',
+        'req.body.refreshToken',
+      ],
       transport: isDevelopment
         ? {
             target: 'pino-pretty',

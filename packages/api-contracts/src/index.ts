@@ -17,7 +17,10 @@ export type ErrorCode =
   | 'VALIDATION_FAILED'
   | 'INVALID_CREDENTIALS'
   | 'TOKEN_INVALID'
-  | 'TOKEN_REUSED';
+  | 'TOKEN_REUSED'
+  | 'TOKEN_EXPIRED'
+  | 'IDENTITY_ALREADY_EXISTS'
+  | 'WEAK_PASSWORD';
 
 export interface ApiErrorResponse {
   statusCode: number;
@@ -27,6 +30,38 @@ export interface ApiErrorResponse {
   correlationId: string | null;
   timestamp: string;
   path: string;
+}
+
+export interface RegisterRequest {
+  identifier: string;
+  password: string;
+}
+
+export interface RegisterResponse {
+  id: string;
+  identifier: string;
+  type: 'email' | 'mobile';
+}
+
+export interface ActivateRequest {
+  token: string;
+}
+
+export interface ActivateResendRequest {
+  identifier: string;
+}
+
+export interface PasswordResetRequest {
+  identifier: string;
+}
+
+export interface PasswordResetConfirmRequest {
+  token: string;
+  password: string;
+}
+
+export interface AcceptedResponse {
+  accepted: true;
 }
 
 export interface LoginRequest {

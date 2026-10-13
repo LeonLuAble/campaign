@@ -14,9 +14,12 @@ describe('CredentialService', () => {
   beforeEach(() => {
     passwordHashingService = new PasswordHashingService();
     configService = {
-      get: (key: string, defaultValue?: string) => {
+      get: (key: string, defaultValue?: string | number) => {
         if (key === 'DEFAULT_PHONE_REGION') {
           return defaultValue || 'MY';
+        }
+        if (key === 'PASSWORD_MIN_LENGTH') {
+          return defaultValue ?? 8;
         }
         return defaultValue;
       },
@@ -151,6 +154,24 @@ describe('CredentialService', () => {
       expect(hash).toBeDefined();
       expect(hash).not.toBe(password);
       expect(hash).toContain('$argon2id$');
+    });
+
+    it('rejects passwords shorter than the configured minimum', async () => {
+      await expect(service.setPassword('short')).rejects.toMatchObject({
+        name: 'WeakPasswordError',
+      });
+    });
+
+    it('rejects whitespace-only passwords even when long enough', async () => {
+      await expect(service.setPassword('        ')).rejects.toMatchObject({
+        name: 'WeakPasswordError',
+      });
+    });
+  });
+
+  describe('assertPasswordPolicy', () => {
+    it('accepts an 8-character password', () => {
+      expect(() => service.assertPasswordPolicy('password')).not.toThrow();
     });
   });
 

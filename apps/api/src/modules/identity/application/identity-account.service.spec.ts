@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { UserCredential } from '../domain/user-credential.entity.js';
 import { IdentityType, UserIdentity } from '../domain/user-identity.entity.js';
@@ -10,8 +11,9 @@ describe('IdentityAccountService', () => {
   let service: IdentityAccountService;
 
   const mockUserRepository = { findOne: vi.fn() };
-  const mockIdentityRepository = { findOne: vi.fn() };
+  const mockIdentityRepository = { findOne: vi.fn(), find: vi.fn() };
   const mockCredentialRepository = { findOne: vi.fn() };
+  const mockDataSource = { transaction: vi.fn() };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -26,6 +28,7 @@ describe('IdentityAccountService', () => {
           provide: getRepositoryToken(UserCredential),
           useValue: mockCredentialRepository,
         },
+        { provide: DataSource, useValue: mockDataSource },
       ],
     }).compile();
 
@@ -97,5 +100,37 @@ describe('IdentityAccountService', () => {
     });
     expect(JSON.stringify(profile)).not.toContain('normalized_identifier');
     expect(JSON.stringify(profile)).not.toContain('password_hash');
+  });
+
+  it('finds an identity record by type and normalized identifier', async () => {
+    mockIdentityRepository.findOne.mockResolvedValue({
+      id: 'identity-id',
+      type: IdentityType.EMAIL,
+      identifier: 'test@example.com',
+      is_verified: false,
+      user: { id: 'user-id', is_active: true },
+    });
+
+    await expect(
+      service.findIdentity(IdentityType.EMAIL, 'test@example.com'),
+    ).resolves.toEqual({
+      userId: 'user-id',
+      identityId: 'identity-id',
+      type: IdentityType.EMAIL,
+      identifier: 'test@example.com',
+      isVerified: false,
+      isActive: true,
+    });
+  });
+
+  it('reports whether every identity for a user is verified', async () => {
+    mockIdentityRepository.find.mockResolvedValue([
+      { is_verified: true },
+      { is_verified: false },
+    ]);
+
+    await expect(service.areAllIdentitiesVerified('user-id')).resolves.toBe(
+      false,
+    );
   });
 });

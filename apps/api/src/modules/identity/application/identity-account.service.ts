@@ -1,9 +1,26 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, IsNull, QueryFailedError, Repository } from 'typeorm';
+import { RefreshToken } from '../domain/refresh-token.entity.js';
 import { UserCredential } from '../domain/user-credential.entity.js';
 import { IdentityType, UserIdentity } from '../domain/user-identity.entity.js';
+import { UserToken } from '../domain/user-token.entity.js';
 import { User } from '../domain/user.entity.js';
+
+export class IdentityAlreadyExistsError extends Error {
+  constructor() {
+    super('Identity already exists');
+    this.name = 'IdentityAlreadyExistsError';
+  }
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  if (!(error instanceof QueryFailedError)) {
+    return false;
+  }
+  const driverError = error.driverError as { code?: string } | undefined;
+  return driverError?.code === '23505';
+}
 
 export interface LoginCandidate {
   userId: string;
@@ -29,6 +46,27 @@ export interface PublicUserProfile {
   identities: PublicIdentity[];
 }
 
+export interface IdentityRecord {
+  userId: string;
+  identityId: string;
+  type: IdentityType;
+  identifier: string;
+  isVerified: boolean;
+  isActive: boolean;
+}
+
+export interface CreateLocalAccountInput {
+  identifier: string;
+  normalizedIdentifier: string;
+  type: IdentityType;
+  passwordHash: string;
+}
+
+export interface CreatedLocalAccount {
+  userId: string;
+  identityId: string;
+}
+
 @Injectable()
 export class IdentityAccountService {
   constructor(
@@ -38,6 +76,7 @@ export class IdentityAccountService {
     private readonly userIdentityRepository: Repository<UserIdentity>,
     @InjectRepository(UserCredential)
     private readonly userCredentialRepository: Repository<UserCredential>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async findLoginCandidate(
@@ -102,5 +141,153 @@ export class IdentityAccountService {
         isVerified: identity.is_verified,
       })),
     };
+  }
+
+  async findIdentity(
+    type: IdentityType,
+    normalizedIdentifier: string,
+  ): Promise<IdentityRecord | null> {
+    const identity = await this.userIdentityRepository.findOne({
+      where: {
+        type,
+        normalized_identifier: normalizedIdentifier,
+      },
+      relations: ['user'],
+    });
+
+    if (!identity?.user) {
+      return null;
+    }
+
+    return {
+      userId: identity.user.id,
+      identityId: identity.id,
+      type: identity.type,
+      identifier: identity.identifier,
+      isVerified: identity.is_verified,
+      isActive: identity.user.is_active,
+    };
+  }
+
+  async createLocalAccount(
+    input: CreateLocalAccountInput,
+  ): Promise<CreatedLocalAccount> {
+    try {
+      return await this.dataSource.transaction(async (manager) => {
+        const userRepository = manager.getRepository(User);
+        const identityRepository = manager.getRepository(UserIdentity);
+        const credentialRepository = manager.getRepository(UserCredential);
+
+        const user = await userRepository.save(
+          userRepository.create({
+            is_active: true,
+          }),
+        );
+
+        const identity = await identityRepository.save(
+          identityRepository.create({
+            user_id: user.id,
+            type: input.type,
+            identifier: input.identifier,
+            normalized_identifier: input.normalizedIdentifier,
+            is_verified: false,
+            verified_at: null,
+          }),
+        );
+
+        await credentialRepository.save(
+          credentialRepository.create({
+            user_id: user.id,
+            password_hash: input.passwordHash,
+          }),
+        );
+
+        return { userId: user.id, identityId: identity.id };
+      });
+    } catch (error) {
+      if (isUniqueViolation(error)) {
+        throw new IdentityAlreadyExistsError();
+      }
+      throw error;
+    }
+  }
+
+  async areAllIdentitiesVerified(userId: string): Promise<boolean> {
+    const identities = await this.userIdentityRepository.find({
+      where: { user_id: userId },
+    });
+    return (
+      identities.length > 0 &&
+      identities.every((identity) => identity.is_verified)
+    );
+  }
+
+  async consumeActivation(tokenId: string, userId: string): Promise<boolean> {
+    return this.dataSource.transaction(async (manager) => {
+      const tokenRepository = manager.getRepository(UserToken);
+      const identityRepository = manager.getRepository(UserIdentity);
+
+      const used = await tokenRepository.update(
+        { id: tokenId, used_at: IsNull() },
+        { used_at: new Date() },
+      );
+      if ((used.affected ?? 0) === 0) {
+        return false;
+      }
+
+      await identityRepository.update(
+        { user_id: userId, is_verified: false },
+        { is_verified: true, verified_at: new Date() },
+      );
+      return true;
+    });
+  }
+
+  async completePasswordReset(
+    userId: string,
+    tokenId: string,
+    passwordHash: string,
+  ): Promise<boolean> {
+    return this.dataSource.transaction(async (manager) => {
+      const tokenRepository = manager.getRepository(UserToken);
+      const credentialRepository = manager.getRepository(UserCredential);
+      const refreshTokenRepository = manager.getRepository(RefreshToken);
+
+      const used = await tokenRepository.update(
+        { id: tokenId, used_at: IsNull() },
+        { used_at: new Date() },
+      );
+      if ((used.affected ?? 0) === 0) {
+        return false;
+      }
+
+      const credential = await credentialRepository.findOne({
+        where: { user_id: userId },
+      });
+      if (credential) {
+        credential.password_hash = passwordHash;
+        await credentialRepository.save(credential);
+      } else {
+        await credentialRepository.save(
+          credentialRepository.create({
+            user_id: userId,
+            password_hash: passwordHash,
+          }),
+        );
+      }
+
+      await refreshTokenRepository.update(
+        {
+          user_id: userId,
+          revoked_at: IsNull(),
+        },
+        {
+          revoked_at: new Date(),
+          revocation_reason: 'PASSWORD_RESET',
+        },
+      );
+
+      return true;
+    });
   }
 }
