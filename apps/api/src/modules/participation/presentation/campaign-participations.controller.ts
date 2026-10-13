@@ -30,7 +30,6 @@ export class CampaignParticipationsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @RequirePermission(PERMISSIONS.PARTICIPATIONS_CREATE)
   enroll(
     @CurrentTenant() tenant: TenantContext,
     @CurrentUser() user: AuthenticatedUser,
@@ -41,7 +40,7 @@ export class CampaignParticipationsController {
       tenant,
       campaignId,
       user.userId,
-      dto.userId,
+      dto?.userId,
     );
   }
 

@@ -2,6 +2,7 @@ import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
+  AccessForbiddenException,
   InvalidRequestException,
   ResourceConflictException,
   ResourceNotFoundException,
@@ -100,6 +101,14 @@ export class ParticipationService {
     }
 
     const targetUserId = userId ?? actorUserId;
+    if (
+      targetUserId !== actorUserId &&
+      !tenant.permissions.has(PERMISSIONS.PARTICIPATIONS_CREATE)
+    ) {
+      throw new AccessForbiddenException(
+        'Enrolling another user requires participations.create',
+      );
+    }
     if (!(await this.identities.isUserActive(targetUserId))) {
       throw new ResourceNotFoundException('User not found');
     }
@@ -198,11 +207,15 @@ export class ParticipationService {
     actorUserId: string,
   ): Promise<ParticipationResponse> {
     await this.customers.requireActive(tenant.tenantId);
-    const participation = await this.requireOwnedOrManaged(
-      tenant,
-      participationId,
-      actorUserId,
-    );
+    const participation = await this.requireVisible(tenant, participationId);
+    if (
+      participation.user_id !== actorUserId &&
+      !tenant.permissions.has(PERMISSIONS.PARTICIPATIONS_UPDATE)
+    ) {
+      throw new AccessForbiddenException(
+        'Withdrawing another user requires participations.update',
+      );
+    }
     if (participation.status === ParticipationStatus.WITHDRAWN) {
       return this.toResponse(participation);
     }
@@ -233,21 +246,6 @@ export class ParticipationService {
     if (
       !this.canManageParticipations(tenant) &&
       !this.isOwn(tenant, participation)
-    ) {
-      throw new ResourceNotFoundException('Participation not found');
-    }
-    return participation;
-  }
-
-  private async requireOwnedOrManaged(
-    tenant: TenantContext,
-    participationId: string,
-    actorUserId: string,
-  ): Promise<Participation> {
-    const participation = await this.requireVisible(tenant, participationId);
-    if (
-      !this.canManageParticipations(tenant) &&
-      participation.user_id !== actorUserId
     ) {
       throw new ResourceNotFoundException('Participation not found');
     }

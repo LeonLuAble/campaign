@@ -56,10 +56,10 @@ Campaign (tenant-scoped via `customerId` query/body or resource id; generic conf
 - GET/PUT /campaigns/:campaignId/communities `{ communityIds }` → empty list means tenant-wide; PUT draft only
 
 Participation:
-- POST /campaigns/:campaignId/participations `{ userId? }` → 201. Requires `participations.create`. Omitting `userId` enrolls the caller. Campaign must be published or started. Target user must be an active tenant member in a targeted community (or any membership if tenant-wide).
+- POST /campaigns/:campaignId/participations `{ userId? }` → 201. Omitting `userId` (or passing the caller’s id) is self-enroll: any authenticated user with an active, eligible membership may join a published or started campaign. Enrolling another user requires `participations.create`. Target user must be an active tenant member in a targeted community (or any membership if tenant-wide).
 - GET /campaigns/:campaignId/participations → requires `participations.read`. Members see only their own row; tenant admins see all.
 - GET /participations/:participationId → requires `participations.read`
-- POST /participations/:participationId/withdraw → requires `participations.update`. Idempotent if already withdrawn. Re-enroll restores the same row.
+- POST /participations/:participationId/withdraw → self-withdraw is allowed for the participant. Withdrawing another user requires `participations.update`. Idempotent if already withdrawn. Re-enroll restores the same row.
 
 Actions:
 - action definitions

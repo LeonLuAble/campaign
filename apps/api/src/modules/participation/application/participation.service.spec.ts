@@ -2,6 +2,7 @@ import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  AccessForbiddenException,
   InvalidRequestException,
   ResourceConflictException,
   ResourceNotFoundException,
@@ -221,6 +222,65 @@ describe('ParticipationService', () => {
     );
     await expect(
       service.get(memberContext(), 'participation-1'),
+    ).rejects.toBeInstanceOf(ResourceNotFoundException);
+  });
+
+  it('lets a member enroll themselves without participations.create', async () => {
+    participationRepository.findOne.mockResolvedValue(null);
+    memberships.listActiveForUserInTenant.mockResolvedValue([
+      {
+        id: 'member-membership',
+        tenantId: tenantA,
+        userId,
+        communityId,
+        isActive: true,
+      },
+    ]);
+    const created = await service.enroll(memberContext(), campaignId, userId);
+    expect(created.status).toBe(ParticipationStatus.ENROLLED);
+    expect(created.userId).toBe(userId);
+  });
+
+  it('lets a member enroll themselves when they pass their own userId', async () => {
+    participationRepository.findOne.mockResolvedValue(null);
+    const created = await service.enroll(
+      memberContext(),
+      campaignId,
+      userId,
+      userId,
+    );
+    expect(created.userId).toBe(userId);
+  });
+
+  it('forbids a member from enrolling another user', async () => {
+    await expect(
+      service.enroll(
+        memberContext(),
+        campaignId,
+        userId,
+        '66666666-6666-4666-8666-666666666666',
+      ),
+    ).rejects.toBeInstanceOf(AccessForbiddenException);
+    expect(identities.isUserActive).not.toHaveBeenCalled();
+  });
+
+  it('lets a member withdraw themselves without participations.update', async () => {
+    participationRepository.findOne.mockResolvedValue(participation());
+    const withdrawn = await service.withdraw(
+      memberContext(),
+      'participation-1',
+      userId,
+    );
+    expect(withdrawn.status).toBe(ParticipationStatus.WITHDRAWN);
+    expect(withdrawn.withdrawnAt).toEqual(expect.any(String));
+  });
+
+  it('hides another user’s participation when a member tries to withdraw it', async () => {
+    participationRepository.findOne.mockResolvedValue(
+      participation({ user_id: 'someone-else' }),
+    );
+    await expect(
+      service.withdraw(memberContext(), 'participation-1', userId),
     ).rejects.toBeInstanceOf(ResourceNotFoundException);
   });
 });

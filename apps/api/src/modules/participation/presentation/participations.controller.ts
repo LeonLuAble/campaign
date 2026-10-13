@@ -37,7 +37,6 @@ export class ParticipationsController {
 
   @Post(':participationId/withdraw')
   @HttpCode(HttpStatus.OK)
-  @RequirePermission(PERMISSIONS.PARTICIPATIONS_UPDATE)
   withdraw(
     @CurrentTenant() tenant: TenantContext,
     @CurrentUser() user: AuthenticatedUser,

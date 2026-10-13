@@ -232,11 +232,89 @@ describe('Campaigns and participations (e2e)', () => {
         timezone: 'UTC',
       });
     expect(create.status).toBe(403);
+  });
+
+  it('lets a member self-enroll and self-withdraw but not act on another user', async () => {
+    const { admin, member, customerId } = await seededTenant();
+    const other = await registerActivatedUser(
+      app,
+      notifications,
+      'other@example.com',
+    );
+    const otherMembership = await request(app.getHttpServer())
+      .post('/api/v1/memberships')
+      .set(auth(admin.accessToken))
+      .send({ customerId, userId: other.userId });
+    const roles = await request(app.getHttpServer())
+      .get('/api/v1/roles')
+      .query({ customerId })
+      .set(auth(admin.accessToken));
+    const memberRole = roles.body.find(
+      (role: { key: string }) => role.key === 'member',
+    );
+    await request(app.getHttpServer())
+      .post(`/api/v1/memberships/${otherMembership.body.id}/roles`)
+      .set(auth(admin.accessToken))
+      .send({ roleId: memberRole.id });
+
+    const template = await request(app.getHttpServer())
+      .post('/api/v1/campaign-templates')
+      .set(auth(admin.accessToken))
+      .send({ customerId, name: 'Environmental Action' });
+    const scope = await request(app.getHttpServer())
+      .post('/api/v1/campaign-scopes')
+      .set(auth(admin.accessToken))
+      .send({
+        customerId,
+        templateId: template.body.id,
+        name: 'Vegetarian',
+      });
+    const created = await request(app.getHttpServer())
+      .post('/api/v1/campaigns')
+      .set(auth(admin.accessToken))
+      .send({
+        customerId,
+        templateId: template.body.id,
+        scopeId: scope.body.id,
+        name: '速素数数',
+        timezone: 'Asia/Kuala_Lumpur',
+      });
+    await request(app.getHttpServer())
+      .post(`/api/v1/campaigns/${created.body.id}/publish`)
+      .set(auth(admin.accessToken));
+
+    const enrollOther = await request(app.getHttpServer())
+      .post(`/api/v1/campaigns/${created.body.id}/participations`)
+      .set(auth(member.accessToken))
+      .send({ userId: other.userId });
+    expect(enrollOther.status).toBe(403);
+    expect(enrollOther.body.code).toBe('FORBIDDEN');
 
     const enrollSelf = await request(app.getHttpServer())
       .post(`/api/v1/campaigns/${created.body.id}/participations`)
       .set(auth(member.accessToken))
       .send({});
-    expect(enrollSelf.status).toBe(403);
+    expect(enrollSelf.status).toBe(201);
+    expect(enrollSelf.body).toMatchObject({
+      userId: member.userId,
+      status: 'enrolled',
+    });
+
+    const otherEnrolled = await request(app.getHttpServer())
+      .post(`/api/v1/campaigns/${created.body.id}/participations`)
+      .set(auth(admin.accessToken))
+      .send({ userId: other.userId });
+    expect(otherEnrolled.status).toBe(201);
+
+    const withdrawOther = await request(app.getHttpServer())
+      .post(`/api/v1/participations/${otherEnrolled.body.id}/withdraw`)
+      .set(auth(member.accessToken));
+    expect(withdrawOther.status).toBe(404);
+
+    const withdrawSelf = await request(app.getHttpServer())
+      .post(`/api/v1/participations/${enrollSelf.body.id}/withdraw`)
+      .set(auth(member.accessToken));
+    expect(withdrawSelf.status).toBe(200);
+    expect(withdrawSelf.body.status).toBe('withdrawn');
   });
 });
