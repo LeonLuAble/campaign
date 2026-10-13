@@ -21,4 +21,5 @@ export interface TenantScopeInput {
   actionDefinitionId?: string | null;
   submissionId?: string | null;
   commitmentId?: string | null;
+  milestoneId?: string | null;
 }

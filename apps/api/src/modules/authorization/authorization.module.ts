@@ -8,6 +8,7 @@ import { MembershipsModule } from '../memberships/memberships.module.js';
 import { ActionsModule } from '../actions/actions.module.js';
 import { CommitmentsModule } from '../commitments/commitments.module.js';
 import { ParticipationModule } from '../participation/participation.module.js';
+import { MilestonesModule } from '../milestones/milestones.module.js';
 import { AuthorizationService } from './application/authorization.service.js';
 import { TenantContextService } from './application/tenant-context.service.js';
 import { MembershipRole } from './domain/membership-role.entity.js';
@@ -35,6 +36,7 @@ import { TenantScopeGuard } from './presentation/tenant-scope.guard.js';
     forwardRef(() => ParticipationModule),
     forwardRef(() => ActionsModule),
     forwardRef(() => CommitmentsModule),
+    forwardRef(() => MilestonesModule),
   ],
   controllers: [RolesController, PermissionsController],
   providers: [

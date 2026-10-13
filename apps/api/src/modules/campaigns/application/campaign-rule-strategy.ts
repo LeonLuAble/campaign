@@ -17,11 +17,36 @@ export interface ActionRuleInput {
   payload: Record<string, unknown>;
 }
 
+export interface ProgressContributionInput {
+  definitionUnit: string;
+  quantity: number;
+  occurredOn: string;
+}
+
+export interface ProgressTargetContext {
+  startsOn: string | null;
+  endsOn: string | null;
+  timezone: string;
+}
+
+export interface ProgressTarget {
+  targetValue: number;
+  unit: string;
+}
+
 export interface CampaignRuleStrategy {
   readonly key: string;
   validateCommitment(input: CommitmentRuleInput): void;
   validateAction(input: ActionRuleInput): void;
   normalizeCommitment?(input: CommitmentRuleInput): CommitmentRuleInput;
+  contributeToProgress(
+    contribution: ProgressContributionInput,
+    commitment: CommitmentRuleInput | null,
+  ): number;
+  resolveProgressTarget(
+    commitment: CommitmentRuleInput,
+    campaign: ProgressTargetContext,
+  ): ProgressTarget;
 }
 
 const MAX_TARGET = 100_000;
@@ -38,6 +63,29 @@ export class GenericCampaignRules implements CampaignRuleStrategy {
   validateAction(input: ActionRuleInput): void {
     assertPositiveInt('quantity', input.quantity, MAX_QUANTITY);
     assertNonBlank('unit', input.definitionUnit);
+  }
+
+  contributeToProgress(
+    contribution: ProgressContributionInput,
+    commitment: CommitmentRuleInput | null,
+  ): number {
+    if (!commitment) {
+      return contribution.quantity;
+    }
+    return contribution.definitionUnit === commitment.unit
+      ? contribution.quantity
+      : 0;
+  }
+
+  resolveProgressTarget(
+    commitment: CommitmentRuleInput,
+    campaign: ProgressTargetContext,
+  ): ProgressTarget {
+    void campaign;
+    return {
+      targetValue: commitment.targetValue,
+      unit: commitment.unit,
+    };
   }
 }
 

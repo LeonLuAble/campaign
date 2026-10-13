@@ -39,6 +39,7 @@ describe('TenantContextService', () => {
     findSubmissionById: vi.fn(),
   };
   const commitments = { findById: vi.fn() };
+  const milestones = { findById: vi.fn() };
 
   let service: TenantContextService;
 
@@ -53,6 +54,7 @@ describe('TenantContextService', () => {
       participations,
       actions,
       commitments,
+      milestones,
     );
   });
 
@@ -163,6 +165,29 @@ describe('TenantContextService', () => {
     );
 
     const context = await service.build(userId, { actionId });
+    expect(context.tenantId).toBe(tenantA);
+  });
+
+  it('resolves tenant from a milestone id', async () => {
+    const milestoneId = '88888888-8888-4888-8888-888888888888';
+    milestones.findById.mockResolvedValue({
+      id: milestoneId,
+      tenantId: tenantA,
+    });
+    memberships.listActiveForUserInTenant.mockResolvedValue([
+      {
+        id: membershipId,
+        tenantId: tenantA,
+        userId,
+        communityId: null,
+        isActive: true,
+      },
+    ]);
+    authorization.resolvePermissionKeys.mockResolvedValue(
+      new Set(['milestones.read']),
+    );
+
+    const context = await service.build(userId, { milestoneId });
     expect(context.tenantId).toBe(tenantA);
   });
 });

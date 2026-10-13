@@ -547,3 +547,132 @@ export interface UpdateActionRequest {
 export interface ReviewSubmissionRequest {
   note?: string;
 }
+
+export type CompletionStatus =
+  | 'none'
+  | 'not_started'
+  | 'in_progress'
+  | 'achieved'
+  | 'exceeded';
+
+export type MilestoneMetric = 'completion_percent' | 'achieved_value';
+
+export interface ProgressUnit {
+  unit: string;
+  achievedValue: number;
+  targetValue: number;
+  completionPercent: number | null;
+  completionStatus: CompletionStatus;
+  approvedActionCount: number;
+  distinctApprovedDays: number;
+  committedParticipantCount: number;
+}
+
+export interface ParticipantProgressResponse {
+  scope: 'participant';
+  customerId: string;
+  campaignId: string;
+  participationId: string;
+  userId: string;
+  communityId: string | null;
+  timezone: string;
+  commitment: {
+    id: string;
+    typeKey: string | null;
+    targetValue: number;
+    unit: string;
+  } | null;
+  unit: string | null;
+  achievedValue: number;
+  targetValue: number;
+  completionPercent: number | null;
+  completionStatus: CompletionStatus;
+  approvedActionCount: number;
+  distinctApprovedDays: number;
+  byUnit: ProgressUnit[];
+}
+
+export interface AchievementResponse {
+  customerId: string;
+  campaignId: string;
+  participationId: string;
+  userId: string;
+  unit: string | null;
+  achievedValue: number;
+  approvedActionCount: number;
+  distinctApprovedDays: number;
+}
+
+export interface AggregateProgressResponse {
+  scope: 'campaign' | 'community';
+  customerId: string;
+  campaignId: string;
+  communityId: string | null;
+  timezone: string;
+  participantCount: number;
+  committedParticipantCount: number;
+  units: ProgressUnit[];
+}
+
+export interface MilestoneResponse {
+  id: string;
+  customerId: string;
+  campaignId: string;
+  key: string;
+  name: string;
+  description: string | null;
+  metric: MilestoneMetric;
+  thresholdValue: number;
+  unit: string;
+  isActive: boolean;
+  createdByUserId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateMilestoneRequest {
+  key?: string;
+  name: string;
+  description?: string;
+  metric: MilestoneMetric;
+  thresholdValue: number;
+  unit: string;
+}
+
+export interface UpdateMilestoneRequest {
+  name?: string;
+  description?: string | null;
+  metric?: MilestoneMetric;
+  thresholdValue?: number;
+  unit?: string;
+  isActive?: boolean;
+}
+
+export interface MilestoneProgressResponse {
+  milestoneId: string;
+  campaignId: string;
+  customerId: string;
+  metric: MilestoneMetric;
+  unit: string;
+  thresholdValue: number;
+  currentAchievedValue: number;
+  currentTargetValue: number;
+  currentCompletionPercent: number | null;
+  crossed: boolean;
+  status: CompletionStatus;
+  computedAt: string;
+}
+
+export interface MilestoneEvaluationResponse {
+  id: string;
+  milestoneId: string;
+  customerId: string;
+  evaluatedByUserId: string;
+  achievedValue: number;
+  targetValue: number;
+  completionPercent: number | null;
+  crossed: boolean;
+  status: CompletionStatus;
+  evaluatedAt: string;
+  createdAt: string;
+}

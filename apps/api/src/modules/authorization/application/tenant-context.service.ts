@@ -8,6 +8,7 @@ import {
   CAMPAIGN_READER,
   COMMITMENT_READER,
   COMMUNITY_READER,
+  MILESTONE_READER,
   MEMBERSHIP_READER,
   PARTICIPATION_READER,
   TENANT_READER,
@@ -15,6 +16,7 @@ import {
   type CampaignReader,
   type CommitmentReader,
   type CommunityReader,
+  type MilestoneReader,
   type MembershipReader,
   type ParticipationReader,
   type TenantReader,
@@ -57,6 +59,8 @@ export class TenantContextService {
     private readonly actions: ActionReader,
     @Inject(forwardRef(() => COMMITMENT_READER))
     private readonly commitments: CommitmentReader,
+    @Inject(forwardRef(() => MILESTONE_READER))
+    private readonly milestones: MilestoneReader,
   ) {}
 
   async build(userId: string, input: TenantScopeInput): Promise<TenantContext> {
@@ -77,6 +81,7 @@ export class TenantContextService {
       ),
       submissionId: requireUuid(input.submissionId, 'submissionId'),
       commitmentId: requireUuid(input.commitmentId, 'commitmentId'),
+      milestoneId: requireUuid(input.milestoneId, 'milestoneId'),
     };
     const tenantId = await this.resolveTenantId(normalized);
     const memberships = await this.memberships.listActiveForUserInTenant(
@@ -217,6 +222,14 @@ export class TenantContextService {
         throw new ResourceNotFoundException('Resource not found');
       }
       candidates.add(commitment.tenantId);
+    }
+
+    if (input.milestoneId) {
+      const milestone = await this.milestones.findById(input.milestoneId);
+      if (!milestone) {
+        throw new ResourceNotFoundException('Resource not found');
+      }
+      candidates.add(milestone.tenantId);
     }
 
     if (candidates.size === 0) {

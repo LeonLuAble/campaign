@@ -3,7 +3,11 @@ import type {
   ActionRuleInput,
   CampaignRuleStrategy,
   CommitmentRuleInput,
+  ProgressContributionInput,
+  ProgressTarget,
+  ProgressTargetContext,
 } from '../../campaigns/application/campaign-rule-strategy.js';
+import { inclusiveIsoDateCount } from '../../campaigns/application/timezone.js';
 
 export const VEGETARIAN_RULES_STRATEGY_KEY = 'vegetarian';
 
@@ -24,6 +28,44 @@ for (const choice of VEGETARIAN_CHOICES) {
 }
 
 const VEGETARIAN_UNITS = new Set(['days', 'meals']);
+
+export const VEGETARIAN_CHOICE_TARGETS = {
+  sui_yuan_su: {
+    canonicalUnit: 'meals',
+    suggestedTarget: null,
+    usesCampaignDuration: false,
+  },
+  huan_xi_su: {
+    canonicalUnit: 'meals',
+    suggestedTarget: null,
+    usesCampaignDuration: false,
+  },
+  ding_ri_su: {
+    canonicalUnit: 'days',
+    suggestedTarget: null,
+    usesCampaignDuration: false,
+  },
+  yi_zhou_su: {
+    canonicalUnit: 'days',
+    suggestedTarget: 7,
+    usesCampaignDuration: false,
+  },
+  quan_yue_su: {
+    canonicalUnit: 'days',
+    suggestedTarget: 30,
+    usesCampaignDuration: false,
+  },
+  fa_yuan_su: {
+    canonicalUnit: 'days',
+    suggestedTarget: null,
+    usesCampaignDuration: false,
+  },
+  yi_quan_su: {
+    canonicalUnit: 'days',
+    suggestedTarget: null,
+    usesCampaignDuration: true,
+  },
+} as const;
 
 export function normalizeVegetarianChoice(typeKey: string): string {
   const normalized = CHOICE_BY_KEY.get(typeKey.trim());
@@ -80,5 +122,46 @@ export class VegetarianRuleStrategy implements CampaignRuleStrategy {
     if (!Number.isInteger(input.quantity) || input.quantity < 1) {
       throw new InvalidRequestException('quantity must be a positive integer');
     }
+  }
+
+  contributeToProgress(
+    contribution: ProgressContributionInput,
+    commitment: CommitmentRuleInput | null,
+  ): number {
+    if (!commitment) {
+      return contribution.quantity;
+    }
+    return contribution.definitionUnit === commitment.unit
+      ? contribution.quantity
+      : 0;
+  }
+
+  resolveProgressTarget(
+    commitment: CommitmentRuleInput,
+    campaign: ProgressTargetContext,
+  ): ProgressTarget {
+    const choice = commitment.typeKey
+      ? CHOICE_BY_KEY.get(commitment.typeKey.trim())
+      : null;
+    const spec = choice
+      ? VEGETARIAN_CHOICE_TARGETS[
+          choice as keyof typeof VEGETARIAN_CHOICE_TARGETS
+        ]
+      : null;
+    if (
+      spec?.usesCampaignDuration &&
+      commitment.unit === 'days' &&
+      campaign.startsOn &&
+      campaign.endsOn
+    ) {
+      return {
+        targetValue: inclusiveIsoDateCount(campaign.startsOn, campaign.endsOn),
+        unit: 'days',
+      };
+    }
+    return {
+      targetValue: commitment.targetValue,
+      unit: commitment.unit,
+    };
   }
 }

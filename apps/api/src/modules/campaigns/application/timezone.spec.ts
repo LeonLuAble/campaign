@@ -5,6 +5,7 @@ import {
   assertIanaTimeZone,
   assertOccurredOnInCampaignWindow,
   calendarDateInTimeZone,
+  inclusiveIsoDateCount,
   normalizeSettings,
   parseIsoDate,
   resolveOccurredOn,
@@ -100,5 +101,10 @@ describe('timezone and campaign value helpers', () => {
         '2026-12-31',
       ),
     ).not.toThrow();
+  });
+
+  it('counts inclusive campaign calendar days', () => {
+    expect(inclusiveIsoDateCount('2026-01-01', '2026-01-01')).toBe(1);
+    expect(inclusiveIsoDateCount('2026-01-01', '2026-01-31')).toBe(31);
   });
 });

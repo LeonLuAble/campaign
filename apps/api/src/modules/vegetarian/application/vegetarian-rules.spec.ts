@@ -43,6 +43,45 @@ describe('vegetarian rules', () => {
     ).toThrow(InvalidRequestException);
   });
 
+  it('maps 已全素 progress to inclusive campaign days when dates exist', () => {
+    const target = rules.resolveProgressTarget(
+      {
+        typeKey: 'yi_quan_su',
+        targetValue: 1,
+        unit: 'days',
+        payload: {},
+      },
+      {
+        startsOn: '2026-01-01',
+        endsOn: '2026-01-31',
+        timezone: 'Asia/Kuala_Lumpur',
+      },
+    );
+    expect(target).toEqual({ targetValue: 31, unit: 'days' });
+    expect(
+      rules.contributeToProgress(
+        { definitionUnit: 'days', quantity: 1, occurredOn: '2026-01-02' },
+        {
+          typeKey: 'fa_yuan_su',
+          targetValue: 10,
+          unit: 'days',
+          payload: {},
+        },
+      ),
+    ).toBe(1);
+    expect(
+      rules.contributeToProgress(
+        { definitionUnit: 'meals', quantity: 3, occurredOn: '2026-01-02' },
+        {
+          typeKey: 'fa_yuan_su',
+          targetValue: 10,
+          unit: 'days',
+          payload: {},
+        },
+      ),
+    ).toBe(0);
+  });
+
   it('limits vegetarian day quantity to 1 and meals to 1-3', () => {
     expect(() =>
       rules.validateAction({

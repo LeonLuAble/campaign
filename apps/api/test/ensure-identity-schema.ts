@@ -6,6 +6,7 @@ import { AddUserPlatformAdmin1792165406000 } from '../src/platform/database/migr
 import { CreateUserImportTables1792265507000 } from '../src/platform/database/migrations/1792265507000-CreateUserImportTables.js';
 import { CreateCampaignTables1792365608000 } from '../src/platform/database/migrations/1792365608000-CreateCampaignTables.js';
 import { CreateCommitmentActionTables1792465709000 } from '../src/platform/database/migrations/1792465709000-CreateCommitmentActionTables.js';
+import { CreateProgressMilestoneTables1792565810000 } from '../src/platform/database/migrations/1792565810000-CreateProgressMilestoneTables.js';
 
 type MigrationCtor = new () => MigrationInterface;
 
@@ -18,6 +19,7 @@ const SCHEMA_MIGRATIONS: MigrationCtor[] = [
   CreateUserImportTables1792265507000,
   CreateCampaignTables1792365608000,
   CreateCommitmentActionTables1792465709000,
+  CreateProgressMilestoneTables1792565810000,
 ];
 
 export async function revertSchemaMigrationsNewestFirst(
@@ -84,6 +86,9 @@ export async function clearTenantData(dataSource: DataSource): Promise<void> {
     return;
   }
   const tables = [
+    'milestone_evaluations',
+    'milestone_progress',
+    'milestones',
     'submissions',
     'actions',
     'commitments',
@@ -134,6 +139,9 @@ export async function ensureTenantSchema(
   const hasTenants = await tableExists(dataSource, 'tenants');
   const hasMembershipRoles = await tableExists(dataSource, 'membership_roles');
   if (hasTenants && !hasMembershipRoles) {
+    if (await tableExists(dataSource, 'milestones')) {
+      await new CreateProgressMilestoneTables1792565810000().down(queryRunner);
+    }
     if (await tableExists(dataSource, 'commitments')) {
       await new CreateCommitmentActionTables1792465709000().down(queryRunner);
     }
@@ -160,6 +168,9 @@ export async function ensureTenantSchema(
   }
   if (!(await tableExists(dataSource, 'commitments'))) {
     await new CreateCommitmentActionTables1792465709000().up(queryRunner);
+  }
+  if (!(await tableExists(dataSource, 'milestones'))) {
+    await new CreateProgressMilestoneTables1792565810000().up(queryRunner);
   }
 }
 

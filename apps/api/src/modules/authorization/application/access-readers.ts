@@ -5,6 +5,7 @@ export const CAMPAIGN_READER = 'CAMPAIGN_READER';
 export const PARTICIPATION_READER = 'PARTICIPATION_READER';
 export const ACTION_READER = 'ACTION_READER';
 export const COMMITMENT_READER = 'COMMITMENT_READER';
+export const MILESTONE_READER = 'MILESTONE_READER';
 
 export interface TenantRecord {
   id: string;
@@ -69,5 +70,9 @@ export interface ActionReader {
 }
 
 export interface CommitmentReader {
+  findById(id: string): Promise<CampaignAccessRecord | null>;
+}
+
+export interface MilestoneReader {
   findById(id: string): Promise<CampaignAccessRecord | null>;
 }

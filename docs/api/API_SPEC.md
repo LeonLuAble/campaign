@@ -81,11 +81,27 @@ Commitments:
 - GET /commitments/:commitmentId → requires `commitments.read`
 - PATCH /commitments/:commitmentId → admin correction; requires `commitments.update`
 
-Vegetarian campaign rules (速素数数) are not hardcoded in commitments/actions. Campaigns with `configuration.rulesStrategy = "vegetarian"` are validated by the vegetarian module (seven choices, days/meals units).
-Goals: `/goals`
-Achievements: campaign/participant endpoints
-Progress: participant/community/campaign endpoints
-Milestones: create/list/progress/evaluate/evaluations
+Vegetarian campaign rules (速素数数) are not hardcoded in commitments/actions. Campaigns with `configuration.rulesStrategy = "vegetarian"` are validated by the vegetarian module (seven choices, days/meals units). Choice-to-target mapping for progress (including 已全素 campaign-duration days) also lives in that module.
+
+Progress (computed from source on read; counts only `approved` submissions on non-cancelled actions; campaign timezone calendar days on `occurredOn`):
+- GET `/participations/:participationId/progress` → requires `progress.read`. Members see only their own participation.
+- GET `/participations/:participationId/achievement` → requires `achievements.read`. Members see only their own actual result.
+- GET `/campaigns/:campaignId/progress` → requires `progress.read`. Aggregate totals by unit only; never includes user or participation ids.
+- GET `/campaigns/:campaignId/communities/:communityId/progress` → requires `progress.read` and visibility of that community. Subtree = the node plus descendants. Tenant-level participations with a null community are omitted from community aggregates.
+- GET `/campaigns/:campaignId/achievements` → requires `achievements.read`. Members receive only their own row; callers with `actions.update` or `participations.update` receive all rows in the tenant campaign.
+
+Completion is `achieved / target * 100` and is not capped. Status: `none` (no target), `not_started`, `in_progress`, `achieved` (exactly 100%), `exceeded` (>100%).
+
+Milestones (campaign-scoped stage targets; evaluation is an explicit admin action and never deletes history):
+- POST `/campaigns/:campaignId/milestones` `{ key?, name, description?, metric: 'completion_percent' | 'achieved_value', thresholdValue, unit }` → 201. Requires `milestones.create` and a tenant-level membership.
+- GET `/campaigns/:campaignId/milestones` → requires `milestones.read`
+- GET `/milestones/:milestoneId` → requires `milestones.read`
+- PATCH `/milestones/:milestoneId` → requires `milestones.update`
+- GET `/milestones/:milestoneId/progress` → live campaign aggregate vs the threshold; no individual rows
+- POST `/milestones/:milestoneId/evaluate` → requires `milestones.evaluate`; appends an evaluation snapshot and upserts `milestone_progress`
+- GET `/milestones/:milestoneId/evaluations` → append-only history
+
+Goals: `/goals` (not implemented in this phase; participant targets are commitments)
 Measurement/Outcome/Impact: definitions, measurements, factors, outcomes
 Visualization: campaign visualization and data
 Dashboards/reports: participant/group/community/campaign

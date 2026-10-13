@@ -1,0 +1,36 @@
+import { Module, forwardRef } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { MILESTONE_READER } from '../authorization/application/access-readers.js';
+import { AuthorizationModule } from '../authorization/authorization.module.js';
+import { AuthModule } from '../auth/auth.module.js';
+import { CampaignsModule } from '../campaigns/campaigns.module.js';
+import { CustomersModule } from '../customers/customers.module.js';
+import { ProgressModule } from '../progress/progress.module.js';
+import { MilestoneService } from './application/milestone.service.js';
+import { MilestoneEvaluation } from './domain/milestone-evaluation.entity.js';
+import { MilestoneProgress } from './domain/milestone-progress.entity.js';
+import { Milestone } from './domain/milestone.entity.js';
+import { CampaignMilestonesController } from './presentation/campaign-milestones.controller.js';
+import { MilestonesController } from './presentation/milestones.controller.js';
+
+@Module({
+  imports: [
+    TypeOrmModule.forFeature([
+      Milestone,
+      MilestoneProgress,
+      MilestoneEvaluation,
+    ]),
+    AuthModule,
+    forwardRef(() => AuthorizationModule),
+    forwardRef(() => CampaignsModule),
+    forwardRef(() => CustomersModule),
+    forwardRef(() => ProgressModule),
+  ],
+  controllers: [CampaignMilestonesController, MilestonesController],
+  providers: [
+    MilestoneService,
+    { provide: MILESTONE_READER, useExisting: MilestoneService },
+  ],
+  exports: [MilestoneService, MILESTONE_READER],
+})
+export class MilestonesModule {}

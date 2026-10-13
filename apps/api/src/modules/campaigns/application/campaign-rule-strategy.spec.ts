@@ -37,4 +37,19 @@ describe('campaign rule strategies', () => {
       resolveCampaignRules({ rulesStrategy: 'keto' }, [vegetarian], generic),
     ).toThrow(InvalidRequestException);
   });
+
+  it('counts only matching units toward a pledged target', () => {
+    expect(
+      generic.contributeToProgress(
+        { definitionUnit: 'hours', quantity: 2, occurredOn: '2026-01-01' },
+        { typeKey: null, targetValue: 5, unit: 'hours', payload: {} },
+      ),
+    ).toBe(2);
+    expect(
+      generic.contributeToProgress(
+        { definitionUnit: 'days', quantity: 1, occurredOn: '2026-01-01' },
+        { typeKey: null, targetValue: 5, unit: 'hours', payload: {} },
+      ),
+    ).toBe(0);
+  });
 });
