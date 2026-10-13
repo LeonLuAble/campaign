@@ -242,6 +242,7 @@ describe('Identity Migration (e2e)', () => {
       expect(indexes.length).toBe(1);
       expect(indexes[0].indexdef).toContain('WHERE');
       expect(indexes[0].indexdef).toContain('used_at IS NULL');
+      expect(indexes[0].indexdef).toContain('UNIQUE');
     });
 
     it('should enforce unique constraint on user_identities', async () => {
@@ -356,7 +357,7 @@ describe('Identity Migration (e2e)', () => {
       await dataSource.query(`DELETE FROM users;`);
     });
 
-    it('should allow multiple tokens of same type if previous is used or expired', async () => {
+    it('should allow multiple tokens of same type if previous is used', async () => {
       await dataSource.query(`
         INSERT INTO users (id, is_active, created_at, updated_at)
         VALUES ('00000000-0000-0000-0000-000000000030', true, now(), now());

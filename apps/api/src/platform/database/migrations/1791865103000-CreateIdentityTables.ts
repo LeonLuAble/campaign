@@ -133,7 +133,7 @@ export class CreateIdentityTables1791865103000 implements MigrationInterface {
     await queryRunner.query(`
       CREATE UNIQUE INDEX "idx_user_tokens_active_unused" 
       ON "user_tokens"("user_id", "type") 
-      WHERE "used_at" IS NULL AND "expires_at" > now();
+      WHERE "used_at" IS NULL;
     `);
   }
 
