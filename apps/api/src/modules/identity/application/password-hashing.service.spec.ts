@@ -55,6 +55,12 @@ describe('PasswordHashingService', () => {
       expect(isValid).toBe(false);
     });
 
+    it('should reject a password against the dummy hash', async () => {
+      const isValid = await service.verifyDummy('password123');
+
+      expect(isValid).toBe(false);
+    });
+
     it('should return false for invalid hash format', async () => {
       const password = 'testPassword123!';
       const invalidHash = 'not-a-valid-hash';

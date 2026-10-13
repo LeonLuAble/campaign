@@ -20,6 +20,8 @@ export const envValidationSchema = Joi.object({
   JWT_REFRESH_SECRET: Joi.string().min(32).required(),
   JWT_ACCESS_TTL_SECONDS: Joi.number().integer().min(60).default(900),
   JWT_REFRESH_TTL_SECONDS: Joi.number().integer().min(3600).default(604800),
+  JWT_ISSUER: Joi.string().min(1).default('campaign-api'),
+  JWT_AUDIENCE: Joi.string().min(1).default('campaign-clients'),
   OBJECT_STORAGE_ENDPOINT: Joi.string().uri().allow('').optional(),
   OBJECT_STORAGE_BUCKET: Joi.string().allow('').optional(),
   OBJECT_STORAGE_ACCESS_KEY: Joi.string().allow('').optional(),

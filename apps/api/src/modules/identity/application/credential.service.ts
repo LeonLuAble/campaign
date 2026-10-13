@@ -33,6 +33,10 @@ export class CredentialService {
     return this.passwordHashingService.verify(hash, password);
   }
 
+  async verifyDummyPassword(password: string): Promise<boolean> {
+    return this.passwordHashingService.verifyDummy(password);
+  }
+
   normalizeEmail(email: string): string {
     return email.toLowerCase().trim();
   }

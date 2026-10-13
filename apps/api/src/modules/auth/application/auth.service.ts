@@ -1,79 +1,60 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import {
   CredentialService,
   InvalidPhoneNumberError,
 } from '../../identity/application/credential.service.js';
-import { UserCredential } from '../../identity/domain/user-credential.entity.js';
-import { UserIdentity } from '../../identity/domain/user-identity.entity.js';
-import { User } from '../../identity/domain/user.entity.js';
+import { IdentityAccountService } from '../../identity/application/identity-account.service.js';
+import type { PublicUserProfile } from '../../identity/application/identity-account.service.js';
+import { DUMMY_PASSWORD_HASH } from '../../identity/application/password-hashing.service.js';
+import { IdentityType } from '../../identity/domain/user-identity.entity.js';
 import { InvalidCredentialsException } from './auth.exceptions.js';
 import { TokenPair, TokenService } from './token.service.js';
 
-export interface UserProfile {
-  id: string;
-  firstName: string | null;
-  lastName: string | null;
-  displayName: string | null;
-  locale: string | null;
-  timezone: string | null;
-  isActive: boolean;
-  identities: Array<{
-    id: string;
-    type: string;
-    identifier: string;
-    isVerified: boolean;
-  }>;
-}
+export type UserProfile = PublicUserProfile;
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
-    @InjectRepository(UserIdentity)
-    private readonly userIdentityRepository: Repository<UserIdentity>,
-    @InjectRepository(UserCredential)
-    private readonly userCredentialRepository: Repository<UserCredential>,
+    private readonly identityAccountService: IdentityAccountService,
     private readonly credentialService: CredentialService,
     private readonly tokenService: TokenService,
   ) {}
 
   async login(identifier: string, password: string): Promise<TokenPair> {
-    const normalizedIdentifier = this.normalizeLoginIdentifier(identifier);
+    const type = this.credentialService.detectIdentifierType(identifier);
+    let normalizedIdentifier: string;
 
-    const userIdentity = await this.userIdentityRepository.findOne({
-      where: { normalized_identifier: normalizedIdentifier },
-      relations: ['user'],
-    });
-
-    if (
-      !userIdentity ||
-      !userIdentity.is_verified ||
-      !userIdentity.user.is_active
-    ) {
-      throw new InvalidCredentialsException();
+    try {
+      normalizedIdentifier =
+        this.credentialService.normalizeIdentifier(identifier);
+    } catch (error) {
+      if (error instanceof InvalidPhoneNumberError) {
+        await this.credentialService.verifyDummyPassword(password);
+        throw new InvalidCredentialsException();
+      }
+      throw error;
     }
 
-    const credential = await this.userCredentialRepository.findOne({
-      where: { user_id: userIdentity.user.id },
-    });
-
-    if (!credential) {
-      throw new InvalidCredentialsException();
-    }
-
-    const isValidPassword = await this.credentialService.verifyPassword(
-      credential.password_hash,
+    const candidate = await this.identityAccountService.findLoginCandidate(
+      type as IdentityType,
+      normalizedIdentifier,
+    );
+    const passwordHash = candidate
+      ? await this.identityAccountService.getPasswordHash(candidate.userId)
+      : null;
+    const eligible = Boolean(
+      candidate?.isVerified && candidate.isActive && passwordHash,
+    );
+    const verified = await this.credentialService.verifyPassword(
+      eligible && passwordHash ? passwordHash : DUMMY_PASSWORD_HASH,
       password,
     );
 
-    if (!isValidPassword) {
+    if (!eligible || !verified) {
       throw new InvalidCredentialsException();
     }
 
-    return this.tokenService.createRefreshToken(userIdentity.user.id);
+    return this.tokenService.createRefreshToken(candidate!.userId);
   }
 
   async logout(refreshToken: string, revokeFamily = false): Promise<void> {
@@ -83,10 +64,7 @@ export class AuthService {
     }
 
     if (revokeFamily) {
-      await this.tokenService.revokeFamilyTokens(
-        token.family_id,
-        'USER_LOGOUT',
-      );
+      await this.tokenService.revokeFamilyTokens(token.familyId, 'USER_LOGOUT');
       return;
     }
 
@@ -94,40 +72,10 @@ export class AuthService {
   }
 
   async getUserProfile(userId: string): Promise<UserProfile> {
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-      relations: ['identities'],
-    });
-
-    if (!user) {
+    const profile = await this.identityAccountService.getProfile(userId);
+    if (!profile) {
       throw new InvalidCredentialsException();
     }
-
-    return {
-      id: user.id,
-      firstName: user.first_name,
-      lastName: user.last_name,
-      displayName: user.display_name,
-      locale: user.locale,
-      timezone: user.timezone,
-      isActive: user.is_active,
-      identities: user.identities.map((identity) => ({
-        id: identity.id,
-        type: identity.type,
-        identifier: identity.identifier,
-        isVerified: identity.is_verified,
-      })),
-    };
-  }
-
-  private normalizeLoginIdentifier(identifier: string): string {
-    try {
-      return this.credentialService.normalizeIdentifier(identifier);
-    } catch (error) {
-      if (error instanceof InvalidPhoneNumberError) {
-        throw new InvalidCredentialsException();
-      }
-      throw error;
-    }
+    return profile;
   }
 }

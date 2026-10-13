@@ -14,6 +14,8 @@ export interface AppConfiguration {
     refreshSecret?: string;
     accessTtlSeconds: number;
     refreshTtlSeconds: number;
+    issuer: string;
+    audience: string;
   };
   objectStorage: {
     endpoint?: string;
@@ -48,6 +50,8 @@ export default function configuration(): AppConfiguration {
       refreshSecret: emptyToUndefined(process.env.JWT_REFRESH_SECRET),
       accessTtlSeconds: Number(process.env.JWT_ACCESS_TTL_SECONDS ?? 900),
       refreshTtlSeconds: Number(process.env.JWT_REFRESH_TTL_SECONDS ?? 604800),
+      issuer: process.env.JWT_ISSUER || 'campaign-api',
+      audience: process.env.JWT_AUDIENCE || 'campaign-clients',
     },
     objectStorage: {
       endpoint: emptyToUndefined(process.env.OBJECT_STORAGE_ENDPOINT),
