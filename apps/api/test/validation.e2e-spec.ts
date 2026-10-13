@@ -1,10 +1,10 @@
 import { Body, Controller, Module, Post } from '@nestjs/common';
 import type { INestApplication } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import { IsString } from 'class-validator';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { AppConfigModule } from '../src/config/app-config.module.js';
 import { configureApp } from '../src/bootstrap/configure-app.js';
 
 class TestValidationDto {
@@ -21,7 +21,7 @@ class TestValidationController {
 }
 
 @Module({
-  imports: [AppConfigModule],
+  imports: [ConfigModule.forRoot({ ignoreEnvFile: true })],
   controllers: [TestValidationController],
 })
 class TestValidationModule {}
