@@ -221,6 +221,18 @@ export class MembershipService {
     return mapped.get(membership.id) ?? [];
   }
 
+  async assignSystemRole(
+    tenant: TenantContext,
+    membershipId: string,
+    roleKey: string,
+  ): Promise<RoleSummary[]> {
+    const role = await this.authorization.findSystemRoleByKey(
+      tenant.tenantId,
+      roleKey,
+    );
+    return this.assignRole(tenant, membershipId, role.id);
+  }
+
   async assignRole(
     tenant: TenantContext,
     membershipId: string,

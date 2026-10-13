@@ -80,6 +80,7 @@ describe('UserImportService', () => {
   const memberships = {
     listActiveForUserInTenant: vi.fn(),
     create: vi.fn(),
+    assignSystemRole: vi.fn(),
   };
   const registration = { sendActivationInvitation: vi.fn() };
 
@@ -266,6 +267,9 @@ describe('UserImportService', () => {
     });
     memberships.listActiveForUserInTenant.mockResolvedValue([]);
     memberships.create.mockResolvedValue({ id: 'membership-1' });
+    memberships.assignSystemRole.mockResolvedValue([
+      { id: 'role-member', key: 'member', name: 'Member' },
+    ]);
 
     const summary = await service.confirm(tenantContext(tenantA), importId);
 
@@ -285,12 +289,68 @@ describe('UserImportService', () => {
       expect.objectContaining({ tenantId: tenantA }),
       { userId: 'imported-user', communityId: null },
     );
+    expect(memberships.assignSystemRole).toHaveBeenCalledWith(
+      expect.objectContaining({ tenantId: tenantA }),
+      'membership-1',
+      'member',
+    );
     expect(registration.sendActivationInvitation).toHaveBeenCalledWith(
       'mei@example.com',
     );
     expect(row.status).toBe('created');
     expect(row.resolved_user_id).toBe('imported-user');
     expect(summary.status).toBe(UserImportStatus.CONFIRMED);
+  });
+
+  it('assigns the system member role when confirming a matched in-tenant user', async () => {
+    importRepository.findOne.mockResolvedValue({
+      id: importId,
+      tenant_id: tenantA,
+      status: UserImportStatus.VALIDATED,
+      headers: ['email'],
+      column_mapping: { email: 'email' },
+      default_community_id: null,
+      created_at: new Date(),
+      updated_at: new Date(),
+    });
+    const row = {
+      id: 'r1',
+      import_id: importId,
+      row_number: 2,
+      raw_data: { email: 'admin@example.com' },
+      email: 'admin@example.com',
+      mobile: null,
+      first_name: null,
+      last_name: null,
+      display_name: null,
+      community_id: null,
+      status: 'valid',
+      resolved_user_id: 'admin-user',
+    };
+    rowRepository.find.mockResolvedValue([row]);
+    memberships.listActiveForUserInTenant.mockResolvedValue([
+      {
+        id: 'membership-admin',
+        tenantId: tenantA,
+        userId: 'admin-user',
+        communityId: null,
+        isActive: true,
+      },
+    ]);
+    memberships.assignSystemRole.mockResolvedValue([
+      { id: 'role-member', key: 'member', name: 'Member' },
+    ]);
+
+    await service.confirm(tenantContext(tenantA), importId);
+
+    expect(identities.createImportedAccount).not.toHaveBeenCalled();
+    expect(memberships.create).not.toHaveBeenCalled();
+    expect(memberships.assignSystemRole).toHaveBeenCalledWith(
+      expect.objectContaining({ tenantId: tenantA }),
+      'membership-admin',
+      'member',
+    );
+    expect(row.status).toBe('matched');
   });
 
   it('does not create users when confirm is repeated', async () => {

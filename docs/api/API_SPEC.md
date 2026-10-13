@@ -33,7 +33,7 @@ User import: `/user-imports` (tenant-scoped via `customerId` query; requires `us
 - PATCH /user-imports/:userImportId/mapping `{ mapping }` → map CSV headers to canonical fields
 - POST /user-imports/:userImportId/validate → per-row validation without writes
 - GET /user-imports/:userImportId/preview → validated per-row preview
-- POST /user-imports/:userImportId/confirm → create identities/memberships and send activation invitations
+- POST /user-imports/:userImportId/confirm → create identities/memberships, assign the tenant system `member` role, and send activation invitations
 - GET /user-imports, GET /user-imports/:userImportId, GET /user-imports/:userImportId/rows → list/summary/result errors
 
 Imported users activate through POST /auth/activate with a password. Invitation delivery reuses the existing activation token + NotificationSender path (no `/invitations` resource in this phase).

@@ -160,13 +160,28 @@ describe('User imports (e2e)', () => {
       .get('/api/v1/memberships')
       .query({ customerId })
       .set(auth(admin.accessToken));
+    const importedMembership = memberships.body.find(
+      (membership: {
+        userId: string;
+        communityId: string | null;
+        roles: Array<{ key: string }>;
+      }) =>
+        membership.userId === created.resolvedUserId &&
+        membership.communityId === community.body.id,
+    );
+    expect(importedMembership).toBeTruthy();
     expect(
-      memberships.body.some(
-        (membership: { userId: string; communityId: string | null }) =>
-          membership.userId === created.resolvedUserId &&
-          membership.communityId === community.body.id,
-      ),
-    ).toBe(true);
+      importedMembership.roles.map((role: { key: string }) => role.key),
+    ).toEqual(['member']);
+
+    const importedReads = await request(app.getHttpServer())
+      .get('/api/v1/communities')
+      .query({ customerId })
+      .set(auth(login.body.accessToken));
+    expect(importedReads.status).toBe(200);
+    expect(importedReads.body.map((row: { id: string }) => row.id)).toContain(
+      community.body.id,
+    );
   });
 
   it('is idempotent for the same external_id in the same customer', async () => {

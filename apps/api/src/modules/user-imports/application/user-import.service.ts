@@ -9,6 +9,7 @@ import {
 } from '../../../shared/errors/domain-http.exceptions.js';
 import { hasTenantLevelMembership } from '../../authorization/application/membership-scope.js';
 import type { TenantContext } from '../../authorization/application/tenant-context.js';
+import { SYSTEM_ROLE_MEMBER } from '../../authorization/domain/permission-keys.js';
 import { RegistrationService } from '../../auth/application/registration.service.js';
 import { CommunityService } from '../../communities/application/community.service.js';
 import { CustomerService } from '../../customers/application/customer.service.js';
@@ -546,6 +547,11 @@ export class UserImportService {
       (membership) => membership.communityId === communityId,
     );
     if (match) {
+      await this.memberships.assignSystemRole(
+        tenant,
+        match.id,
+        SYSTEM_ROLE_MEMBER,
+      );
       return { id: match.id };
     }
     try {
@@ -553,6 +559,11 @@ export class UserImportService {
         userId,
         communityId,
       });
+      await this.memberships.assignSystemRole(
+        tenant,
+        created.id,
+        SYSTEM_ROLE_MEMBER,
+      );
       return { id: created.id };
     } catch (error) {
       if (error instanceof ResourceConflictException) {
@@ -564,6 +575,11 @@ export class UserImportService {
           (membership) => membership.communityId === communityId,
         );
         if (found) {
+          await this.memberships.assignSystemRole(
+            tenant,
+            found.id,
+            SYSTEM_ROLE_MEMBER,
+          );
           return { id: found.id };
         }
       }
