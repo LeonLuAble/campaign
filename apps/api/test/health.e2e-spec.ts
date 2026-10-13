@@ -47,4 +47,20 @@ describe('Health (e2e)', () => {
     expect(JSON.stringify(response.body)).not.toContain('postgresql://');
     expect(JSON.stringify(response.body)).not.toContain('redis://');
   });
+
+  it('GET /api/v1/health/ready returns 503 when database or redis is down', async () => {
+    await app.close();
+
+    const response = await request(app.getHttpServer()).get(
+      '/api/v1/health/ready',
+    );
+
+    expect(response.status).toBe(503);
+    expect(response.body.status).toBe('degraded');
+    expect(JSON.stringify(response.body)).not.toContain('postgresql://');
+    expect(JSON.stringify(response.body)).not.toContain('redis://');
+    expect(JSON.stringify(response.body)).not.toContain('localhost');
+    expect(JSON.stringify(response.body)).not.toContain('5432');
+    expect(JSON.stringify(response.body)).not.toContain('6379');
+  });
 });

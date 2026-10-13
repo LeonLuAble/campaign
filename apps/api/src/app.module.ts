@@ -4,6 +4,7 @@ import { LoggerModule } from 'nestjs-pino';
 import { createLoggerParams } from './bootstrap/logger.config.js';
 import { AppConfigModule } from './config/app-config.module.js';
 import { HealthModule } from './modules/health/health.module.js';
+import { TestModule } from './modules/test/test.module.js';
 import { DatabaseModule } from './platform/database/database.module.js';
 import { RedisModule } from './platform/redis/redis.module.js';
 
@@ -17,6 +18,7 @@ import { RedisModule } from './platform/redis/redis.module.js';
     DatabaseModule,
     RedisModule,
     HealthModule,
+    TestModule,
   ],
 })
 export class AppModule {}

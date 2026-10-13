@@ -11,7 +11,10 @@ import {
   CORRELATION_ID_HEADER,
   resolveCorrelationId,
 } from '../correlation/correlation-id.js';
-import type { ApiErrorResponse } from '../types/api-error.response.js';
+import type {
+  ApiErrorResponse,
+  ErrorCode,
+} from '../types/api-error.response.js';
 import type { CorrelatedRequest } from '../types/correlated-request.js';
 
 const STATUS_PHRASES: Record<number, string> = {
@@ -23,6 +26,17 @@ const STATUS_PHRASES: Record<number, string> = {
   [HttpStatus.UNPROCESSABLE_ENTITY]: 'Unprocessable Entity',
   [HttpStatus.INTERNAL_SERVER_ERROR]: 'Internal Server Error',
   [HttpStatus.SERVICE_UNAVAILABLE]: 'Service Unavailable',
+};
+
+const ERROR_CODES: Record<number, ErrorCode> = {
+  [HttpStatus.BAD_REQUEST]: 'BAD_REQUEST',
+  [HttpStatus.UNAUTHORIZED]: 'UNAUTHORIZED',
+  [HttpStatus.FORBIDDEN]: 'FORBIDDEN',
+  [HttpStatus.NOT_FOUND]: 'NOT_FOUND',
+  [HttpStatus.CONFLICT]: 'CONFLICT',
+  [HttpStatus.UNPROCESSABLE_ENTITY]: 'UNPROCESSABLE_ENTITY',
+  [HttpStatus.INTERNAL_SERVER_ERROR]: 'INTERNAL_ERROR',
+  [HttpStatus.SERVICE_UNAVAILABLE]: 'SERVICE_UNAVAILABLE',
 };
 
 @Catch()
@@ -38,6 +52,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
     const { message, error } = this.describe(exception, status);
+    const code = this.resolveErrorCode(exception, status);
 
     if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
       this.logger.error(
@@ -48,6 +63,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     const body: ApiErrorResponse = {
       statusCode: status,
+      code,
       error,
       message,
       correlationId: request.id ?? this.headerCorrelationId(request),
@@ -65,6 +81,23 @@ export class AllExceptionsFilter implements ExceptionFilter {
     }
 
     return resolveCorrelationId(header);
+  }
+
+  private resolveErrorCode(exception: unknown, status: number): ErrorCode {
+    if (
+      exception instanceof HttpException &&
+      status === HttpStatus.BAD_REQUEST
+    ) {
+      const exceptionBody = exception.getResponse();
+      if (typeof exceptionBody === 'object' && exceptionBody !== null) {
+        const record = exceptionBody as Record<string, unknown>;
+        if (Array.isArray(record.message)) {
+          return 'VALIDATION_FAILED';
+        }
+      }
+    }
+
+    return ERROR_CODES[status] ?? 'INTERNAL_ERROR';
   }
 
   private describe(
