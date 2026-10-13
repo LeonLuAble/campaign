@@ -1,10 +1,46 @@
-import { DataSource } from 'typeorm';
+import { DataSource, type MigrationInterface, type QueryRunner } from 'typeorm';
 import { CreateIdentityTables1791865103000 } from '../src/platform/database/migrations/1791865103000-CreateIdentityTables.js';
 import { AddIdentityIdToUserTokens1791965204000 } from '../src/platform/database/migrations/1791965204000-AddIdentityIdToUserTokens.js';
 import { CreateTenantCommunityMembershipTables1792065305000 } from '../src/platform/database/migrations/1792065305000-CreateTenantCommunityMembershipTables.js';
 import { AddUserPlatformAdmin1792165406000 } from '../src/platform/database/migrations/1792165406000-AddUserPlatformAdmin.js';
 import { CreateUserImportTables1792265507000 } from '../src/platform/database/migrations/1792265507000-CreateUserImportTables.js';
 import { CreateCampaignTables1792365608000 } from '../src/platform/database/migrations/1792365608000-CreateCampaignTables.js';
+
+type MigrationCtor = new () => MigrationInterface;
+
+/** Oldest-first. Revert helpers walk this list newest-first so later FKs drop first. */
+const SCHEMA_MIGRATIONS: MigrationCtor[] = [
+  CreateIdentityTables1791865103000,
+  AddIdentityIdToUserTokens1791965204000,
+  CreateTenantCommunityMembershipTables1792065305000,
+  AddUserPlatformAdmin1792165406000,
+  CreateUserImportTables1792265507000,
+  CreateCampaignTables1792365608000,
+];
+
+export async function revertSchemaMigrationsNewestFirst(
+  queryRunner: QueryRunner,
+): Promise<void> {
+  for (const Migration of [...SCHEMA_MIGRATIONS].reverse()) {
+    await new Migration().down(queryRunner);
+  }
+}
+
+export async function revertFromNewestThrough(
+  queryRunner: QueryRunner,
+  target: MigrationCtor,
+): Promise<void> {
+  const newestFirst = [...SCHEMA_MIGRATIONS].reverse();
+  const targetIndex = newestFirst.findIndex(
+    (Migration) => Migration.name === target.name,
+  );
+  if (targetIndex < 0) {
+    throw new Error(`Unknown schema migration: ${target.name}`);
+  }
+  for (const Migration of newestFirst.slice(0, targetIndex + 1)) {
+    await new Migration().down(queryRunner);
+  }
+}
 
 async function tableExists(
   dataSource: DataSource,
