@@ -28,6 +28,16 @@ export const envValidationSchema = Joi.object({
     .min(60)
     .default(3600),
   PASSWORD_MIN_LENGTH: Joi.number().integer().min(8).max(256).default(8),
+  GOOGLE_CLIENT_ID: Joi.when('NODE_ENV', {
+    is: 'production',
+    then: Joi.string().min(1).required(),
+    otherwise: Joi.string().allow('').default(''),
+  }),
+  APPLE_CLIENT_ID: Joi.when('NODE_ENV', {
+    is: 'production',
+    then: Joi.string().min(1).required(),
+    otherwise: Joi.string().allow('').default(''),
+  }),
   OBJECT_STORAGE_ENDPOINT: Joi.string().uri().allow('').optional(),
   OBJECT_STORAGE_BUCKET: Joi.string().allow('').optional(),
   OBJECT_STORAGE_ACCESS_KEY: Joi.string().allow('').optional(),

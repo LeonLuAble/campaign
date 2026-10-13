@@ -27,6 +27,7 @@ export function createLoggerParams(config: ConfigService) {
         'req.body.password',
         'req.body.token',
         'req.body.refreshToken',
+        'req.body.idToken',
       ],
       transport: isDevelopment
         ? {

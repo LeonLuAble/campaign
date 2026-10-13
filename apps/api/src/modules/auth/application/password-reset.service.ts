@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   CredentialService,
@@ -25,6 +25,7 @@ const DEFAULT_PASSWORD_RESET_TTL_SECONDS = 3_600;
 
 @Injectable()
 export class PasswordResetService {
+  private readonly logger = new Logger(PasswordResetService.name);
   private readonly resetTtlSeconds: number;
 
   constructor(
@@ -64,8 +65,9 @@ export class PasswordResetService {
     );
     const eligible = Boolean(identity?.isActive);
 
+    await this.credentialService.verifyDummyPassword(identifier);
+
     if (!eligible) {
-      await this.credentialService.verifyDummyPassword(identifier);
       return;
     }
 
@@ -76,7 +78,7 @@ export class PasswordResetService {
       tokenHash: hashOneTimeToken(rawToken),
       expiresAt: new Date(Date.now() + this.resetTtlSeconds * 1000),
     });
-    await this.notificationSender.send({
+    this.dispatchNotification({
       channel: channelForIdentityType(identity!.type),
       to: identity!.identifier,
       template: 'password_reset',
@@ -118,5 +120,16 @@ export class PasswordResetService {
     if (!completed) {
       throw new ActivationTokenInvalidException();
     }
+  }
+
+  private dispatchNotification(
+    message: Parameters<NotificationSender['send']>[0],
+  ): void {
+    void this.notificationSender.send(message).catch((error: unknown) => {
+      this.logger.error(
+        'Failed to dispatch password reset notification',
+        error instanceof Error ? error.stack : undefined,
+      );
+    });
   }
 }

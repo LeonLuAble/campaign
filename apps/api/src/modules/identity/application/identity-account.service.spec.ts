@@ -5,6 +5,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RefreshToken } from '../domain/refresh-token.entity.js';
 import { UserCredential } from '../domain/user-credential.entity.js';
 import { IdentityType, UserIdentity } from '../domain/user-identity.entity.js';
+import {
+  SocialProvider,
+  UserSocialIdentity,
+} from '../domain/user-social-identity.entity.js';
 import { UserToken } from '../domain/user-token.entity.js';
 import { User } from '../domain/user.entity.js';
 import { IdentityAccountService } from './identity-account.service.js';
@@ -136,7 +140,7 @@ describe('IdentityAccountService', () => {
     );
   });
 
-  it('consumes an unused activation token and verifies identities', async () => {
+  it('consumes an unused activation token and verifies only that identity', async () => {
     const tokenRepository = {
       update: vi.fn().mockResolvedValue({ affected: 1 }),
     };
@@ -163,14 +167,14 @@ describe('IdentityAccountService', () => {
     );
 
     await expect(
-      service.consumeActivation('token-id', 'user-id'),
+      service.consumeActivation('token-id', 'user-id', 'identity-id'),
     ).resolves.toBe(true);
     expect(tokenRepository.update).toHaveBeenCalledWith(
       { id: 'token-id', used_at: IsNull() },
       { used_at: expect.any(Date) },
     );
     expect(identityRepository.update).toHaveBeenCalledWith(
-      { user_id: 'user-id', is_verified: false },
+      { id: 'identity-id', user_id: 'user-id', is_verified: false },
       { is_verified: true, verified_at: expect.any(Date) },
     );
   });
@@ -200,9 +204,45 @@ describe('IdentityAccountService', () => {
     );
 
     await expect(
-      service.consumeActivation('token-id', 'user-id'),
+      service.consumeActivation('token-id', 'user-id', 'identity-id'),
     ).resolves.toBe(false);
     expect(identityRepository.update).not.toHaveBeenCalled();
+  });
+
+  it('does not verify every identity when the activation token has no identity_id', async () => {
+    const tokenRepository = {
+      update: vi.fn().mockResolvedValue({ affected: 1 }),
+    };
+    const identityRepository = { update: vi.fn() };
+    mockDataSource.transaction.mockImplementation(
+      async (
+        work: (manager: {
+          getRepository: (entity: unknown) => unknown;
+        }) => unknown,
+      ) =>
+        work({
+          getRepository: (entity: unknown) => {
+            if (entity === UserToken) {
+              return tokenRepository;
+            }
+            if (entity === UserIdentity) {
+              return identityRepository;
+            }
+            throw new Error('unexpected entity');
+          },
+        }),
+    );
+
+    await expect(
+      service.consumeActivation('token-id', 'user-id', null),
+    ).resolves.toBe(true);
+    expect(identityRepository.update).not.toHaveBeenCalled();
+  });
+
+  it('reports whether a specific identity is verified', async () => {
+    mockIdentityRepository.findOne.mockResolvedValue({ is_verified: true });
+
+    await expect(service.isIdentityVerified('identity-id')).resolves.toBe(true);
   });
 
   it('consumes the reset token, updates the password, and revokes refresh sessions', async () => {
@@ -292,5 +332,151 @@ describe('IdentityAccountService', () => {
     ).resolves.toBe(false);
     expect(credentialRepository.findOne).not.toHaveBeenCalled();
     expect(refreshTokenRepository.update).not.toHaveBeenCalled();
+  });
+
+  it('logs in when a social identity already exists', async () => {
+    const socialRepository = {
+      findOne: vi.fn().mockResolvedValue({
+        provider_email: null,
+        user: { id: 'user-id', is_active: true },
+      }),
+      save: vi.fn(async (value: unknown) => value),
+    };
+    mockDataSource.transaction.mockImplementation(
+      async (
+        work: (manager: {
+          getRepository: (entity: unknown) => unknown;
+        }) => unknown,
+      ) =>
+        work({
+          getRepository: (entity: unknown) => {
+            if (entity === User) {
+              return {};
+            }
+            if (entity === UserIdentity) {
+              return {};
+            }
+            if (entity === UserSocialIdentity) {
+              return socialRepository;
+            }
+            throw new Error('unexpected entity');
+          },
+        }),
+    );
+
+    await expect(
+      service.resolveSocialAccount({
+        provider: SocialProvider.GOOGLE,
+        subject: 'sub-1',
+        email: 'user@example.com',
+        emailVerified: true,
+        normalizedEmail: 'user@example.com',
+      }),
+    ).resolves.toEqual({ userId: 'user-id', isActive: true });
+    expect(socialRepository.save).toHaveBeenCalled();
+  });
+
+  it('links a verified provider email to an existing verified identity', async () => {
+    const socialRepository = {
+      findOne: vi.fn().mockResolvedValue(null),
+      create: vi.fn((value: unknown) => value),
+      save: vi.fn(async (value: unknown) => value),
+    };
+    const identityRepository = {
+      findOne: vi.fn().mockResolvedValue({
+        is_verified: true,
+        user: { id: 'existing-user', is_active: true },
+      }),
+    };
+    mockDataSource.transaction.mockImplementation(
+      async (
+        work: (manager: {
+          getRepository: (entity: unknown) => unknown;
+        }) => unknown,
+      ) =>
+        work({
+          getRepository: (entity: unknown) => {
+            if (entity === User) {
+              return {};
+            }
+            if (entity === UserIdentity) {
+              return identityRepository;
+            }
+            if (entity === UserSocialIdentity) {
+              return socialRepository;
+            }
+            throw new Error('unexpected entity');
+          },
+        }),
+    );
+
+    await expect(
+      service.resolveSocialAccount({
+        provider: SocialProvider.APPLE,
+        subject: 'sub-2',
+        email: 'user@example.com',
+        emailVerified: true,
+        normalizedEmail: 'user@example.com',
+      }),
+    ).resolves.toEqual({ userId: 'existing-user', isActive: true });
+    expect(socialRepository.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user_id: 'existing-user',
+        provider: SocialProvider.APPLE,
+        provider_subject: 'sub-2',
+      }),
+    );
+  });
+
+  it('does not auto-link to an unverified local email identity', async () => {
+    const socialRepository = {
+      findOne: vi.fn().mockResolvedValue(null),
+      create: vi.fn((value: unknown) => value),
+      save: vi.fn(async (value: unknown) => value),
+    };
+    const identityRepository = {
+      findOne: vi
+        .fn()
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce({ id: 'unverified-identity' }),
+      create: vi.fn((value: unknown) => value),
+      save: vi.fn(async (value: unknown) => value),
+    };
+    const userRepository = {
+      create: vi.fn((value: unknown) => value),
+      save: vi.fn(async () => ({ id: 'new-user', is_active: true })),
+    };
+    mockDataSource.transaction.mockImplementation(
+      async (
+        work: (manager: {
+          getRepository: (entity: unknown) => unknown;
+        }) => unknown,
+      ) =>
+        work({
+          getRepository: (entity: unknown) => {
+            if (entity === User) {
+              return userRepository;
+            }
+            if (entity === UserIdentity) {
+              return identityRepository;
+            }
+            if (entity === UserSocialIdentity) {
+              return socialRepository;
+            }
+            throw new Error('unexpected entity');
+          },
+        }),
+    );
+
+    await expect(
+      service.resolveSocialAccount({
+        provider: SocialProvider.GOOGLE,
+        subject: 'sub-3',
+        email: 'user@example.com',
+        emailVerified: true,
+        normalizedEmail: 'user@example.com',
+      }),
+    ).resolves.toEqual({ userId: 'new-user', isActive: true });
+    expect(identityRepository.save).not.toHaveBeenCalled();
   });
 });

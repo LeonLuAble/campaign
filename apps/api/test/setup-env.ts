@@ -12,3 +12,5 @@ process.env.JWT_AUDIENCE ??= 'campaign-clients';
 process.env.ACTIVATION_TOKEN_TTL_SECONDS ??= '86400';
 process.env.PASSWORD_RESET_TOKEN_TTL_SECONDS ??= '3600';
 process.env.PASSWORD_MIN_LENGTH ??= '8';
+process.env.GOOGLE_CLIENT_ID ??= '';
+process.env.APPLE_CLIENT_ID ??= '';

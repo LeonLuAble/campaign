@@ -58,6 +58,7 @@ describe('PasswordResetService', () => {
       'test@example.com',
     );
     mockCredentialService.setPassword.mockResolvedValue('new-hash');
+    mockNotificationSender.send.mockResolvedValue(undefined);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -101,12 +102,39 @@ describe('PasswordResetService', () => {
           type: UserTokenType.PASSWORD_RESET,
         }),
       );
+      expect(mockCredentialService.verifyDummyPassword).toHaveBeenCalledWith(
+        'test@example.com',
+      );
       expect(mockNotificationSender.send).toHaveBeenCalledWith(
         expect.objectContaining({
           template: 'password_reset',
           to: 'test@example.com',
         }),
       );
+    });
+
+    it('returns before the notification sender settles', async () => {
+      mockIdentityAccountService.findIdentity.mockResolvedValue({
+        userId: 'user-id',
+        identityId: 'identity-id',
+        type: IdentityType.EMAIL,
+        identifier: 'test@example.com',
+        isVerified: true,
+        isActive: true,
+      });
+      let resolveSend: (() => void) | undefined;
+      mockNotificationSender.send.mockImplementation(
+        () =>
+          new Promise<void>((resolve) => {
+            resolveSend = resolve;
+          }),
+      );
+
+      await expect(
+        service.request('test@example.com'),
+      ).resolves.toBeUndefined();
+      expect(mockNotificationSender.send).toHaveBeenCalled();
+      resolveSend?.();
     });
 
     it('uses dummy password work and sends nothing for an unknown identifier', async () => {

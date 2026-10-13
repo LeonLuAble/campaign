@@ -4,7 +4,7 @@ Base: `/api/v1`; REST/JSON; camelCase JSON; UUIDs; ISO timestamps; stable error 
 Auth:
 - POST /auth/register (identifier=email or mobile + password) → 201 `{ id, identifier, type }`
 - POST /auth/login (identifier=email or mobile + password)
-- POST /auth/social (Google/Apple)
+- POST /auth/social `{ provider: 'google' | 'apple', idToken }` → 200 `{ accessToken, refreshToken }`
 - POST /auth/refresh
 - POST /auth/logout
 - GET /me
@@ -13,7 +13,7 @@ Auth:
 - POST /auth/password-reset/request `{ identifier }` → 202 `{ accepted: true }` (no enumeration)
 - POST /auth/password-reset/confirm `{ token, password }` → 204
 
-Auth error codes include `INVALID_CREDENTIALS`, `TOKEN_INVALID`, `TOKEN_REUSED`, `TOKEN_EXPIRED`, `IDENTITY_ALREADY_EXISTS`, and `WEAK_PASSWORD`.
+Auth error codes include `INVALID_CREDENTIALS`, `SOCIAL_TOKEN_INVALID`, `TOKEN_INVALID`, `TOKEN_REUSED`, `TOKEN_EXPIRED`, `IDENTITY_ALREADY_EXISTS`, and `WEAK_PASSWORD`.
 Password policy: minimum 8 characters (configurable via `PASSWORD_MIN_LENGTH`).
 
 Customer: `/customers`

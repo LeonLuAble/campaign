@@ -14,6 +14,7 @@ export const ERROR_CODES = [
   'TOKEN_EXPIRED',
   'IDENTITY_ALREADY_EXISTS',
   'WEAK_PASSWORD',
+  'SOCIAL_TOKEN_INVALID',
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

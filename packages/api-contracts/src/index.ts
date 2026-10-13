@@ -20,7 +20,8 @@ export type ErrorCode =
   | 'TOKEN_REUSED'
   | 'TOKEN_EXPIRED'
   | 'IDENTITY_ALREADY_EXISTS'
-  | 'WEAK_PASSWORD';
+  | 'WEAK_PASSWORD'
+  | 'SOCIAL_TOKEN_INVALID';
 
 export interface ApiErrorResponse {
   statusCode: number;
@@ -67,6 +68,13 @@ export interface AcceptedResponse {
 export interface LoginRequest {
   identifier: string;
   password: string;
+}
+
+export type SocialProvider = 'google' | 'apple';
+
+export interface SocialLoginRequest {
+  provider: SocialProvider;
+  idToken: string;
 }
 
 export interface TokenPairResponse {

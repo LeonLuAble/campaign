@@ -6,6 +6,7 @@ import { UserToken, UserTokenType } from '../domain/user-token.entity.js';
 export interface StoredUserToken {
   id: string;
   userId: string;
+  identityId: string | null;
   type: UserTokenType;
   expiresAt: Date;
   usedAt: Date | null;
@@ -13,6 +14,7 @@ export interface StoredUserToken {
 
 export interface CreateUserTokenInput {
   userId: string;
+  identityId?: string | null;
   type: UserTokenType;
   tokenHash: string;
   expiresAt: Date;
@@ -50,6 +52,7 @@ export class UserTokenService {
 
       const entity = repository.create({
         user_id: input.userId,
+        identity_id: input.identityId ?? null,
         type: input.type,
         token_hash: input.tokenHash,
         expires_at: input.expiresAt,
@@ -66,6 +69,7 @@ export class UserTokenService {
     return {
       id: token.id,
       userId: token.user_id,
+      identityId: token.identity_id ?? null,
       type: token.type,
       expiresAt: token.expires_at,
       usedAt: token.used_at,

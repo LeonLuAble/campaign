@@ -5,8 +5,13 @@ import { IdentityAccountService } from '../../identity/application/identity-acco
 import { DUMMY_PASSWORD_HASH } from '../../identity/application/password-hashing.service.js';
 import { IdentityType } from '../../identity/domain/user-identity.entity.js';
 import { AuthService } from './auth.service.js';
-import { InvalidCredentialsException } from './auth.exceptions.js';
+import {
+  InvalidCredentialsException,
+  SocialTokenInvalidException,
+} from './auth.exceptions.js';
+import { SOCIAL_TOKEN_VERIFIER } from './social-token.verifier.js';
 import { TokenService } from './token.service.js';
+import { SocialProvider } from '../../identity/domain/user-social-identity.entity.js';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -15,17 +20,23 @@ describe('AuthService', () => {
     findLoginCandidate: vi.fn(),
     getPasswordHash: vi.fn(),
     getProfile: vi.fn(),
+    resolveSocialAccount: vi.fn(),
   };
 
   const mockCredentialService = {
     detectIdentifierType: vi.fn(),
     normalizeIdentifier: vi.fn(),
+    normalizeEmail: vi.fn(),
     verifyPassword: vi.fn(),
     verifyDummyPassword: vi.fn(),
   };
 
   const mockTokenService = {
     createRefreshToken: vi.fn(),
+  };
+
+  const mockSocialTokenVerifier = {
+    verify: vi.fn(),
   };
 
   beforeEach(async () => {
@@ -38,6 +49,7 @@ describe('AuthService', () => {
         },
         { provide: CredentialService, useValue: mockCredentialService },
         { provide: TokenService, useValue: mockTokenService },
+        { provide: SOCIAL_TOKEN_VERIFIER, useValue: mockSocialTokenVerifier },
       ],
     }).compile();
 
@@ -162,6 +174,82 @@ describe('AuthService', () => {
         'real-hash',
         'password123',
       );
+    });
+  });
+
+  describe('socialLogin', () => {
+    beforeEach(() => {
+      mockCredentialService.normalizeEmail.mockImplementation((email: string) =>
+        email.toLowerCase(),
+      );
+      mockTokenService.createRefreshToken.mockResolvedValue({
+        accessToken: 'a',
+        refreshToken: 'r',
+      });
+    });
+
+    it('issues a token pair for a verified social identity', async () => {
+      mockSocialTokenVerifier.verify.mockResolvedValue({
+        provider: SocialProvider.GOOGLE,
+        subject: 'sub-1',
+        email: 'User@Example.com',
+        emailVerified: true,
+      });
+      mockIdentityAccountService.resolveSocialAccount.mockResolvedValue({
+        userId: 'user-id',
+        isActive: true,
+      });
+
+      await expect(
+        service.socialLogin(SocialProvider.GOOGLE, 'id-token'),
+      ).resolves.toEqual({
+        accessToken: 'a',
+        refreshToken: 'r',
+      });
+
+      expect(
+        mockIdentityAccountService.resolveSocialAccount,
+      ).toHaveBeenCalledWith({
+        provider: SocialProvider.GOOGLE,
+        subject: 'sub-1',
+        email: 'User@Example.com',
+        emailVerified: true,
+        normalizedEmail: 'user@example.com',
+      });
+      expect(mockTokenService.createRefreshToken).toHaveBeenCalledWith(
+        'user-id',
+      );
+    });
+
+    it('rejects an invalid provider token', async () => {
+      mockSocialTokenVerifier.verify.mockRejectedValue(
+        new SocialTokenInvalidException(),
+      );
+
+      await expect(
+        service.socialLogin(SocialProvider.APPLE, 'bad-token'),
+      ).rejects.toBeInstanceOf(SocialTokenInvalidException);
+      expect(
+        mockIdentityAccountService.resolveSocialAccount,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('rejects an inactive resolved account', async () => {
+      mockSocialTokenVerifier.verify.mockResolvedValue({
+        provider: SocialProvider.GOOGLE,
+        subject: 'sub-1',
+        email: 'user@example.com',
+        emailVerified: true,
+      });
+      mockIdentityAccountService.resolveSocialAccount.mockResolvedValue({
+        userId: 'user-id',
+        isActive: false,
+      });
+
+      await expect(
+        service.socialLogin(SocialProvider.GOOGLE, 'id-token'),
+      ).rejects.toBeInstanceOf(InvalidCredentialsException);
+      expect(mockTokenService.createRefreshToken).not.toHaveBeenCalled();
     });
   });
 });

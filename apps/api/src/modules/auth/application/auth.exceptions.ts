@@ -14,6 +14,16 @@ export class InvalidCredentialsException extends UnauthorizedException {
   }
 }
 
+export class SocialTokenInvalidException extends UnauthorizedException {
+  constructor(message = 'Invalid social identity token') {
+    super({
+      code: 'SOCIAL_TOKEN_INVALID',
+      error: 'Unauthorized',
+      message,
+    });
+  }
+}
+
 export class TokenInvalidException extends UnauthorizedException {
   constructor(message = 'Invalid or expired refresh token') {
     super({

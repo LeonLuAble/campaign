@@ -50,6 +50,7 @@ describe('UserTokenService', () => {
     mockRepository.findOne.mockResolvedValue({
       id: 'token-id',
       user_id: 'user-id',
+      identity_id: null,
       type: UserTokenType.ACTIVATION,
       expires_at: new Date('2026-01-02T00:00:00.000Z'),
       used_at: null,
@@ -58,6 +59,7 @@ describe('UserTokenService', () => {
     await expect(service.findByHash('hash')).resolves.toEqual({
       id: 'token-id',
       userId: 'user-id',
+      identityId: null,
       type: UserTokenType.ACTIVATION,
       expiresAt: new Date('2026-01-02T00:00:00.000Z'),
       usedAt: null,
@@ -69,6 +71,7 @@ describe('UserTokenService', () => {
 
     const created = await service.supersedeUnusedAndCreate({
       userId: 'user-id',
+      identityId: 'identity-id',
       type: UserTokenType.ACTIVATION,
       tokenHash: 'new-hash',
       expiresAt,
@@ -82,9 +85,17 @@ describe('UserTokenService', () => {
       },
       { used_at: expect.any(Date) },
     );
-    expect(mockRepository.save).toHaveBeenCalled();
+    expect(mockRepository.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user_id: 'user-id',
+        identity_id: 'identity-id',
+        type: UserTokenType.ACTIVATION,
+        token_hash: 'new-hash',
+      }),
+    );
     expect(created).toMatchObject({
       userId: 'user-id',
+      identityId: 'identity-id',
       type: UserTokenType.ACTIVATION,
       expiresAt,
     });

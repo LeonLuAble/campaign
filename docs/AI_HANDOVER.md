@@ -10,6 +10,11 @@ First campaign: 速素数数.
 Current architecture: Modular Monolith + Event-Ready.
 Current stack: Flutter/Dart, Flutter Web, NestJS/TypeScript, PostgreSQL, Redis, S3-compatible storage, REST/JSON, Docker.
 
+Phase 0 (repository foundation) is complete.
+Phase 1 (Identity + Authentication) is complete: users, identities, credentials, social identities, refresh tokens, email/mobile password login, Google/Apple authentication boundary, registration, activation, password reset, secure token handling, migrations, and tests.
+
+Next phase: Phase 2 — Customer/community/membership/authorization.
+
 ## Canonical Documents
 1. PRODUCT_VISION.md
 2. DOMAIN_MODEL.md

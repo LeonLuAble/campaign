@@ -9,6 +9,7 @@ import {
   Unique,
 } from 'typeorm';
 import { User } from './user.entity.js';
+import { UserIdentity } from './user-identity.entity.js';
 
 export enum UserTokenType {
   ACTIVATION = 'activation',
@@ -18,6 +19,7 @@ export enum UserTokenType {
 @Entity('user_tokens')
 @Unique(['token_hash'])
 @Index(['user_id'])
+@Index(['identity_id'])
 @Index(['type', 'expires_at'])
 export class UserToken {
   @PrimaryGeneratedColumn('uuid')
@@ -25,6 +27,9 @@ export class UserToken {
 
   @Column({ type: 'uuid' })
   user_id: string;
+
+  @Column({ type: 'uuid', nullable: true })
+  identity_id: string | null;
 
   @Column({
     type: 'enum',
@@ -47,4 +52,8 @@ export class UserToken {
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @ManyToOne(() => UserIdentity, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'identity_id' })
+  identity: UserIdentity | null;
 }
