@@ -5,6 +5,7 @@ import { createLoggerParams } from './bootstrap/logger.config.js';
 import { AppConfigModule } from './config/app-config.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { IdentityModule } from './modules/identity/identity.module.js';
+import { AuthModule } from './modules/auth/auth.module.js';
 import { DatabaseModule } from './platform/database/database.module.js';
 import { RedisModule } from './platform/redis/redis.module.js';
 
@@ -19,6 +20,7 @@ import { RedisModule } from './platform/redis/redis.module.js';
     RedisModule,
     HealthModule,
     IdentityModule,
+    AuthModule,
   ],
 })
 export class AppModule {}

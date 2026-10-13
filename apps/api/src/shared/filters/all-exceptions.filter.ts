@@ -11,9 +11,10 @@ import {
   CORRELATION_ID_HEADER,
   resolveCorrelationId,
 } from '../correlation/correlation-id.js';
-import type {
-  ApiErrorResponse,
-  ErrorCode,
+import {
+  isErrorCode,
+  type ApiErrorResponse,
+  type ErrorCode,
 } from '../types/api-error.response.js';
 import type { CorrelatedRequest } from '../types/correlated-request.js';
 
@@ -84,14 +85,19 @@ export class AllExceptionsFilter implements ExceptionFilter {
   }
 
   private resolveErrorCode(exception: unknown, status: number): ErrorCode {
-    if (
-      exception instanceof HttpException &&
-      status === HttpStatus.BAD_REQUEST
-    ) {
+    if (exception instanceof HttpException) {
       const exceptionBody = exception.getResponse();
       if (typeof exceptionBody === 'object' && exceptionBody !== null) {
         const record = exceptionBody as Record<string, unknown>;
-        if (Array.isArray(record.message)) {
+
+        if (typeof record.code === 'string' && isErrorCode(record.code)) {
+          return record.code;
+        }
+
+        if (
+          status === HttpStatus.BAD_REQUEST &&
+          Array.isArray(record.message)
+        ) {
           return 'VALIDATION_FAILED';
         }
       }

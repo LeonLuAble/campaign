@@ -2,6 +2,10 @@ import { DataSource } from 'typeorm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createDatabaseOptions } from '../src/platform/database/database-options.js';
 import { CreateIdentityTables1791865103000 } from '../src/platform/database/migrations/1791865103000-CreateIdentityTables.js';
+import {
+  clearIdentityData,
+  ensureIdentitySchema,
+} from './ensure-identity-schema.js';
 
 interface ColumnInfo {
   column_name: string;
@@ -29,9 +33,7 @@ describe('Identity Migration (e2e)', () => {
 
     dataSource = new DataSource(createDatabaseOptions(databaseUrl));
     await dataSource.initialize();
-
-    const migration = new CreateIdentityTables1791865103000();
-    await migration.up(dataSource.createQueryRunner());
+    await ensureIdentitySchema(dataSource);
   });
 
   afterAll(async () => {
@@ -246,6 +248,7 @@ describe('Identity Migration (e2e)', () => {
     });
 
     it('should enforce unique constraint on user_identities', async () => {
+      await clearIdentityData(dataSource);
       await dataSource.query(`
         INSERT INTO users (id, is_active, created_at, updated_at)
         VALUES ('00000000-0000-0000-0000-000000000001', true, now(), now());
@@ -286,6 +289,7 @@ describe('Identity Migration (e2e)', () => {
     });
 
     it('should enforce unique constraint on user_social_identities', async () => {
+      await clearIdentityData(dataSource);
       await dataSource.query(`
         INSERT INTO users (id, is_active, created_at, updated_at)
         VALUES ('00000000-0000-0000-0000-000000000010', true, now(), now());
@@ -322,6 +326,7 @@ describe('Identity Migration (e2e)', () => {
     });
 
     it('should prevent multiple active unused tokens of same type for a user', async () => {
+      await clearIdentityData(dataSource);
       await dataSource.query(`
         INSERT INTO users (id, is_active, created_at, updated_at)
         VALUES ('00000000-0000-0000-0000-000000000020', true, now(), now());
@@ -358,6 +363,7 @@ describe('Identity Migration (e2e)', () => {
     });
 
     it('should allow multiple tokens of same type if previous is used', async () => {
+      await clearIdentityData(dataSource);
       await dataSource.query(`
         INSERT INTO users (id, is_active, created_at, updated_at)
         VALUES ('00000000-0000-0000-0000-000000000030', true, now(), now());

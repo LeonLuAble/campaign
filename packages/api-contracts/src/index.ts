@@ -14,7 +14,10 @@ export type ErrorCode =
   | 'UNPROCESSABLE_ENTITY'
   | 'INTERNAL_ERROR'
   | 'SERVICE_UNAVAILABLE'
-  | 'VALIDATION_FAILED';
+  | 'VALIDATION_FAILED'
+  | 'INVALID_CREDENTIALS'
+  | 'TOKEN_INVALID'
+  | 'TOKEN_REUSED';
 
 export interface ApiErrorResponse {
   statusCode: number;
@@ -24,4 +27,41 @@ export interface ApiErrorResponse {
   correlationId: string | null;
   timestamp: string;
   path: string;
+}
+
+export interface LoginRequest {
+  identifier: string;
+  password: string;
+}
+
+export interface TokenPairResponse {
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface RefreshRequest {
+  refreshToken: string;
+}
+
+export interface LogoutRequest {
+  refreshToken: string;
+  revokeFamily?: boolean;
+}
+
+export interface UserIdentityResponse {
+  id: string;
+  type: string;
+  identifier: string;
+  isVerified: boolean;
+}
+
+export interface UserProfileResponse {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  displayName: string | null;
+  locale: string | null;
+  timezone: string | null;
+  isActive: boolean;
+  identities: UserIdentityResponse[];
 }

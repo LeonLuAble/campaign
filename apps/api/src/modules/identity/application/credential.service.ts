@@ -33,8 +33,23 @@ export class CredentialService {
     return this.passwordHashingService.verify(hash, password);
   }
 
+  async verifyDummyPassword(password: string): Promise<boolean> {
+    return this.passwordHashingService.verifyDummy(password);
+  }
+
   normalizeEmail(email: string): string {
     return email.toLowerCase().trim();
+  }
+
+  detectIdentifierType(identifier: string): 'email' | 'mobile' {
+    return identifier.includes('@') ? 'email' : 'mobile';
+  }
+
+  normalizeIdentifier(identifier: string): string {
+    if (this.detectIdentifierType(identifier) === 'email') {
+      return this.normalizeEmail(identifier);
+    }
+    return this.normalizeMobile(identifier);
   }
 
   normalizeMobile(mobile: string): string {
@@ -44,9 +59,7 @@ export class CredentialService {
         this.defaultPhoneRegion,
       );
       if (!phoneNumber.isValid()) {
-        throw new InvalidPhoneNumberError(
-          `Invalid phone number: ${mobile}`,
-        );
+        throw new InvalidPhoneNumberError(`Invalid phone number: ${mobile}`);
       }
       return phoneNumber.format('E.164');
     } catch (error) {
