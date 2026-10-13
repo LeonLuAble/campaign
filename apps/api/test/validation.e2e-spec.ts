@@ -1,30 +1,9 @@
-import { Body, Controller, Module, Post } from '@nestjs/common';
 import type { INestApplication } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
-import { IsString } from 'class-validator';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { configureApp } from '../src/bootstrap/configure-app.js';
-
-class TestValidationDto {
-  @IsString()
-  name!: string;
-}
-
-@Controller('test')
-class TestValidationController {
-  @Post('validate')
-  validate(@Body() dto: TestValidationDto) {
-    return { success: true, name: dto.name };
-  }
-}
-
-@Module({
-  imports: [ConfigModule.forRoot({ ignoreEnvFile: true })],
-  controllers: [TestValidationController],
-})
-class TestValidationModule {}
+import { TestValidationModule } from './test-validation.module.js';
 
 describe('Validation (e2e)', () => {
   let app: INestApplication;

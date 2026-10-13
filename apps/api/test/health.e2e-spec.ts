@@ -5,7 +5,7 @@ import { DataSource } from 'typeorm';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/bootstrap/configure-app.js';
-import type { RedisService } from '../src/platform/redis/redis.service.js';
+import { RedisService } from '../src/platform/redis/redis.service.js';
 
 describe('Health (e2e)', () => {
   let app: INestApplication;
@@ -68,7 +68,7 @@ describe('Health readiness degraded (e2e)', () => {
     })
       .overrideProvider(DataSource)
       .useValue(failingDataSource)
-      .overrideProvider('RedisService')
+      .overrideProvider(RedisService)
       .useValue(failingRedisService)
       .compile();
 
