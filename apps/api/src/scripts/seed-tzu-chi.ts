@@ -5,6 +5,8 @@ import type { TenantContext } from '../modules/authorization/application/tenant-
 import { ALL_PERMISSION_KEYS } from '../modules/authorization/domain/permission-keys.js';
 import { ActionService } from '../modules/actions/application/action.service.js';
 import { CampaignService } from '../modules/campaigns/application/campaign.service.js';
+import { VisualizationService } from '../modules/visualizations/application/visualization.service.js';
+import { VISUALIZATION_TYPE_TREE } from '../modules/visualizations/domain/visualization.entity.js';
 import { VEGETARIAN_RULES_STRATEGY_KEY } from '../modules/vegetarian/application/vegetarian-rules.js';
 import { CustomerService } from '../modules/customers/application/customer.service.js';
 import { CredentialService } from '../modules/identity/application/credential.service.js';
@@ -43,6 +45,7 @@ function seedTenantContext(tenantId: string, userId: string): TenantContext {
 async function ensureFoundingCampaign(
   campaigns: CampaignService,
   actions: ActionService,
+  visualizations: VisualizationService,
   customerId: string,
   actorUserId: string,
 ): Promise<void> {
@@ -110,6 +113,25 @@ async function ensureFoundingCampaign(
       `Created action definition '${definition.name}' (${definition.id})`,
     );
   }
+
+  const existingVisualization = await visualizations.findForCampaign(
+    customerId,
+    campaign.id,
+  );
+  if (!existingVisualization) {
+    const visualization = await visualizations.replace(
+      tenant,
+      campaign.id,
+      actorUserId,
+      {
+        type: VISUALIZATION_TYPE_TREE,
+        settings: { displayName: '素心树' },
+      },
+    );
+    console.log(
+      `Created campaign visualization '${visualization.type}' (${visualization.id})`,
+    );
+  }
 }
 
 async function main(): Promise<void> {
@@ -135,6 +157,7 @@ async function main(): Promise<void> {
     const customers = app.get(CustomerService);
     const campaigns = app.get(CampaignService);
     const actions = app.get(ActionService);
+    const visualizations = app.get(VisualizationService);
 
     const normalized = credentials.normalizeEmail(email);
     const identity = await identities.findIdentity(
@@ -167,6 +190,7 @@ async function main(): Promise<void> {
     await ensureFoundingCampaign(
       campaigns,
       actions,
+      visualizations,
       customer.id,
       identity.userId,
     );

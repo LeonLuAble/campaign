@@ -43,6 +43,18 @@ export const PERMISSIONS = {
   MILESTONES_READ: 'milestones.read',
   MILESTONES_UPDATE: 'milestones.update',
   MILESTONES_EVALUATE: 'milestones.evaluate',
+  MEASUREMENT_DEFINITIONS_CREATE: 'measurement_definitions.create',
+  MEASUREMENT_DEFINITIONS_READ: 'measurement_definitions.read',
+  MEASUREMENT_DEFINITIONS_UPDATE: 'measurement_definitions.update',
+  MEASUREMENTS_READ: 'measurements.read',
+  IMPACT_FACTORS_CREATE: 'impact_factors.create',
+  IMPACT_FACTORS_READ: 'impact_factors.read',
+  IMPACT_FACTORS_UPDATE: 'impact_factors.update',
+  OUTCOMES_READ: 'outcomes.read',
+  VISUALIZATIONS_CREATE: 'visualizations.create',
+  VISUALIZATIONS_READ: 'visualizations.read',
+  VISUALIZATIONS_UPDATE: 'visualizations.update',
+  DASHBOARDS_READ: 'dashboards.read',
 } as const;
 
 export type PermissionKey = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -247,5 +259,58 @@ export const PERMISSION_CATALOG: ReadonlyArray<{
   {
     key: PERMISSIONS.MILESTONES_EVALUATE,
     description: 'Evaluate campaign milestones in the current tenant',
+  },
+  {
+    key: PERMISSIONS.MEASUREMENT_DEFINITIONS_CREATE,
+    description:
+      'Create campaign measurement definitions in the current tenant',
+  },
+  {
+    key: PERMISSIONS.MEASUREMENT_DEFINITIONS_READ,
+    description: 'View campaign measurement definitions in the current tenant',
+  },
+  {
+    key: PERMISSIONS.MEASUREMENT_DEFINITIONS_UPDATE,
+    description:
+      'Update campaign measurement definitions in the current tenant',
+  },
+  {
+    key: PERMISSIONS.MEASUREMENTS_READ,
+    description:
+      'View own measurements and allowed campaign or community aggregates',
+  },
+  {
+    key: PERMISSIONS.IMPACT_FACTORS_CREATE,
+    description: 'Create versioned impact factors in the current tenant',
+  },
+  {
+    key: PERMISSIONS.IMPACT_FACTORS_READ,
+    description: 'View impact factors in the current tenant',
+  },
+  {
+    key: PERMISSIONS.IMPACT_FACTORS_UPDATE,
+    description: 'Update impact factor metadata in the current tenant',
+  },
+  {
+    key: PERMISSIONS.OUTCOMES_READ,
+    description:
+      'View own outcomes and allowed campaign or community aggregates',
+  },
+  {
+    key: PERMISSIONS.VISUALIZATIONS_CREATE,
+    description: 'Create campaign visualizations in the current tenant',
+  },
+  {
+    key: PERMISSIONS.VISUALIZATIONS_READ,
+    description: 'View campaign visualizations in the current tenant',
+  },
+  {
+    key: PERMISSIONS.VISUALIZATIONS_UPDATE,
+    description: 'Update campaign visualizations in the current tenant',
+  },
+  {
+    key: PERMISSIONS.DASHBOARDS_READ,
+    description:
+      'View own dashboards and allowed campaign or community aggregates',
   },
 ];

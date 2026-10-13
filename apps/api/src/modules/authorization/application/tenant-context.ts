@@ -22,4 +22,6 @@ export interface TenantScopeInput {
   submissionId?: string | null;
   commitmentId?: string | null;
   milestoneId?: string | null;
+  measurementDefinitionId?: string | null;
+  impactFactorId?: string | null;
 }

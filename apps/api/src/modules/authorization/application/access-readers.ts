@@ -6,6 +6,8 @@ export const PARTICIPATION_READER = 'PARTICIPATION_READER';
 export const ACTION_READER = 'ACTION_READER';
 export const COMMITMENT_READER = 'COMMITMENT_READER';
 export const MILESTONE_READER = 'MILESTONE_READER';
+export const MEASUREMENT_DEFINITION_READER = 'MEASUREMENT_DEFINITION_READER';
+export const IMPACT_FACTOR_READER = 'IMPACT_FACTOR_READER';
 
 export interface TenantRecord {
   id: string;
@@ -74,5 +76,13 @@ export interface CommitmentReader {
 }
 
 export interface MilestoneReader {
+  findById(id: string): Promise<CampaignAccessRecord | null>;
+}
+
+export interface MeasurementDefinitionReader {
+  findById(id: string): Promise<CampaignAccessRecord | null>;
+}
+
+export interface ImpactFactorReader {
   findById(id: string): Promise<CampaignAccessRecord | null>;
 }

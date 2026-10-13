@@ -40,6 +40,8 @@ describe('TenantContextService', () => {
   };
   const commitments = { findById: vi.fn() };
   const milestones = { findById: vi.fn() };
+  const measurementDefinitions = { findById: vi.fn() };
+  const impactFactors = { findById: vi.fn() };
 
   let service: TenantContextService;
 
@@ -55,6 +57,8 @@ describe('TenantContextService', () => {
       actions,
       commitments,
       milestones,
+      measurementDefinitions,
+      impactFactors,
     );
   });
 
@@ -188,6 +192,52 @@ describe('TenantContextService', () => {
     );
 
     const context = await service.build(userId, { milestoneId });
+    expect(context.tenantId).toBe(tenantA);
+  });
+
+  it('resolves tenant from a measurement definition id', async () => {
+    const measurementDefinitionId = '99999999-9999-4999-8999-999999999999';
+    measurementDefinitions.findById.mockResolvedValue({
+      id: measurementDefinitionId,
+      tenantId: tenantA,
+    });
+    memberships.listActiveForUserInTenant.mockResolvedValue([
+      {
+        id: membershipId,
+        tenantId: tenantA,
+        userId,
+        communityId: null,
+        isActive: true,
+      },
+    ]);
+    authorization.resolvePermissionKeys.mockResolvedValue(
+      new Set(['measurement_definitions.read']),
+    );
+
+    const context = await service.build(userId, { measurementDefinitionId });
+    expect(context.tenantId).toBe(tenantA);
+  });
+
+  it('resolves tenant from an impact factor id', async () => {
+    const impactFactorId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+    impactFactors.findById.mockResolvedValue({
+      id: impactFactorId,
+      tenantId: tenantA,
+    });
+    memberships.listActiveForUserInTenant.mockResolvedValue([
+      {
+        id: membershipId,
+        tenantId: tenantA,
+        userId,
+        communityId: null,
+        isActive: true,
+      },
+    ]);
+    authorization.resolvePermissionKeys.mockResolvedValue(
+      new Set(['impact_factors.read']),
+    );
+
+    const context = await service.build(userId, { impactFactorId });
     expect(context.tenantId).toBe(tenantA);
   });
 });

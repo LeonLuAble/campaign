@@ -8,6 +8,8 @@ import {
   CAMPAIGN_READER,
   COMMITMENT_READER,
   COMMUNITY_READER,
+  IMPACT_FACTOR_READER,
+  MEASUREMENT_DEFINITION_READER,
   MILESTONE_READER,
   MEMBERSHIP_READER,
   PARTICIPATION_READER,
@@ -16,6 +18,8 @@ import {
   type CampaignReader,
   type CommitmentReader,
   type CommunityReader,
+  type ImpactFactorReader,
+  type MeasurementDefinitionReader,
   type MilestoneReader,
   type MembershipReader,
   type ParticipationReader,
@@ -61,6 +65,10 @@ export class TenantContextService {
     private readonly commitments: CommitmentReader,
     @Inject(forwardRef(() => MILESTONE_READER))
     private readonly milestones: MilestoneReader,
+    @Inject(forwardRef(() => MEASUREMENT_DEFINITION_READER))
+    private readonly measurementDefinitions: MeasurementDefinitionReader,
+    @Inject(forwardRef(() => IMPACT_FACTOR_READER))
+    private readonly impactFactors: ImpactFactorReader,
   ) {}
 
   async build(userId: string, input: TenantScopeInput): Promise<TenantContext> {
@@ -82,6 +90,11 @@ export class TenantContextService {
       submissionId: requireUuid(input.submissionId, 'submissionId'),
       commitmentId: requireUuid(input.commitmentId, 'commitmentId'),
       milestoneId: requireUuid(input.milestoneId, 'milestoneId'),
+      measurementDefinitionId: requireUuid(
+        input.measurementDefinitionId,
+        'measurementDefinitionId',
+      ),
+      impactFactorId: requireUuid(input.impactFactorId, 'impactFactorId'),
     };
     const tenantId = await this.resolveTenantId(normalized);
     const memberships = await this.memberships.listActiveForUserInTenant(
@@ -230,6 +243,24 @@ export class TenantContextService {
         throw new ResourceNotFoundException('Resource not found');
       }
       candidates.add(milestone.tenantId);
+    }
+
+    if (input.measurementDefinitionId) {
+      const definition = await this.measurementDefinitions.findById(
+        input.measurementDefinitionId,
+      );
+      if (!definition) {
+        throw new ResourceNotFoundException('Resource not found');
+      }
+      candidates.add(definition.tenantId);
+    }
+
+    if (input.impactFactorId) {
+      const factor = await this.impactFactors.findById(input.impactFactorId);
+      if (!factor) {
+        throw new ResourceNotFoundException('Resource not found');
+      }
+      candidates.add(factor.tenantId);
     }
 
     if (candidates.size === 0) {

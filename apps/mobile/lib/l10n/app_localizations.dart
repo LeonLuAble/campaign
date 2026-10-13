@@ -115,6 +115,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Environment: {environment}'**
   String environmentLabel(String environment);
+
+  String get openDashboard;
+  String get participantDashboardTitle;
+  String get emptyDashboard;
+  String get progressSection;
+  String get measurementsSection;
+  String get outcomesSection;
+  String get timeSeriesSection;
+  String get visualizationSection;
+  String completionLabel(String percent);
+  String achievedOfTarget(String achieved, String target, String unit);
+  String get noOutcomes;
+  String factorSourceLabel(String source);
+  String outcomeValueLabel(String value, String unit);
+  String measurementQuantityLabel(String quantity, String unit);
+  String periodLabel(String start, String end);
+  String get treeInactive;
+  String get anonymousTotalsNote;
 }
 
 class _AppLocalizationsDelegate

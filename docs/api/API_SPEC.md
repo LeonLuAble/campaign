@@ -101,10 +101,35 @@ Milestones (campaign-scoped stage targets; evaluation is an explicit admin actio
 - POST `/milestones/:milestoneId/evaluate` → requires `milestones.evaluate`; appends an evaluation snapshot and upserts `milestone_progress`
 - GET `/milestones/:milestoneId/evaluations` → append-only history
 
-Goals: `/goals` (not implemented in this phase; participant targets are commitments)
-Measurement/Outcome/Impact: definitions, measurements, factors, outcomes
-Visualization: campaign visualization and data
-Dashboards/reports: participant/group/community/campaign
-Notifications, localization, audit.
+Goals: `/goals` (not implemented; participant targets are commitments)
+Measurement definitions (campaign-scoped source units that may be converted):
+- POST `/campaigns/:campaignId/measurement-definitions` `{ key?, name, sourceUnit, description? }` → 201. Requires `measurement_definitions.create` and a tenant-level membership.
+- GET `/campaigns/:campaignId/measurement-definitions` → requires `measurement_definitions.read`
+- GET `/measurement-definitions/:measurementDefinitionId` → requires `measurement_definitions.read`
+- PATCH `/measurement-definitions/:measurementDefinitionId` → requires `measurement_definitions.update`
+
+Impact factors (versioned, source-attributed, effective-date aware; campaign row overrides tenant-wide for the same source unit + outcome metric on that date):
+- POST `/impact-factors` `{ customerId, campaignId?, sourceUnit, outcomeMetric, outcomeUnit, factorValue, source, effectiveFrom, effectiveTo? }` → 201 tenant-wide when `campaignId` is omitted. Requires `impact_factors.create` and a tenant-level membership. `source` is a required citation. `factorValue` is never platform-defaulted.
+- POST `/campaigns/:campaignId/impact-factors` → 201 campaign-scoped version
+- GET `/impact-factors?customerId=&campaignId?` and GET `/campaigns/:campaignId/impact-factors` → requires `impact_factors.read`. Campaign list includes tenant-wide rows plus campaign overrides.
+- GET `/impact-factors/:impactFactorId` → requires `impact_factors.read`
+- PATCH `/impact-factors/:impactFactorId` `{ source?, effectiveTo?, isActive? }` → requires `impact_factors.update`. `factorValue`, units, metric and version are immutable; a new POST creates the next version. Open previous versions are closed when a later version is created.
+
+Measurements and outcomes are computed on read from approved submissions on non-cancelled actions (same counting rule as Phase 6). Raw action quantities in a defined source unit are converted with the factor that was effective on `occurredOn`. Historical factor versions are returned on each outcome contribution. No `measurements` or `outcomes` projection tables.
+- GET `/participations/:participationId/measurements` → requires `measurements.read`. Members see only their own.
+- GET `/participations/:participationId/outcomes` → requires `outcomes.read`. Members see only their own.
+- GET `/campaigns/:campaignId/measurements` and `/outcomes` → anonymous unit totals; never includes user or participation ids.
+- GET `/campaigns/:campaignId/communities/:communityId/measurements` and `/outcomes` → subtree = node plus descendants; tenant-level participations with a null community are omitted.
+
+Visualization (generic `tree` type only; display name such as 素心树 lives in settings, not as a domain class):
+- GET/PUT `/campaigns/:campaignId/visualization` `{ type: 'tree', settings? }` → GET `visualizations.read`; PUT `visualizations.update` (create-or-replace), tenant-level membership required to write.
+- GET `/campaigns/:campaignId/visualization/data` → campaign aggregate completion for TREE display. Missing config still returns type `tree` with `isActive: false`.
+
+Dashboards (compose progress, measurements, outcomes, campaign-local day/week time series, and TREE data). Query `granularity=day|week` (default `day`). Week buckets are ISO weeks starting Monday in the campaign timezone. No public unauthenticated sharing. No rankings.
+- GET `/participations/:participationId/dashboard` → requires `dashboards.read`. Members see only their own.
+- GET `/campaigns/:campaignId/dashboard` → requires `dashboards.read`. Anonymous campaign totals.
+- GET `/campaigns/:campaignId/communities/:communityId/dashboard` → community/group subtree; TREE still reflects the campaign aggregate.
+
+Notifications, localization, reporting exports (Phase 8), audit.
 
 Authorization must enforce authentication, tenant scope, permission, community scope, privacy and ownership where applicable. Never trust client-supplied tenantId.

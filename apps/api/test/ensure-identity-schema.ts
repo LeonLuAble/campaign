@@ -7,6 +7,7 @@ import { CreateUserImportTables1792265507000 } from '../src/platform/database/mi
 import { CreateCampaignTables1792365608000 } from '../src/platform/database/migrations/1792365608000-CreateCampaignTables.js';
 import { CreateCommitmentActionTables1792465709000 } from '../src/platform/database/migrations/1792465709000-CreateCommitmentActionTables.js';
 import { CreateProgressMilestoneTables1792565810000 } from '../src/platform/database/migrations/1792565810000-CreateProgressMilestoneTables.js';
+import { CreateMeasurementOutcomeVisualizationTables1792665911000 } from '../src/platform/database/migrations/1792665911000-CreateMeasurementOutcomeVisualizationTables.js';
 
 type MigrationCtor = new () => MigrationInterface;
 
@@ -20,6 +21,7 @@ const SCHEMA_MIGRATIONS: MigrationCtor[] = [
   CreateCampaignTables1792365608000,
   CreateCommitmentActionTables1792465709000,
   CreateProgressMilestoneTables1792565810000,
+  CreateMeasurementOutcomeVisualizationTables1792665911000,
 ];
 
 export async function revertSchemaMigrationsNewestFirst(
@@ -86,6 +88,9 @@ export async function clearTenantData(dataSource: DataSource): Promise<void> {
     return;
   }
   const tables = [
+    'visualizations',
+    'impact_factors',
+    'measurement_definitions',
     'milestone_evaluations',
     'milestone_progress',
     'milestones',
@@ -139,6 +144,11 @@ export async function ensureTenantSchema(
   const hasTenants = await tableExists(dataSource, 'tenants');
   const hasMembershipRoles = await tableExists(dataSource, 'membership_roles');
   if (hasTenants && !hasMembershipRoles) {
+    if (await tableExists(dataSource, 'measurement_definitions')) {
+      await new CreateMeasurementOutcomeVisualizationTables1792665911000().down(
+        queryRunner,
+      );
+    }
     if (await tableExists(dataSource, 'milestones')) {
       await new CreateProgressMilestoneTables1792565810000().down(queryRunner);
     }
@@ -171,6 +181,11 @@ export async function ensureTenantSchema(
   }
   if (!(await tableExists(dataSource, 'milestones'))) {
     await new CreateProgressMilestoneTables1792565810000().up(queryRunner);
+  }
+  if (!(await tableExists(dataSource, 'measurement_definitions'))) {
+    await new CreateMeasurementOutcomeVisualizationTables1792665911000().up(
+      queryRunner,
+    );
   }
 }
 

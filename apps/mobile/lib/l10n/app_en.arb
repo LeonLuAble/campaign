@@ -9,5 +9,59 @@
         "type": "String"
       }
     }
-  }
+  },
+  "openDashboard": "My dashboard",
+  "participantDashboardTitle": "My campaign dashboard",
+  "emptyDashboard": "No dashboard data yet. Record approved actions after an admin configures measurements.",
+  "progressSection": "Progress",
+  "measurementsSection": "Measurements",
+  "outcomesSection": "Outcomes",
+  "timeSeriesSection": "Time series",
+  "visualizationSection": "Visualization",
+  "completionLabel": "Completion: {percent}",
+  "@completionLabel": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "achievedOfTarget": "{achieved} of {target} {unit}",
+  "@achievedOfTarget": {
+    "placeholders": {
+      "achieved": { "type": "String" },
+      "target": { "type": "String" },
+      "unit": { "type": "String" }
+    }
+  },
+  "noOutcomes": "No outcomes yet. Impact factors are configured by administrators.",
+  "factorSourceLabel": "Source: {source}",
+  "@factorSourceLabel": {
+    "placeholders": {
+      "source": { "type": "String" }
+    }
+  },
+  "outcomeValueLabel": "{value} {unit}",
+  "@outcomeValueLabel": {
+    "placeholders": {
+      "value": { "type": "String" },
+      "unit": { "type": "String" }
+    }
+  },
+  "measurementQuantityLabel": "{quantity} {unit}",
+  "@measurementQuantityLabel": {
+    "placeholders": {
+      "quantity": { "type": "String" },
+      "unit": { "type": "String" }
+    }
+  },
+  "periodLabel": "{start} – {end}",
+  "@periodLabel": {
+    "placeholders": {
+      "start": { "type": "String" },
+      "end": { "type": "String" }
+    }
+  },
+  "treeInactive": "Campaign visualization is not configured.",
+  "anonymousTotalsNote": "Totals are anonymous. People are not ranked."
 }
