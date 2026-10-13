@@ -59,6 +59,11 @@ describe('Health readiness degraded (e2e)', () => {
       query: vi.fn().mockRejectedValue(new Error('Connection refused')),
       entityMetadatas: [],
       options: { entities: [] },
+      getRepository: vi.fn().mockReturnValue({
+        metadata: {
+          tableName: 'mock_table',
+        },
+      }),
     } as unknown as DataSource;
 
     const failingRedisService = {

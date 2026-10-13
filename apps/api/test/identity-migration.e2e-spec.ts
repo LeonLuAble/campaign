@@ -1,6 +1,7 @@
 import { DataSource } from 'typeorm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createDatabaseOptions } from '../src/platform/database/database-options.js';
+import { CreateIdentityTables1700000000000 } from '../src/platform/database/migrations/1700000000000-CreateIdentityTables.js';
 
 interface ColumnInfo {
   column_name: string;
@@ -24,14 +25,11 @@ describe('Identity Migration (e2e)', () => {
       process.env.DATABASE_URL ||
       'postgresql://campaign:campaign@localhost:5432/campaign';
 
-    const options = createDatabaseOptions(databaseUrl);
-    dataSource = new DataSource({
-      ...options,
-      migrations: ['src/platform/database/migrations/*.ts'],
-    });
+    dataSource = new DataSource(createDatabaseOptions(databaseUrl));
     await dataSource.initialize();
 
-    await dataSource.runMigrations();
+    const migration = new CreateIdentityTables1700000000000();
+    await migration.up(dataSource.createQueryRunner());
   });
 
   afterAll(async () => {
@@ -281,7 +279,8 @@ describe('Identity Migration (e2e)', () => {
 
   describe('migration down', () => {
     it('should revert all tables', async () => {
-      await dataSource.undoLastMigration();
+      const migration = new CreateIdentityTables1700000000000();
+      await migration.down(dataSource.createQueryRunner());
 
       const tables = await dataSource.query(`
         SELECT table_name
