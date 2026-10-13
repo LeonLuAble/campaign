@@ -12,6 +12,8 @@ export const PERMISSIONS = {
   ROLES_CREATE: 'roles.create',
   ROLES_UPDATE: 'roles.update',
   ROLES_ASSIGN: 'roles.assign',
+  USER_IMPORTS_CREATE: 'user_imports.create',
+  USER_IMPORTS_READ: 'user_imports.read',
 } as const;
 
 export type PermissionKey = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -80,5 +82,13 @@ export const PERMISSION_CATALOG: ReadonlyArray<{
   {
     key: PERMISSIONS.ROLES_ASSIGN,
     description: 'Assign or remove roles on memberships',
+  },
+  {
+    key: PERMISSIONS.USER_IMPORTS_CREATE,
+    description: 'Upload, map, validate and confirm user imports',
+  },
+  {
+    key: PERMISSIONS.USER_IMPORTS_READ,
+    description: 'View user imports and per-row results',
   },
 ];

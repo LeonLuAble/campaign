@@ -10,6 +10,7 @@ import { AuthorizationModule } from './modules/authorization/authorization.modul
 import { CustomersModule } from './modules/customers/customers.module.js';
 import { CommunitiesModule } from './modules/communities/communities.module.js';
 import { MembershipsModule } from './modules/memberships/memberships.module.js';
+import { UserImportsModule } from './modules/user-imports/user-imports.module.js';
 import { DatabaseModule } from './platform/database/database.module.js';
 import { RedisModule } from './platform/redis/redis.module.js';
 
@@ -28,6 +29,7 @@ import { RedisModule } from './platform/redis/redis.module.js';
     CustomersModule,
     CommunitiesModule,
     MembershipsModule,
+    UserImportsModule,
     AuthorizationModule,
   ],
 })

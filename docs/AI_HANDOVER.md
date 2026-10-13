@@ -13,8 +13,9 @@ Current stack: Flutter/Dart, Flutter Web, NestJS/TypeScript, PostgreSQL, Redis, 
 Phase 0 (repository foundation) is complete.
 Phase 1 (Identity + Authentication) is complete: users, identities, credentials, social identities, refresh tokens, email/mobile password login, Google/Apple authentication boundary, registration, activation, password reset, secure token handling, migrations, and tests.
 Phase 2 (Customer/community/membership/authorization) is complete: `tenants` (API: customers), arbitrary-depth `community_nodes`, memberships, tenant-scoped roles, a global permission catalog, backend guards/policies, tenant isolation tests, additive TypeORM migrations, and API contracts. Customer creation is restricted to platform admins (`users.is_platform_admin`). `npm run seed:tzu-chi` (from `apps/api`) promotes an existing user by email and creates Tzu Chi Malaysia if missing.
+Phase 3 (User import/activation) is complete: tenant-admin CSV import (`/user-imports` upload → mapping → validate → preview → confirm → per-row results), identities and memberships created through IdentityAccountService and MembershipService, imported memberships assigned the tenant system `member` role via MembershipService/AuthorizationService, phone normalization via CredentialService (default region MY), activation invitations via existing NotificationSender and activation tokens, imported users activate by setting a password on `POST /auth/activate`, additive `user_imports` / `user_import_rows` migrations, and tenant-isolation tests.
 
-Next phase: Phase 3 — User import/activation.
+Next phase: Phase 4 — Campaign foundation.
 
 ## Canonical Documents
 1. PRODUCT_VISION.md
@@ -66,6 +67,7 @@ Phase 1:
 
 Do not implement campaign, vegetarian business logic, community or import during Phase 1.
 Do not implement user import, invitations, campaigns, or vegetarian logic during Phase 2.
+Do not implement campaigns or vegetarian logic during Phase 3.
 
 ## Orchestration Workflow
 1. Read canonical docs.

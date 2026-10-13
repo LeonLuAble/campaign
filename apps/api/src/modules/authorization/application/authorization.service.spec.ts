@@ -102,6 +102,22 @@ describe('AuthorizationService', () => {
     expect(membershipRoleRepository.createQueryBuilder).not.toHaveBeenCalled();
   });
 
+  it('finds a system role by key in the tenant', async () => {
+    roleRepository.findOne.mockResolvedValue({
+      id: 'role-member',
+      tenant_id: 't1',
+      key: 'member',
+      is_system: true,
+    });
+
+    await expect(service.findSystemRoleByKey('t1', 'member')).resolves.toEqual(
+      expect.objectContaining({ id: 'role-member', key: 'member' }),
+    );
+    expect(roleRepository.findOne).toHaveBeenCalledWith({
+      where: { tenant_id: 't1', key: 'member', is_system: true },
+    });
+  });
+
   it('rejects changing permissions on a system role', async () => {
     roleRepository.findOne.mockResolvedValue({
       id: 'role-1',

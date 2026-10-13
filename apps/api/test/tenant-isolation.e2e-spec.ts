@@ -180,6 +180,58 @@ describe('Tenant isolation (e2e)', () => {
     expect(response.status).toBe(404);
   });
 
+  it('does not list or confirm another customer user import', async () => {
+    const csv = 'email,first_name\nisolate@example.com,Iso\n';
+    const uploaded = await request(app.getHttpServer())
+      .post('/api/v1/user-imports')
+      .query({ customerId: tenantB.id })
+      .set(auth(userB.accessToken))
+      .attach('file', Buffer.from(csv), 'b.csv');
+    expect(uploaded.status).toBe(201);
+
+    const list = await request(app.getHttpServer())
+      .get('/api/v1/user-imports')
+      .query({ customerId: tenantB.id })
+      .set(auth(userA.accessToken));
+    expect(list.status).toBe(404);
+
+    const get = await request(app.getHttpServer())
+      .get(`/api/v1/user-imports/${uploaded.body.id}`)
+      .query({ customerId: tenantA.id })
+      .set(auth(userA.accessToken));
+    expect(get.status).toBe(404);
+
+    const confirm = await request(app.getHttpServer())
+      .post(`/api/v1/user-imports/${uploaded.body.id}/confirm`)
+      .query({ customerId: tenantA.id })
+      .set(auth(userA.accessToken));
+    expect(confirm.status).toBe(404);
+  });
+
+  it('does not auto-link an email that already belongs to another customer', async () => {
+    const uploaded = await request(app.getHttpServer())
+      .post('/api/v1/user-imports')
+      .query({ customerId: tenantA.id })
+      .set(auth(userA.accessToken))
+      .attach('file', Buffer.from(`email\n${'b@example.com'}\n`), 'cross.csv');
+    const validated = await request(app.getHttpServer())
+      .post(`/api/v1/user-imports/${uploaded.body.id}/validate`)
+      .query({ customerId: tenantA.id })
+      .set(auth(userA.accessToken));
+    expect(validated.status).toBe(200);
+
+    const rows = await request(app.getHttpServer())
+      .get(`/api/v1/user-imports/${uploaded.body.id}/rows`)
+      .query({ customerId: tenantA.id })
+      .set(auth(userA.accessToken));
+    expect(rows.body).toEqual([
+      expect.objectContaining({
+        status: 'review',
+        errorCode: 'EXISTING_IDENTITY',
+      }),
+    ]);
+  });
+
   it('database trigger rejects a membership that points at another tenant community', async () => {
     await expect(
       dataSource.query(

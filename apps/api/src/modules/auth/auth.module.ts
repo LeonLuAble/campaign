@@ -40,6 +40,12 @@ import { MeController } from './presentation/me.controller.js';
     JwksSocialTokenVerifier,
     { provide: SOCIAL_TOKEN_VERIFIER, useExisting: JwksSocialTokenVerifier },
   ],
-  exports: [AuthService, TokenService, JwtAuthGuard, DevNotificationSender],
+  exports: [
+    AuthService,
+    TokenService,
+    JwtAuthGuard,
+    DevNotificationSender,
+    RegistrationService,
+  ],
 })
 export class AuthModule {}

@@ -8,7 +8,7 @@ Auth:
 - POST /auth/refresh
 - POST /auth/logout
 - GET /me
-- POST /auth/activate `{ token }` → 204; idempotent if already verified
+- POST /auth/activate `{ token, password? }` → 204; idempotent if already verified. `password` is required when the account has no credential (imported users); ignored when a password already exists.
 - POST /auth/activate/resend `{ identifier }` → 202 `{ accepted: true }`
 - POST /auth/password-reset/request `{ identifier }` → 202 `{ accepted: true }` (no enumeration)
 - POST /auth/password-reset/confirm `{ token, password }` → 204
@@ -28,8 +28,15 @@ Bootstrap (idempotent, no hardcoded credentials): from `apps/api`, `npm run seed
 Communities: `/communities`
 Membership/roles/permissions: `/memberships`, `/roles`, `/permissions`
 
-User import: `/user-imports` with file upload, mapping, validate, preview, confirm, result/errors.
-Invitations: `/invitations`
+User import: `/user-imports` (tenant-scoped via `customerId` query; requires `user_imports.create` / `user_imports.read`)
+- POST /user-imports (multipart `file`, query `customerId`, optional query `communityId`) → upload CSV
+- PATCH /user-imports/:userImportId/mapping `{ mapping }` → map CSV headers to canonical fields
+- POST /user-imports/:userImportId/validate → per-row validation without writes
+- GET /user-imports/:userImportId/preview → validated per-row preview
+- POST /user-imports/:userImportId/confirm → create identities/memberships, assign the tenant system `member` role, and send activation invitations
+- GET /user-imports, GET /user-imports/:userImportId, GET /user-imports/:userImportId/rows → list/summary/result errors
+
+Imported users activate through POST /auth/activate with a password. Invitation delivery reuses the existing activation token + NotificationSender path (no `/invitations` resource in this phase).
 
 Campaign:
 - `/campaign-templates`

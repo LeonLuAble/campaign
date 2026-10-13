@@ -172,6 +172,71 @@ describe('IdentityAccountService', () => {
     );
   });
 
+  it('creates an imported account without a password credential', async () => {
+    const userRepository = {
+      create: vi.fn((value: unknown) => value),
+      save: vi.fn(async () => ({ id: 'imported-user' })),
+    };
+    const identityRepository = {
+      create: vi.fn((value: unknown) => value),
+      save: vi.fn(
+        async (value: { type: IdentityType; identifier: string }) => ({
+          id: 'identity-id',
+          type: value.type,
+          identifier: value.identifier,
+        }),
+      ),
+    };
+    mockDataSource.transaction.mockImplementation(
+      async (
+        work: (manager: {
+          getRepository: (entity: unknown) => unknown;
+        }) => unknown,
+      ) =>
+        work({
+          getRepository: (entity: unknown) => {
+            if (entity === User) {
+              return userRepository;
+            }
+            if (entity === UserIdentity) {
+              return identityRepository;
+            }
+            throw new Error('unexpected entity');
+          },
+        }),
+    );
+
+    await expect(
+      service.createImportedAccount({
+        firstName: 'Mei',
+        lastName: 'Lin',
+        displayName: 'Mei Lin',
+        identities: [
+          {
+            type: IdentityType.EMAIL,
+            identifier: 'mei@example.com',
+            normalizedIdentifier: 'mei@example.com',
+          },
+        ],
+      }),
+    ).resolves.toEqual({
+      userId: 'imported-user',
+      identities: [
+        {
+          id: 'identity-id',
+          type: IdentityType.EMAIL,
+          identifier: 'mei@example.com',
+        },
+      ],
+    });
+    expect(identityRepository.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        is_verified: false,
+        user_id: 'imported-user',
+      }),
+    );
+  });
+
   it('consumes an unused activation token and verifies only that identity', async () => {
     const tokenRepository = {
       update: vi.fn().mockResolvedValue({ affected: 1 }),
@@ -208,6 +273,56 @@ describe('IdentityAccountService', () => {
     expect(identityRepository.update).toHaveBeenCalledWith(
       { id: 'identity-id', user_id: 'user-id', is_verified: false },
       { is_verified: true, verified_at: expect.any(Date) },
+    );
+  });
+
+  it('stores a password hash while consuming activation for an imported user', async () => {
+    const tokenRepository = {
+      update: vi.fn().mockResolvedValue({ affected: 1 }),
+    };
+    const identityRepository = {
+      update: vi.fn().mockResolvedValue({ affected: 1 }),
+    };
+    const credentialRepository = {
+      findOne: vi.fn().mockResolvedValue(null),
+      create: vi.fn((value: unknown) => value),
+      save: vi.fn(async (value: unknown) => value),
+    };
+    mockDataSource.transaction.mockImplementation(
+      async (
+        work: (manager: {
+          getRepository: (entity: unknown) => unknown;
+        }) => unknown,
+      ) =>
+        work({
+          getRepository: (entity: unknown) => {
+            if (entity === UserToken) {
+              return tokenRepository;
+            }
+            if (entity === UserIdentity) {
+              return identityRepository;
+            }
+            if (entity === UserCredential) {
+              return credentialRepository;
+            }
+            throw new Error('unexpected entity');
+          },
+        }),
+    );
+
+    await expect(
+      service.consumeActivation(
+        'token-id',
+        'user-id',
+        'identity-id',
+        'imported-hash',
+      ),
+    ).resolves.toBe(true);
+    expect(credentialRepository.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user_id: 'user-id',
+        password_hash: 'imported-hash',
+      }),
     );
   });
 

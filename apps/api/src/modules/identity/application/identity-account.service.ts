@@ -71,6 +71,28 @@ export interface CreatedLocalAccount {
   identityId: string;
 }
 
+export interface ImportedIdentityInput {
+  type: IdentityType;
+  identifier: string;
+  normalizedIdentifier: string;
+}
+
+export interface CreateImportedAccountInput {
+  firstName: string | null;
+  lastName: string | null;
+  displayName: string | null;
+  identities: ImportedIdentityInput[];
+}
+
+export interface CreatedImportedAccount {
+  userId: string;
+  identities: Array<{
+    id: string;
+    type: IdentityType;
+    identifier: string;
+  }>;
+}
+
 export interface ResolveSocialAccountInput {
   provider: SocialProvider;
   subject: string;
@@ -204,6 +226,56 @@ export class IdentityAccountService {
     };
   }
 
+  async createImportedAccount(
+    input: CreateImportedAccountInput,
+  ): Promise<CreatedImportedAccount> {
+    if (input.identities.length === 0) {
+      throw new Error('Imported accounts require at least one identity');
+    }
+
+    try {
+      return await this.dataSource.transaction(async (manager) => {
+        const userRepository = manager.getRepository(User);
+        const identityRepository = manager.getRepository(UserIdentity);
+
+        const user = await userRepository.save(
+          userRepository.create({
+            first_name: input.firstName,
+            last_name: input.lastName,
+            display_name: input.displayName,
+            is_active: true,
+          }),
+        );
+
+        const identities = [];
+        for (const identityInput of input.identities) {
+          const identity = await identityRepository.save(
+            identityRepository.create({
+              user_id: user.id,
+              type: identityInput.type,
+              identifier: identityInput.identifier,
+              normalized_identifier: identityInput.normalizedIdentifier,
+              is_verified: false,
+              verified_at: null,
+            }),
+          );
+          identities.push({
+            id: identity.id,
+            type: identity.type,
+            identifier: identity.identifier,
+          });
+        }
+
+        return { userId: user.id, identities };
+      });
+    } catch (error) {
+      if (isUniqueViolation(error)) {
+        throw new IdentityAlreadyExistsError();
+      }
+      throw error;
+    }
+  }
+
   async createLocalAccount(
     input: CreateLocalAccountInput,
   ): Promise<CreatedLocalAccount> {
@@ -268,6 +340,7 @@ export class IdentityAccountService {
     tokenId: string,
     userId: string,
     identityId: string | null,
+    passwordHash?: string | null,
   ): Promise<boolean> {
     return this.dataSource.transaction(async (manager) => {
       const tokenRepository = manager.getRepository(UserToken);
@@ -288,8 +361,42 @@ export class IdentityAccountService {
         );
       }
 
+      if (passwordHash) {
+        const credentialRepository = manager.getRepository(UserCredential);
+        const credential = await credentialRepository.findOne({
+          where: { user_id: userId },
+        });
+        if (!credential) {
+          await credentialRepository.save(
+            credentialRepository.create({
+              user_id: userId,
+              password_hash: passwordHash,
+            }),
+          );
+        }
+      }
+
       return true;
     });
+  }
+
+  async setPasswordIfMissing(
+    userId: string,
+    passwordHash: string,
+  ): Promise<boolean> {
+    const existing = await this.userCredentialRepository.findOne({
+      where: { user_id: userId },
+    });
+    if (existing) {
+      return false;
+    }
+    await this.userCredentialRepository.save(
+      this.userCredentialRepository.create({
+        user_id: userId,
+        password_hash: passwordHash,
+      }),
+    );
+    return true;
   }
 
   async resolveSocialAccount(

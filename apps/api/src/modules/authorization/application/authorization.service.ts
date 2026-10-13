@@ -144,6 +144,16 @@ export class AuthorizationService {
     return role;
   }
 
+  async findSystemRoleByKey(tenantId: string, key: string): Promise<Role> {
+    const role = await this.roleRepository.findOne({
+      where: { tenant_id: tenantId, key, is_system: true },
+    });
+    if (!role) {
+      throw new ResourceNotFoundException('Role not found');
+    }
+    return role;
+  }
+
   async assignRoleInTransaction(
     manager: EntityManager,
     membershipId: string,

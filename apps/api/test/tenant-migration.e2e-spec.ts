@@ -2,6 +2,7 @@ import { DataSource } from 'typeorm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createDatabaseOptions } from '../src/platform/database/database-options.js';
 import { CreateTenantCommunityMembershipTables1792065305000 } from '../src/platform/database/migrations/1792065305000-CreateTenantCommunityMembershipTables.js';
+import { CreateUserImportTables1792265507000 } from '../src/platform/database/migrations/1792265507000-CreateUserImportTables.js';
 import {
   ensureIdentitySchema,
   ensureTenantSchema,
@@ -89,6 +90,7 @@ describe('Tenant community membership migration (e2e)', () => {
 
   it('can revert and re-apply without dropping identity tables', async () => {
     const queryRunner = dataSource.createQueryRunner();
+    await new CreateUserImportTables1792265507000().down(queryRunner);
     await new CreateTenantCommunityMembershipTables1792065305000().down(
       queryRunner,
     );
