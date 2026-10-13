@@ -72,8 +72,8 @@ Actions (tenant-scoped via campaign/participation/action ids; generic recording,
 - GET /actions/:actionId → requires `actions.read`
 - PATCH /actions/:actionId → admin correction; requires `actions.update`
 - POST /actions/:actionId/cancel → owner may cancel their own row; cancelling another user requires `actions.update`. Cancel is idempotent and preserves the row (`status=cancelled`). A new recorded action may then be created for that day.
-- GET /actions/:actionId/submissions → requires `submissions.read`. Recording an action also creates a `submitted` submission.
-- POST /submissions/:submissionId/approve|reject `{ note? }` → requires `submissions.update`
+- GET /actions/:actionId/submissions → requires `submissions.read`. Recording an action also creates a submission. Campaign configuration `submissionReview` is `'auto'` (default) or `'manual'`. Auto mode creates the submission as `approved` with `reviewedByUserId` null and `reviewedAt` set. Manual mode creates `submitted` and waits for review.
+- POST /submissions/:submissionId/approve|reject `{ note? }` → requires `submissions.update`. Admins may reject auto-approved submissions. Phase 6 progress must count only `approved` submissions on non-cancelled actions.
 
 Commitments:
 - POST /participations/:participationId/commitments `{ typeKey?, targetValue, unit, payload? }` → 201 create-or-replace (one commitment per participation). Members may pledge only on their own enrolled participation (`commitments.create`). Acting on another user requires `commitments.update`. Allowed while the campaign is published or started.

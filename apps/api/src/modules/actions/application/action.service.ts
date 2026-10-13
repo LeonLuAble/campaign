@@ -29,6 +29,7 @@ import {
   resolveCampaignRules,
   type CampaignRuleStrategy,
 } from '../../campaigns/application/campaign-rule-strategy.js';
+import { readSubmissionReview } from '../../campaigns/application/campaign-settings.js';
 import { canRecordActions } from '../../campaigns/application/campaign-lifecycle.js';
 import { CampaignService } from '../../campaigns/application/campaign.service.js';
 import { CampaignStatus } from '../../campaigns/domain/campaign.entity.js';
@@ -358,6 +359,7 @@ export class ActionService {
     });
     const privacyLevel = dto.privacyLevel ?? PrivacyLevel.PRIVATE;
     const idempotencyKey = dto.idempotencyKey?.trim() || null;
+    const autoApprove = readSubmissionReview(campaign.configuration) === 'auto';
 
     if (idempotencyKey) {
       const existing = await this.actionRepository.findOne({
@@ -408,10 +410,12 @@ export class ActionService {
             manager.create(Submission, {
               tenant_id: tenant.tenantId,
               action_id: action.id,
-              status: SubmissionStatus.SUBMITTED,
+              status: autoApprove
+                ? SubmissionStatus.APPROVED
+                : SubmissionStatus.SUBMITTED,
               submitted_by_user_id: actorUserId,
               reviewed_by_user_id: null,
-              reviewed_at: null,
+              reviewed_at: autoApprove ? now : null,
               review_note: null,
             }),
           );

@@ -43,7 +43,9 @@ describe('Commitments and actions (e2e)', () => {
     notifications.clear();
   });
 
-  async function startedCampaign() {
+  async function startedCampaign(
+    configuration: Record<string, unknown> = { rulesStrategy: 'vegetarian' },
+  ) {
     const admin = await registerActivatedUser(
       app,
       notifications,
@@ -98,7 +100,7 @@ describe('Commitments and actions (e2e)', () => {
         timezone: 'Asia/Kuala_Lumpur',
         startsOn: '2020-01-01',
         endsOn: '2099-12-31',
-        configuration: { rulesStrategy: 'vegetarian' },
+        configuration,
       });
     const definition = await request(app.getHttpServer())
       .post(`/api/v1/campaigns/${campaign.body.id}/action-definitions`)
@@ -157,7 +159,11 @@ describe('Commitments and actions (e2e)', () => {
       status: 'recorded',
       userId: ctx.member.userId,
     });
-    expect(recorded.body.submission.status).toBe('submitted');
+    expect(recorded.body.submission).toMatchObject({
+      status: 'approved',
+      reviewedByUserId: null,
+    });
+    expect(recorded.body.submission.reviewedAt).toEqual(expect.any(String));
 
     const replay = await request(app.getHttpServer())
       .post('/api/v1/actions')
@@ -273,17 +279,49 @@ describe('Commitments and actions (e2e)', () => {
     expect(list.status).toBe(200);
     expect(list.body).toHaveLength(0);
 
+    expect(recorded.body.submission.status).toBe('approved');
+    expect(recorded.body.submission.reviewedByUserId).toBeNull();
+
+    const rejected = await request(app.getHttpServer())
+      .post(`/api/v1/submissions/${recorded.body.submission.id}/reject`)
+      .set(auth(ctx.admin.accessToken))
+      .send({ note: 'not credible' });
+    expect(rejected.status).toBe(200);
+    expect(rejected.body.status).toBe('rejected');
+
+    const memberReject = await request(app.getHttpServer())
+      .post(`/api/v1/submissions/${recorded.body.submission.id}/reject`)
+      .set(auth(ctx.member.accessToken))
+      .send({});
+    expect(memberReject.status).toBe(403);
+  });
+
+  it('keeps submissions pending when submissionReview is manual', async () => {
+    const ctx = await startedCampaign({
+      rulesStrategy: 'vegetarian',
+      submissionReview: 'manual',
+    });
+
+    const recorded = await request(app.getHttpServer())
+      .post('/api/v1/actions')
+      .set(auth(ctx.member.accessToken))
+      .send({
+        participationId: ctx.participationId,
+        actionDefinitionId: ctx.definitionId,
+        occurredOn: '2026-10-12',
+      });
+    expect(recorded.status).toBe(201);
+    expect(recorded.body.submission).toMatchObject({
+      status: 'submitted',
+      reviewedByUserId: null,
+      reviewedAt: null,
+    });
+
     const approved = await request(app.getHttpServer())
       .post(`/api/v1/submissions/${recorded.body.submission.id}/approve`)
       .set(auth(ctx.admin.accessToken))
       .send({ note: 'verified' });
     expect(approved.status).toBe(200);
     expect(approved.body.status).toBe('approved');
-
-    const memberApprove = await request(app.getHttpServer())
-      .post(`/api/v1/submissions/${recorded.body.submission.id}/reject`)
-      .set(auth(ctx.member.accessToken))
-      .send({});
-    expect(memberApprove.status).toBe(403);
   });
 });

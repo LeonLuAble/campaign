@@ -29,6 +29,7 @@ import {
   canTransitionCampaign,
 } from './campaign-lifecycle.js';
 import { campaignVisibleToMemberships } from './campaign-visibility.js';
+import { readSubmissionReview } from './campaign-settings.js';
 import {
   assertDateOrder,
   assertIanaTimeZone,
@@ -826,6 +827,7 @@ export class CampaignService {
     settings: Record<string, unknown>,
   ): Promise<CampaignConfiguration> {
     const normalized = normalizeSettings(settings);
+    readSubmissionReview(normalized);
     const existing = await this.configurationRepository.findOne({
       where: { campaign_id: campaignId },
     });

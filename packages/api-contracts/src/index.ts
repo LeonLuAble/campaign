@@ -432,6 +432,8 @@ export type ActionStatus = 'recorded' | 'cancelled';
 
 export type SubmissionStatus = 'submitted' | 'approved' | 'rejected';
 
+export type SubmissionReviewMode = 'auto' | 'manual';
+
 export interface ActionDefinitionResponse {
   id: string;
   customerId: string;

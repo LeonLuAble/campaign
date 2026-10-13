@@ -328,6 +328,64 @@ describe('ActionService', () => {
     ).rejects.toBeInstanceOf(ResourceNotFoundException);
   });
 
+  it('auto-approves self-recorded submissions by default', async () => {
+    actionRepository.findOne.mockResolvedValue(null);
+    const now = new Date('2026-10-13T02:00:00.000Z');
+    await service.record(
+      memberContext(),
+      userId,
+      {
+        participationId,
+        actionDefinitionId: definitionId,
+        occurredOn: '2026-10-12',
+      },
+      now,
+    );
+    const submissionSave = manager.save.mock.calls.find(
+      (call) => call[0] === Submission,
+    );
+    expect(submissionSave?.[1]).toMatchObject({
+      status: SubmissionStatus.APPROVED,
+      reviewed_by_user_id: null,
+      reviewed_at: now,
+    });
+  });
+
+  it('leaves submissions pending when submissionReview is manual', async () => {
+    actionRepository.findOne.mockResolvedValue(null);
+    campaigns.getCampaignRecord.mockResolvedValue({
+      id: campaignId,
+      tenantId: tenantA,
+      status: CampaignStatus.STARTED,
+      timezone: 'Asia/Kuala_Lumpur',
+      startsOn: '2026-01-01',
+      endsOn: '2026-12-31',
+      configuration: {
+        rulesStrategy: 'vegetarian',
+        submissionReview: 'manual',
+      },
+      communityIds: [],
+    });
+    await service.record(
+      memberContext(),
+      userId,
+      {
+        participationId,
+        actionDefinitionId: definitionId,
+        occurredOn: '2026-10-12',
+      },
+      new Date('2026-10-13T02:00:00.000Z'),
+    );
+    const submissionSave = manager.save.mock.calls.find(
+      (call) => call[0] === Submission,
+    );
+    expect(submissionSave?.[1]).toMatchObject({
+      status: SubmissionStatus.SUBMITTED,
+      reviewed_by_user_id: null,
+      reviewed_at: null,
+    });
+  });
+
   it('lets a member cancel their own action', async () => {
     actionRepository.findOne.mockResolvedValue(action());
     const cancelled = await service.cancel(memberContext(), 'action-1', userId);
@@ -357,5 +415,30 @@ describe('ActionService', () => {
     );
     expect(reviewed.status).toBe(SubmissionStatus.APPROVED);
     expect(reviewed.reviewNote).toBe('looks good');
+  });
+
+  it('lets an admin reject an auto-approved submission', async () => {
+    submissionRepository.findOne.mockResolvedValue({
+      id: 'submission-1',
+      tenant_id: tenantA,
+      action_id: 'action-1',
+      status: SubmissionStatus.APPROVED,
+      submitted_by_user_id: userId,
+      reviewed_by_user_id: null,
+      reviewed_at: new Date('2026-10-13T02:00:00.000Z'),
+      review_note: null,
+      created_at: new Date('2026-10-13T00:00:00.000Z'),
+      updated_at: new Date('2026-10-13T00:00:00.000Z'),
+    });
+    actionRepository.findOne.mockResolvedValue(action());
+    submissionRepository.save.mockImplementation(async (value) => value);
+    const reviewed = await service.rejectSubmission(
+      adminContext(),
+      'submission-1',
+      'admin-user',
+      'not credible',
+    );
+    expect(reviewed.status).toBe(SubmissionStatus.REJECTED);
+    expect(reviewed.reviewedByUserId).toBe('admin-user');
   });
 });
