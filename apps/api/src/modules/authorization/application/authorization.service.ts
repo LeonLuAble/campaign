@@ -17,7 +17,7 @@ import { MembershipRole } from '../domain/membership-role.entity.js';
 import { Permission } from '../domain/permission.entity.js';
 import {
   ALL_PERMISSION_KEYS,
-  READ_PERMISSION_KEYS,
+  MEMBER_PERMISSION_KEYS,
   SYSTEM_ROLE_MEMBER,
   SYSTEM_ROLE_TENANT_ADMIN,
   type PermissionKey,
@@ -124,7 +124,7 @@ export class AuthorizationService {
     await this.replaceRolePermissions(
       manager,
       member.id,
-      READ_PERMISSION_KEYS.map((key) => byKey.get(key)?.id).filter(
+      MEMBER_PERMISSION_KEYS.map((key) => byKey.get(key)?.id).filter(
         (id): id is string => Boolean(id),
       ),
     );

@@ -5,6 +5,8 @@ import { CampaignsModule } from '../campaigns/campaigns.module.js';
 import { CommunitiesModule } from '../communities/communities.module.js';
 import { CustomersModule } from '../customers/customers.module.js';
 import { MembershipsModule } from '../memberships/memberships.module.js';
+import { ActionsModule } from '../actions/actions.module.js';
+import { CommitmentsModule } from '../commitments/commitments.module.js';
 import { ParticipationModule } from '../participation/participation.module.js';
 import { AuthorizationService } from './application/authorization.service.js';
 import { TenantContextService } from './application/tenant-context.service.js';
@@ -31,6 +33,8 @@ import { TenantScopeGuard } from './presentation/tenant-scope.guard.js';
     forwardRef(() => MembershipsModule),
     forwardRef(() => CampaignsModule),
     forwardRef(() => ParticipationModule),
+    forwardRef(() => ActionsModule),
+    forwardRef(() => CommitmentsModule),
   ],
   controllers: [RolesController, PermissionsController],
   providers: [

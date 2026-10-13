@@ -3,8 +3,11 @@ import { InvalidRequestException } from '../../../shared/errors/domain-http.exce
 import {
   assertDateOrder,
   assertIanaTimeZone,
+  assertOccurredOnInCampaignWindow,
+  calendarDateInTimeZone,
   normalizeSettings,
   parseIsoDate,
+  resolveOccurredOn,
   toIsoDate,
 } from './timezone.js';
 
@@ -45,5 +48,57 @@ describe('timezone and campaign value helpers', () => {
     expect(() => normalizeSettings(['vegetarian'])).toThrow(
       InvalidRequestException,
     );
+  });
+
+  it('resolves campaign-local calendar dates around UTC midnight', () => {
+    expect(
+      calendarDateInTimeZone(
+        new Date('2026-10-12T16:30:00.000Z'),
+        'Asia/Kuala_Lumpur',
+      ),
+    ).toBe('2026-10-13');
+    expect(
+      calendarDateInTimeZone(
+        new Date('2026-10-12T15:30:00.000Z'),
+        'Asia/Kuala_Lumpur',
+      ),
+    ).toBe('2026-10-12');
+  });
+
+  it('defaults occurredOn to campaign-local today and rejects future dates', () => {
+    const now = new Date('2026-10-13T02:00:00.000Z');
+    expect(resolveOccurredOn(undefined, 'Asia/Kuala_Lumpur', now)).toBe(
+      '2026-10-13',
+    );
+    expect(resolveOccurredOn('2026-10-12', 'Asia/Kuala_Lumpur', now)).toBe(
+      '2026-10-12',
+    );
+    expect(() =>
+      resolveOccurredOn('2026-10-14', 'Asia/Kuala_Lumpur', now),
+    ).toThrow(InvalidRequestException);
+  });
+
+  it('keeps occurredOn inside the campaign window', () => {
+    expect(() =>
+      assertOccurredOnInCampaignWindow(
+        '2026-01-01',
+        '2026-02-01',
+        '2026-12-31',
+      ),
+    ).toThrow(InvalidRequestException);
+    expect(() =>
+      assertOccurredOnInCampaignWindow(
+        '2027-01-01',
+        '2026-01-01',
+        '2026-12-31',
+      ),
+    ).toThrow(InvalidRequestException);
+    expect(() =>
+      assertOccurredOnInCampaignWindow(
+        '2026-06-01',
+        '2026-01-01',
+        '2026-12-31',
+      ),
+    ).not.toThrow();
   });
 });

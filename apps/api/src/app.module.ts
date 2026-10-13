@@ -13,6 +13,9 @@ import { MembershipsModule } from './modules/memberships/memberships.module.js';
 import { UserImportsModule } from './modules/user-imports/user-imports.module.js';
 import { CampaignsModule } from './modules/campaigns/campaigns.module.js';
 import { ParticipationModule } from './modules/participation/participation.module.js';
+import { CommitmentsModule } from './modules/commitments/commitments.module.js';
+import { ActionsModule } from './modules/actions/actions.module.js';
+import { VegetarianModule } from './modules/vegetarian/vegetarian.module.js';
 import { DatabaseModule } from './platform/database/database.module.js';
 import { RedisModule } from './platform/redis/redis.module.js';
 
@@ -34,6 +37,9 @@ import { RedisModule } from './platform/redis/redis.module.js';
     UserImportsModule,
     CampaignsModule,
     ParticipationModule,
+    CommitmentsModule,
+    ActionsModule,
+    VegetarianModule,
     AuthorizationModule,
   ],
 })

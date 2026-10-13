@@ -3,6 +3,8 @@ export const COMMUNITY_READER = 'COMMUNITY_READER';
 export const MEMBERSHIP_READER = 'MEMBERSHIP_READER';
 export const CAMPAIGN_READER = 'CAMPAIGN_READER';
 export const PARTICIPATION_READER = 'PARTICIPATION_READER';
+export const ACTION_READER = 'ACTION_READER';
+export const COMMITMENT_READER = 'COMMITMENT_READER';
 
 export interface TenantRecord {
   id: string;
@@ -57,5 +59,15 @@ export interface CampaignReader {
 }
 
 export interface ParticipationReader {
+  findById(id: string): Promise<CampaignAccessRecord | null>;
+}
+
+export interface ActionReader {
+  findActionById(id: string): Promise<CampaignAccessRecord | null>;
+  findDefinitionById(id: string): Promise<CampaignAccessRecord | null>;
+  findSubmissionById(id: string): Promise<CampaignAccessRecord | null>;
+}
+
+export interface CommitmentReader {
   findById(id: string): Promise<CampaignAccessRecord | null>;
 }

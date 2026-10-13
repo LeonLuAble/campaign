@@ -3,7 +3,9 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../app.module.js';
 import type { TenantContext } from '../modules/authorization/application/tenant-context.js';
 import { ALL_PERMISSION_KEYS } from '../modules/authorization/domain/permission-keys.js';
+import { ActionService } from '../modules/actions/application/action.service.js';
 import { CampaignService } from '../modules/campaigns/application/campaign.service.js';
+import { VEGETARIAN_RULES_STRATEGY_KEY } from '../modules/vegetarian/application/vegetarian-rules.js';
 import { CustomerService } from '../modules/customers/application/customer.service.js';
 import { CredentialService } from '../modules/identity/application/credential.service.js';
 import { IdentityAccountService } from '../modules/identity/application/identity-account.service.js';
@@ -40,6 +42,7 @@ function seedTenantContext(tenantId: string, userId: string): TenantContext {
 
 async function ensureFoundingCampaign(
   campaigns: CampaignService,
+  actions: ActionService,
   customerId: string,
   actorUserId: string,
 ): Promise<void> {
@@ -73,18 +76,40 @@ async function ensureFoundingCampaign(
   }
 
   const existing = await campaigns.listCampaigns(tenant);
-  if (existing.some((campaign) => campaign.name === FOUNDING_CAMPAIGN_NAME)) {
+  let campaign = existing.find((row) => row.name === FOUNDING_CAMPAIGN_NAME);
+  if (!campaign) {
+    campaign = await campaigns.createCampaign(tenant, actorUserId, {
+      templateId: template.id,
+      scopeId: scope.id,
+      name: FOUNDING_CAMPAIGN_NAME,
+      timezone: FOUNDING_TIMEZONE,
+      configuration: { rulesStrategy: VEGETARIAN_RULES_STRATEGY_KEY },
+    });
+    console.log(`Created campaign '${campaign.name}' (${campaign.id})`);
+  } else {
     console.log(`Campaign '${FOUNDING_CAMPAIGN_NAME}' already exists`);
-    return;
+    if (
+      campaign.status === 'draft' &&
+      campaign.configuration.rulesStrategy !== VEGETARIAN_RULES_STRATEGY_KEY
+    ) {
+      await campaigns.replaceConfiguration(tenant, campaign.id, {
+        ...campaign.configuration,
+        rulesStrategy: VEGETARIAN_RULES_STRATEGY_KEY,
+      });
+    }
   }
 
-  const created = await campaigns.createCampaign(tenant, actorUserId, {
-    templateId: template.id,
-    scopeId: scope.id,
-    name: FOUNDING_CAMPAIGN_NAME,
-    timezone: FOUNDING_TIMEZONE,
-  });
-  console.log(`Created campaign '${created.name}' (${created.id})`);
+  const definitions = await actions.listDefinitions(tenant, campaign.id);
+  if (!definitions.some((definition) => definition.key === 'vegetarian_day')) {
+    const definition = await actions.createDefinition(tenant, campaign.id, {
+      key: 'vegetarian_day',
+      name: 'Vegetarian day',
+      unit: 'days',
+    });
+    console.log(
+      `Created action definition '${definition.name}' (${definition.id})`,
+    );
+  }
 }
 
 async function main(): Promise<void> {
@@ -109,6 +134,7 @@ async function main(): Promise<void> {
     const identities = app.get(IdentityAccountService);
     const customers = app.get(CustomerService);
     const campaigns = app.get(CampaignService);
+    const actions = app.get(ActionService);
 
     const normalized = credentials.normalizeEmail(email);
     const identity = await identities.findIdentity(
@@ -138,7 +164,12 @@ async function main(): Promise<void> {
       );
     }
 
-    await ensureFoundingCampaign(campaigns, customer.id, identity.userId);
+    await ensureFoundingCampaign(
+      campaigns,
+      actions,
+      customer.id,
+      identity.userId,
+    );
   } finally {
     await app.close();
   }

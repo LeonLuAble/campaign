@@ -29,3 +29,13 @@ export function canEnrollInCampaign(status: CampaignStatus): boolean {
     status === CampaignStatus.PUBLISHED || status === CampaignStatus.STARTED
   );
 }
+
+export function canPledgeCommitment(status: CampaignStatus): boolean {
+  return (
+    status === CampaignStatus.PUBLISHED || status === CampaignStatus.STARTED
+  );
+}
+
+export function canRecordActions(status: CampaignStatus): boolean {
+  return status === CampaignStatus.STARTED;
+}

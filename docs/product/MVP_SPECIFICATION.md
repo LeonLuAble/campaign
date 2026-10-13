@@ -13,8 +13,8 @@
 - Campaign template/scope/configuration/lifecycle.
 - Seven vegetarian choices.
 - Participation and commitment.
-- Action definitions, actions and submissions.
-- Goals, achievements, progress and completion.
+- Action definitions, actions and submissions. Campaign `submissionReview` is `auto` (default) or `manual`; auto-approved self-records do not require per-action admin review. Advanced verification is out of scope.
+- Goals, achievements, progress and completion. Progress counts only approved submissions on non-cancelled actions.
 - Milestones and evaluation.
 - Measurement, versioned impact factors and outcomes.
 - TREE visualization.

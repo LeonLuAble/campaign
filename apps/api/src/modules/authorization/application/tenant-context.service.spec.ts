@@ -33,6 +33,12 @@ describe('TenantContextService', () => {
     findScopeById: vi.fn(),
   };
   const participations = { findById: vi.fn() };
+  const actions = {
+    findActionById: vi.fn(),
+    findDefinitionById: vi.fn(),
+    findSubmissionById: vi.fn(),
+  };
+  const commitments = { findById: vi.fn() };
 
   let service: TenantContextService;
 
@@ -45,6 +51,8 @@ describe('TenantContextService', () => {
       authorization as unknown as AuthorizationService,
       campaigns,
       participations,
+      actions,
+      commitments,
     );
   });
 
@@ -132,6 +140,29 @@ describe('TenantContextService', () => {
     );
 
     const context = await service.build(userId, { campaignId });
+    expect(context.tenantId).toBe(tenantA);
+  });
+
+  it('resolves tenant from an action id', async () => {
+    const actionId = '77777777-7777-4777-8777-777777777777';
+    actions.findActionById.mockResolvedValue({
+      id: actionId,
+      tenantId: tenantA,
+    });
+    memberships.listActiveForUserInTenant.mockResolvedValue([
+      {
+        id: membershipId,
+        tenantId: tenantA,
+        userId,
+        communityId: null,
+        isActive: true,
+      },
+    ]);
+    authorization.resolvePermissionKeys.mockResolvedValue(
+      new Set(['actions.read']),
+    );
+
+    const context = await service.build(userId, { actionId });
     expect(context.tenantId).toBe(tenantA);
   });
 });

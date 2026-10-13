@@ -3,6 +3,8 @@ import { CampaignStatus } from '../domain/campaign.entity.js';
 import {
   canEnrollInCampaign,
   canMutateCampaignDefinition,
+  canPledgeCommitment,
+  canRecordActions,
   canTransitionCampaign,
   nextCampaignStatus,
 } from './campaign-lifecycle.js';
@@ -36,5 +38,14 @@ describe('campaign lifecycle', () => {
     expect(canEnrollInCampaign(CampaignStatus.PUBLISHED)).toBe(true);
     expect(canEnrollInCampaign(CampaignStatus.STARTED)).toBe(true);
     expect(canEnrollInCampaign(CampaignStatus.COMPLETED)).toBe(false);
+  });
+
+  it('allows commitments while published or started and actions only while started', () => {
+    expect(canPledgeCommitment(CampaignStatus.PUBLISHED)).toBe(true);
+    expect(canPledgeCommitment(CampaignStatus.STARTED)).toBe(true);
+    expect(canPledgeCommitment(CampaignStatus.DRAFT)).toBe(false);
+    expect(canRecordActions(CampaignStatus.STARTED)).toBe(true);
+    expect(canRecordActions(CampaignStatus.PUBLISHED)).toBe(false);
+    expect(canRecordActions(CampaignStatus.COMPLETED)).toBe(false);
   });
 });
