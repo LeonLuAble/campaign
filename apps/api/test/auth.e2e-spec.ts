@@ -13,7 +13,10 @@ import {
   UserIdentity,
 } from '../src/modules/identity/domain/user-identity.entity.js';
 import { User } from '../src/modules/identity/domain/user.entity.js';
-import { ensureIdentitySchema } from './ensure-identity-schema.js';
+import {
+  clearIdentityData,
+  ensureIdentitySchema,
+} from './ensure-identity-schema.js';
 
 describe('Auth (e2e)', () => {
   let app: INestApplication;
@@ -38,14 +41,12 @@ describe('Auth (e2e)', () => {
   });
 
   afterAll(async () => {
+    await clearIdentityData(dataSource);
     await app.close();
   });
 
   beforeEach(async () => {
-    await dataSource.query('DELETE FROM refresh_tokens');
-    await dataSource.query('DELETE FROM user_credentials');
-    await dataSource.query('DELETE FROM user_identities');
-    await dataSource.query('DELETE FROM users');
+    await clearIdentityData(dataSource);
 
     const userRepository = dataSource.getRepository(User);
     const identityRepository = dataSource.getRepository(UserIdentity);

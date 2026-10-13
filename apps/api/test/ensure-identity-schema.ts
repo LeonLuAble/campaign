@@ -1,6 +1,15 @@
 import { DataSource } from 'typeorm';
 import { CreateIdentityTables1791865103000 } from '../src/platform/database/migrations/1791865103000-CreateIdentityTables.js';
 
+export async function clearIdentityData(dataSource: DataSource): Promise<void> {
+  await dataSource.query('DELETE FROM refresh_tokens');
+  await dataSource.query('DELETE FROM user_tokens');
+  await dataSource.query('DELETE FROM user_social_identities');
+  await dataSource.query('DELETE FROM user_credentials');
+  await dataSource.query('DELETE FROM user_identities');
+  await dataSource.query('DELETE FROM users');
+}
+
 export async function ensureIdentitySchema(
   dataSource: DataSource,
 ): Promise<void> {
