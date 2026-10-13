@@ -30,7 +30,7 @@ The API source layout is `config`, `bootstrap`, `modules`, `platform`, and `shar
 
 ## Architecture documentation
 
-The product and architecture documents listed below were not in the repository at bootstrap, so they were not created here:
+Product vision, domain model, architecture, and development guides are in the `docs/` directory:
 
 - `docs/product/PRODUCT_VISION.md`
 - `docs/product/DOMAIN_MODEL.md`
@@ -40,12 +40,13 @@ The product and architecture documents listed below were not in the repository a
 - `docs/architecture/DATABASE.md`
 - `docs/api/API_SPEC.md`
 - `docs/development/CURSOR_DEVELOPMENT_GUIDE.md`
+- `docs/AI_HANDOVER.md`
 
-Working constraints for this foundation are in `.cursor/rules/` and `docs/README.md`.
+Working constraints and conventions are in `.cursor/rules/`.
 
 ## Prerequisites
 
-- Node.js 22.12 or newer (see `.nvmrc`)
+- Node.js 22.23 or newer (see `.nvmrc`). The API build requires Node 22.23+ due to compatibility with nest-cli dependencies; Node 22.12 and Node 20 produce module cycle errors.
 - npm
 - Docker with Docker Compose
 - Flutter stable (this workspace was bootstrapped with Flutter 3.47 / Dart 3.13)
