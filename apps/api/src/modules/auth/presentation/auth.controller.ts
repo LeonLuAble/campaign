@@ -36,7 +36,10 @@ export class AuthController {
   @Post('activate')
   @HttpCode(HttpStatus.NO_CONTENT)
   activate(@Body() activateDto: ActivateDto) {
-    return this.registrationService.activate(activateDto.token);
+    return this.registrationService.activate(
+      activateDto.token,
+      activateDto.password,
+    );
   }
 
   // TODO: add activation resend rate limiting.

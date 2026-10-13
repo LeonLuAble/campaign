@@ -13,6 +13,7 @@ import {
 import { UserTokenService } from '../../identity/application/user-token.service.js';
 import { IdentityType } from '../../identity/domain/user-identity.entity.js';
 import { UserTokenType } from '../../identity/domain/user-token.entity.js';
+import { InvalidRequestException } from '../../../shared/errors/domain-http.exceptions.js';
 import {
   ActivationTokenInvalidException,
   IdentityAlreadyExistsException,
@@ -32,6 +33,8 @@ describe('RegistrationService', () => {
     areAllIdentitiesVerified: vi.fn(),
     isIdentityVerified: vi.fn(),
     consumeActivation: vi.fn(),
+    getPasswordHash: vi.fn(),
+    setPasswordIfMissing: vi.fn(),
   };
 
   const mockCredentialService = {
@@ -69,6 +72,7 @@ describe('RegistrationService', () => {
       userId: 'user-id',
       identityId: 'identity-id',
     });
+    mockIdentityAccountService.getPasswordHash.mockResolvedValue('hashed');
     mockUserTokenService.supersedeUnusedAndCreate.mockResolvedValue({
       id: 'token-id',
     });
@@ -172,6 +176,7 @@ describe('RegistrationService', () => {
     it('consumes a valid unused token', async () => {
       mockUserTokenService.findByHash.mockResolvedValue(stored);
       mockIdentityAccountService.isIdentityVerified.mockResolvedValue(false);
+      mockIdentityAccountService.getPasswordHash.mockResolvedValue('hashed');
       mockIdentityAccountService.consumeActivation.mockResolvedValue(true);
 
       await service.activate('raw-token');
@@ -183,6 +188,40 @@ describe('RegistrationService', () => {
         'token-id',
         'user-id',
         'identity-id',
+        null,
+      );
+    });
+
+    it('requires a password when the imported account has no credential', async () => {
+      mockUserTokenService.findByHash.mockResolvedValue(stored);
+      mockIdentityAccountService.isIdentityVerified.mockResolvedValue(false);
+      mockIdentityAccountService.getPasswordHash.mockResolvedValue(null);
+
+      await expect(service.activate('raw-token')).rejects.toBeInstanceOf(
+        InvalidRequestException,
+      );
+      expect(
+        mockIdentityAccountService.consumeActivation,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('sets a password while activating an imported account', async () => {
+      mockUserTokenService.findByHash.mockResolvedValue(stored);
+      mockIdentityAccountService.isIdentityVerified.mockResolvedValue(false);
+      mockIdentityAccountService.getPasswordHash.mockResolvedValue(null);
+      mockCredentialService.setPassword.mockResolvedValue('imported-hash');
+      mockIdentityAccountService.consumeActivation.mockResolvedValue(true);
+
+      await service.activate('raw-token', 'password123');
+
+      expect(mockCredentialService.setPassword).toHaveBeenCalledWith(
+        'password123',
+      );
+      expect(mockIdentityAccountService.consumeActivation).toHaveBeenCalledWith(
+        'token-id',
+        'user-id',
+        'identity-id',
+        'imported-hash',
       );
     });
 
@@ -192,6 +231,7 @@ describe('RegistrationService', () => {
         usedAt: new Date(),
       });
       mockIdentityAccountService.isIdentityVerified.mockResolvedValue(true);
+      mockIdentityAccountService.getPasswordHash.mockResolvedValue('hashed');
 
       await expect(service.activate('raw-token')).resolves.toBeUndefined();
       expect(
@@ -205,6 +245,7 @@ describe('RegistrationService', () => {
         usedAt: new Date(),
       });
       mockIdentityAccountService.isIdentityVerified.mockResolvedValue(false);
+      mockIdentityAccountService.getPasswordHash.mockResolvedValue('hashed');
 
       await expect(service.activate('raw-token')).rejects.toBeInstanceOf(
         ActivationTokenInvalidException,
@@ -217,6 +258,7 @@ describe('RegistrationService', () => {
         expiresAt: new Date(Date.now() - 1000),
       });
       mockIdentityAccountService.isIdentityVerified.mockResolvedValue(false);
+      mockIdentityAccountService.getPasswordHash.mockResolvedValue('hashed');
 
       await expect(service.activate('raw-token')).rejects.toBeInstanceOf(
         TokenExpiredException,

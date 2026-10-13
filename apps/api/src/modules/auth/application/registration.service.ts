@@ -12,6 +12,7 @@ import {
 import { UserTokenService } from '../../identity/application/user-token.service.js';
 import { IdentityType } from '../../identity/domain/user-identity.entity.js';
 import { UserTokenType } from '../../identity/domain/user-token.entity.js';
+import { InvalidRequestException } from '../../../shared/errors/domain-http.exceptions.js';
 import {
   ActivationTokenInvalidException,
   IdentityAlreadyExistsException,
@@ -111,7 +112,7 @@ export class RegistrationService {
     };
   }
 
-  async activate(token: string): Promise<void> {
+  async activate(token: string, password?: string): Promise<void> {
     const stored = await this.userTokenService.findByHash(
       hashOneTimeToken(token),
     );
@@ -124,9 +125,25 @@ export class RegistrationService {
       : await this.identityAccountService.areAllIdentitiesVerified(
           stored.userId,
         );
+    const existingHash = await this.identityAccountService.getPasswordHash(
+      stored.userId,
+    );
 
     if (stored.usedAt) {
-      if (alreadyVerified) {
+      if (alreadyVerified && existingHash) {
+        return;
+      }
+      if (alreadyVerified && password) {
+        const passwordHash = await this.hashActivationPassword(
+          password,
+          existingHash,
+        );
+        if (passwordHash) {
+          await this.identityAccountService.setPasswordIfMissing(
+            stored.userId,
+            passwordHash,
+          );
+        }
         return;
       }
       throw new ActivationTokenInvalidException();
@@ -136,10 +153,16 @@ export class RegistrationService {
       throw new TokenExpiredException('Activation token has expired');
     }
 
+    const passwordHash = await this.hashActivationPassword(
+      password,
+      existingHash,
+    );
+
     const consumed = await this.identityAccountService.consumeActivation(
       stored.id,
       stored.userId,
       stored.identityId,
+      passwordHash,
     );
     if (consumed) {
       return;
@@ -151,9 +174,19 @@ export class RegistrationService {
           stored.userId,
         );
     if (verifiedAfterRace) {
+      if (passwordHash) {
+        await this.identityAccountService.setPasswordIfMissing(
+          stored.userId,
+          passwordHash,
+        );
+      }
       return;
     }
     throw new ActivationTokenInvalidException();
+  }
+
+  async sendActivationInvitation(identifier: string): Promise<void> {
+    await this.resendActivation(identifier);
   }
 
   async resendActivation(identifier: string): Promise<void> {
@@ -191,6 +224,28 @@ export class RegistrationService {
       template: 'activation',
       token: rawToken,
     });
+  }
+
+  private async hashActivationPassword(
+    password: string | undefined,
+    existingHash: string | null,
+  ): Promise<string | null> {
+    if (existingHash) {
+      return null;
+    }
+    if (!password) {
+      throw new InvalidRequestException(
+        'Password is required to activate this account',
+      );
+    }
+    try {
+      return await this.credentialService.setPassword(password);
+    } catch (error) {
+      if (error instanceof WeakPasswordError) {
+        throw new WeakPasswordException(error.message);
+      }
+      throw error;
+    }
   }
 
   private async findIdentityQuietly(identifier: string) {

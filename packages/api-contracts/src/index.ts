@@ -46,6 +46,7 @@ export interface RegisterResponse {
 
 export interface ActivateRequest {
   token: string;
+  password?: string;
 }
 
 export interface ActivateResendRequest {
@@ -212,4 +213,79 @@ export interface UpdateMembershipRequest {
 
 export interface AssignRoleRequest {
   roleId: string;
+}
+
+export type UserImportStatus =
+  | 'uploaded'
+  | 'mapped'
+  | 'validated'
+  | 'confirmed';
+
+export type UserImportRowStatus =
+  | 'pending'
+  | 'valid'
+  | 'invalid'
+  | 'review'
+  | 'created'
+  | 'matched';
+
+export interface UserImportMapping {
+  email?: string;
+  mobile?: string;
+  externalId?: string;
+  firstName?: string;
+  lastName?: string;
+  displayName?: string;
+  communityId?: string;
+}
+
+export interface MapUserImportRequest {
+  mapping: UserImportMapping;
+}
+
+export interface UserImportCounts {
+  total: number;
+  pending: number;
+  valid: number;
+  invalid: number;
+  review: number;
+  created: number;
+  matched: number;
+}
+
+export interface UserImportResponse {
+  id: string;
+  customerId: string;
+  communityId: string | null;
+  originalFilename: string;
+  status: UserImportStatus;
+  headers: string[];
+  mapping: UserImportMapping | null;
+  counts: UserImportCounts;
+  createdAt: string;
+  updatedAt: string;
+  confirmedAt: string | null;
+}
+
+export interface UserImportRowResponse {
+  id: string;
+  rowNumber: number;
+  rawData: Record<string, string>;
+  externalId: string | null;
+  email: string | null;
+  mobile: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  displayName: string | null;
+  communityId: string | null;
+  status: UserImportRowStatus;
+  errorCode: string | null;
+  errorMessage: string | null;
+  resolvedUserId: string | null;
+  resolvedMembershipId: string | null;
+}
+
+export interface UserImportPreviewResponse {
+  import: UserImportResponse;
+  rows: UserImportRowResponse[];
 }

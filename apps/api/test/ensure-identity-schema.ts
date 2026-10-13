@@ -3,6 +3,7 @@ import { CreateIdentityTables1791865103000 } from '../src/platform/database/migr
 import { AddIdentityIdToUserTokens1791965204000 } from '../src/platform/database/migrations/1791965204000-AddIdentityIdToUserTokens.js';
 import { CreateTenantCommunityMembershipTables1792065305000 } from '../src/platform/database/migrations/1792065305000-CreateTenantCommunityMembershipTables.js';
 import { AddUserPlatformAdmin1792165406000 } from '../src/platform/database/migrations/1792165406000-AddUserPlatformAdmin.js';
+import { CreateUserImportTables1792265507000 } from '../src/platform/database/migrations/1792265507000-CreateUserImportTables.js';
 
 async function tableExists(
   dataSource: DataSource,
@@ -43,6 +44,12 @@ export async function clearTenantData(dataSource: DataSource): Promise<void> {
   if (!(await tableExists(dataSource, 'tenants'))) {
     return;
   }
+  if (await tableExists(dataSource, 'user_import_rows')) {
+    await dataSource.query('DELETE FROM user_import_rows');
+  }
+  if (await tableExists(dataSource, 'user_imports')) {
+    await dataSource.query('DELETE FROM user_imports');
+  }
   await dataSource.query('DELETE FROM membership_roles');
   await dataSource.query('DELETE FROM role_permissions');
   await dataSource.query('DELETE FROM roles');
@@ -73,6 +80,11 @@ export async function ensureTenantSchema(
   await ensureIdentitySchemaWithoutTenant(dataSource);
   if (!(await tableExists(dataSource, 'tenants'))) {
     await new CreateTenantCommunityMembershipTables1792065305000().up(
+      dataSource.createQueryRunner(),
+    );
+  }
+  if (!(await tableExists(dataSource, 'user_imports'))) {
+    await new CreateUserImportTables1792265507000().up(
       dataSource.createQueryRunner(),
     );
   }
