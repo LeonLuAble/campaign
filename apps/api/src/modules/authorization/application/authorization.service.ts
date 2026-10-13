@@ -25,7 +25,7 @@ import {
 import { RolePermission } from '../domain/role-permission.entity.js';
 import { Role } from '../domain/role.entity.js';
 import type { MembershipRecord } from './access-readers.js';
-import { membershipAppliesToResource } from './membership-scope.js';
+import { hasTenantLevelMembership } from './membership-scope.js';
 
 export interface RoleSummary {
   id: string;
@@ -176,16 +176,8 @@ export class AuthorizationService {
 
   async resolvePermissionKeys(
     memberships: MembershipRecord[],
-    resourceCommunityId: string | null,
-    ancestorIdsOfResource: string[],
   ): Promise<Set<string>> {
-    const applicable = memberships.filter((membership) =>
-      membershipAppliesToResource(
-        membership,
-        resourceCommunityId,
-        ancestorIdsOfResource,
-      ),
-    );
+    const applicable = memberships.filter((membership) => membership.isActive);
     if (applicable.length === 0) {
       return new Set();
     }
@@ -230,7 +222,9 @@ export class AuthorizationService {
   async createRole(
     tenantId: string,
     input: CreateRoleInput,
+    memberships: MembershipRecord[],
   ): Promise<RoleResponse> {
+    this.assertTenantLevel(memberships);
     const name = input.name.trim();
     const key = this.normalizeRoleKey(input.key ?? name);
     const permissionIds = await this.resolvePermissionIds(input.permissionKeys);
@@ -271,7 +265,9 @@ export class AuthorizationService {
     tenantId: string,
     roleId: string,
     input: UpdateRoleInput,
+    memberships: MembershipRecord[],
   ): Promise<RoleResponse> {
+    this.assertTenantLevel(memberships);
     const role = await this.roleRepository.findOne({
       where: { id: roleId, tenant_id: tenantId },
     });
@@ -406,6 +402,14 @@ export class AuthorizationService {
       .andWhere('role.key = :roleKey', { roleKey })
       .getCount();
     return count > 0;
+  }
+
+  private assertTenantLevel(memberships: MembershipRecord[]): void {
+    if (!hasTenantLevelMembership(memberships)) {
+      throw new AccessForbiddenException(
+        'Only tenant-level members can manage tenant-wide roles',
+      );
+    }
   }
 
   private async requireTenantRole(

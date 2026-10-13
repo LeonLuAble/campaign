@@ -30,7 +30,11 @@ export class RolesController {
   @HttpCode(HttpStatus.CREATED)
   @RequirePermission(PERMISSIONS.ROLES_CREATE)
   create(@CurrentTenant() tenant: TenantContext, @Body() dto: CreateRoleDto) {
-    return this.authorization.createRole(tenant.tenantId, dto);
+    return this.authorization.createRole(
+      tenant.tenantId,
+      dto,
+      tenant.memberships,
+    );
   }
 
   @Get()
@@ -55,6 +59,11 @@ export class RolesController {
     @Param('roleId', ParseUUIDPipe) roleId: string,
     @Body() dto: UpdateRoleDto,
   ) {
-    return this.authorization.updateRole(tenant.tenantId, roleId, dto);
+    return this.authorization.updateRole(
+      tenant.tenantId,
+      roleId,
+      dto,
+      tenant.memberships,
+    );
   }
 }

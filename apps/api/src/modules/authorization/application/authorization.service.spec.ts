@@ -72,19 +72,15 @@ describe('AuthorizationService', () => {
       getRawMany,
     });
 
-    const keys = await service.resolvePermissionKeys(
-      [
-        {
-          id: 'm1',
-          tenantId: 't1',
-          userId: 'u1',
-          communityId: null,
-          isActive: true,
-        },
-      ],
-      null,
-      [],
-    );
+    const keys = await service.resolvePermissionKeys([
+      {
+        id: 'm1',
+        tenantId: 't1',
+        userId: 'u1',
+        communityId: null,
+        isActive: true,
+      },
+    ]);
 
     expect(keys).toEqual(
       new Set([PERMISSIONS.CUSTOMERS_READ, PERMISSIONS.COMMUNITIES_READ]),
@@ -92,20 +88,16 @@ describe('AuthorizationService', () => {
     expect(getRawMany).toHaveBeenCalled();
   });
 
-  it('returns no permissions when no membership applies to the resource', async () => {
-    const keys = await service.resolvePermissionKeys(
-      [
-        {
-          id: 'm1',
-          tenantId: 't1',
-          userId: 'u1',
-          communityId: 'community-a',
-          isActive: true,
-        },
-      ],
-      null,
-      [],
-    );
+  it('returns no permissions when every membership is inactive', async () => {
+    const keys = await service.resolvePermissionKeys([
+      {
+        id: 'm1',
+        tenantId: 't1',
+        userId: 'u1',
+        communityId: 'community-a',
+        isActive: false,
+      },
+    ]);
     expect(keys.size).toBe(0);
     expect(membershipRoleRepository.createQueryBuilder).not.toHaveBeenCalled();
   });
@@ -119,9 +111,22 @@ describe('AuthorizationService', () => {
     });
 
     await expect(
-      service.updateRole('t1', 'role-1', {
-        permissionKeys: [PERMISSIONS.CUSTOMERS_READ],
-      }),
+      service.updateRole(
+        't1',
+        'role-1',
+        {
+          permissionKeys: [PERMISSIONS.CUSTOMERS_READ],
+        },
+        [
+          {
+            id: 'm1',
+            tenantId: 't1',
+            userId: 'u1',
+            communityId: null,
+            isActive: true,
+          },
+        ],
+      ),
     ).rejects.toBeInstanceOf(AccessForbiddenException);
   });
 });

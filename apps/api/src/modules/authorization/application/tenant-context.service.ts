@@ -61,20 +61,15 @@ export class TenantContextService {
     }
 
     const resourceCommunityId = this.resourceCommunityId(normalized);
-    let ancestorIds: string[] = [];
     if (resourceCommunityId) {
       const community = await this.communities.findById(resourceCommunityId);
       if (!community || community.tenantId !== tenantId) {
         throw new ResourceNotFoundException('Resource not found');
       }
-      ancestorIds = await this.communities.listAncestorIds(resourceCommunityId);
     }
 
-    const permissions = await this.authorization.resolvePermissionKeys(
-      memberships,
-      resourceCommunityId,
-      ancestorIds,
-    );
+    const permissions =
+      await this.authorization.resolvePermissionKeys(memberships);
 
     return {
       tenantId,

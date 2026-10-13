@@ -3,14 +3,19 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { randomBytes } from 'node:crypto';
 import { DataSource, In, Repository } from 'typeorm';
 import {
+  AccessForbiddenException,
   InvalidRequestException,
   ResourceConflictException,
   ResourceNotFoundException,
 } from '../../../shared/errors/domain-http.exceptions.js';
 import { isUniqueViolation } from '../../../shared/database/postgres-errors.js';
 import { slugify } from '../../../shared/text/slugify.js';
-import type { TenantRecord } from '../../authorization/application/access-readers.js';
+import type {
+  MembershipRecord,
+  TenantRecord,
+} from '../../authorization/application/access-readers.js';
 import { AuthorizationService } from '../../authorization/application/authorization.service.js';
+import { hasTenantLevelMembership } from '../../authorization/application/membership-scope.js';
 import { SYSTEM_ROLE_TENANT_ADMIN } from '../../authorization/domain/permission-keys.js';
 import { MembershipService } from '../../memberships/application/membership.service.js';
 import { Tenant } from '../domain/tenant.entity.js';
@@ -145,7 +150,13 @@ export class CustomerService {
   async update(
     customerId: string,
     input: { name?: string; isActive?: boolean },
+    memberships: MembershipRecord[],
   ): Promise<CustomerResponse> {
+    if (!hasTenantLevelMembership(memberships)) {
+      throw new AccessForbiddenException(
+        'Only tenant-level members can update a customer',
+      );
+    }
     const tenant = await this.tenantRepository.findOne({
       where: { id: customerId },
     });
