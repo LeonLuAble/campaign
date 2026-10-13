@@ -11,6 +11,11 @@ export const envValidationSchema = Joi.object({
   REDIS_URL: Joi.string()
     .uri({ scheme: ['redis', 'rediss'] })
     .required(),
+  DEFAULT_PHONE_REGION: Joi.string()
+    .length(2)
+    .uppercase()
+    .default('MY')
+    .description('ISO 3166-1 alpha-2 country code for phone number parsing'),
   JWT_ACCESS_SECRET: Joi.string().allow('').optional(),
   JWT_REFRESH_SECRET: Joi.string().allow('').optional(),
   OBJECT_STORAGE_ENDPOINT: Joi.string().uri().allow('').optional(),
