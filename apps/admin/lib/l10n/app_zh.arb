@@ -1,0 +1,6 @@
+{
+  "@@locale": "zh",
+  "appTitle": "社区活动管理",
+  "homeMessage": "管理端应用外壳",
+  "environmentLabel": "环境：{environment}"
+}

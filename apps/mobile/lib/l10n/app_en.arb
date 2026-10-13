@@ -1,0 +1,13 @@
+{
+  "@@locale": "en",
+  "appTitle": "Community Campaign",
+  "homeMessage": "Community Campaign Platform",
+  "environmentLabel": "Environment: {environment}",
+  "@environmentLabel": {
+    "placeholders": {
+      "environment": {
+        "type": "String"
+      }
+    }
+  }
+}

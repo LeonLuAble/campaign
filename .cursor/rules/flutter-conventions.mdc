@@ -1,0 +1,19 @@
+---
+description: Flutter mobile and admin web shell conventions
+globs: apps/{mobile,admin}/**/*.dart
+alwaysApply: false
+---
+
+# Flutter conventions
+
+`apps/mobile` is the iOS and Android app. `apps/admin` is the Flutter web admin app. Keep them separate.
+
+- Route with `go_router`.
+- Read `APP_ENV` and `API_BASE_URL` from `--dart-define` via `AppConfig`.
+- Keep English (`en`) and Simplified Chinese (`zh`) ARB files in `lib/l10n`.
+- Generate localizations from `l10n.yaml`. Do not hardcode user-facing strings in widgets.
+- Leave campaign and administration workflows out of the shells until a later phase adds them.
+
+```sh
+flutter run --dart-define=APP_ENV=development --dart-define=API_BASE_URL=http://localhost:3000/api/v1
+```

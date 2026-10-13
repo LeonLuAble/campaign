@@ -1,0 +1,13 @@
+{
+  "@@locale": "en",
+  "appTitle": "Community Campaign Admin",
+  "homeMessage": "Administration shell",
+  "environmentLabel": "Environment: {environment}",
+  "@environmentLabel": {
+    "placeholders": {
+      "environment": {
+        "type": "String"
+      }
+    }
+  }
+}

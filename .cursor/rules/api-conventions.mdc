@@ -1,0 +1,27 @@
+---
+description: REST JSON conventions for the API
+globs: apps/api/**/*.ts
+alwaysApply: false
+---
+
+# API conventions
+
+Expose HTTP under `/api/v1`. Request bodies go through the global `ValidationPipe` (`whitelist`, `forbidNonWhitelisted`, `transform`).
+
+Error responses use one shape:
+
+```json
+{
+  "statusCode": 400,
+  "error": "Bad Request",
+  "message": "Expected a string",
+  "correlationId": "request-id",
+  "timestamp": "2026-01-01T00:00:00.000Z",
+  "path": "/api/v1/example"
+}
+```
+
+- Accept or generate `x-request-id` and return it on the response.
+- `GET /api/v1/health` reports process liveness only.
+- `GET /api/v1/health/ready` reports PostgreSQL and Redis without connection details.
+- Do not copy domain entities into `packages/api-contracts`.

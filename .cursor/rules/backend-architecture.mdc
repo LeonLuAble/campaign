@@ -1,0 +1,20 @@
+---
+description: NestJS modular monolith layout for the API
+globs: apps/api/**/*.ts
+alwaysApply: false
+---
+
+# Backend architecture
+
+`apps/api` is one NestJS process. Feature code lives in `src/modules`. Cross-cutting startup, logging, and validation live in `src/bootstrap`. Configuration lives in `src/config`. Database and Redis adapters live in `src/platform`.
+
+- Add a module when it has a real endpoint or workflow. Do not scaffold empty future modules.
+- Inject platform services into modules. Do not open PostgreSQL or Redis clients from controllers.
+- Keep `synchronize: false`. Change the database with TypeORM migrations.
+- Validate environment variables at startup through the config schema.
+- Return errors through the shared exception filter so the response shape stays stable.
+
+```typescript
+// Good: a module depends on a platform service.
+constructor(private readonly redis: RedisService) {}
+```

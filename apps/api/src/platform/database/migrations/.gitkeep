@@ -1,0 +1,2 @@
+# Schema changes are added here as TypeORM migrations.
+# synchronize stays disabled. Do not commit generated SQL until a schema exists.

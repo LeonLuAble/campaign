@@ -1,0 +1,31 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+npm-debug.log*
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+**/android/.gradle/
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/ephemeral/
+
+# IDE and OS
+.DS_Store
+.idea/
+*.iml
+.vscode/
+
+# Logs
+*.log

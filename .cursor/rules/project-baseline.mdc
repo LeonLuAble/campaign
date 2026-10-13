@@ -1,0 +1,26 @@
+---
+description: Phase 0 baseline for the Community Campaign Platform
+alwaysApply: true
+---
+
+# Project baseline
+
+This is a modular monolith. Keep one API, one PostgreSQL database, and one Redis instance.
+
+- Put business behavior in `apps/api/src/modules` only when a phase asks for it.
+- Keep infrastructure in `apps/api/src/platform`.
+- The backend is authoritative. `packages/api-contracts` holds shared request and response types only.
+- Use tenant terminology. Do not add a `customers` table beside tenants.
+- Do not add microservices, Kafka, RabbitMQ, a service mesh, or an API gateway unless a later task asks.
+- Do not put `googleId` or `appleId` on users.
+- Do not put password hashes on the `users` table.
+- Do not hardcode campaign, payment, AI, analytics, marketplace, or vegetarian-specific domain types in the foundation.
+
+```text
+apps/api/src/
+├── config/
+├── bootstrap/
+├── modules/
+├── platform/
+└── shared/
+```

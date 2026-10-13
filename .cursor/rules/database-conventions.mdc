@@ -1,0 +1,21 @@
+---
+description: PostgreSQL migration and tenant naming conventions
+globs: apps/api/**/*.ts
+alwaysApply: false
+---
+
+# Database conventions
+
+Use one PostgreSQL database. Schema changes go in `apps/api/src/platform/database/migrations`.
+
+- Keep `synchronize` false in every environment.
+- Run migrations with `npm run migration:run` from `apps/api` after a build.
+- Name the organization boundary `tenants`. Do not also create `customers`.
+- Store external login identifiers and password hashes outside the `users` table when those features are added.
+- Do not put connection strings, hosts, or credentials in API responses.
+
+```typescript
+// Good: migrations own the schema.
+synchronize: false,
+migrationsRun: false,
+```
