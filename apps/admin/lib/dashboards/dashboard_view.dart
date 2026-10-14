@@ -1,12 +1,13 @@
+import 'package:api_client/api_client.dart';
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
-import 'dashboard_models.dart';
+import '../util/format.dart';
 
 class AggregateDashboardView extends StatelessWidget {
   const AggregateDashboardView({this.data, super.key});
 
-  final AggregateDashboardData? data;
+  final AggregateDashboard? data;
 
   @override
   Widget build(BuildContext context) {
@@ -24,22 +25,17 @@ class AggregateDashboardView extends StatelessWidget {
       children: [
         Text(l10n.anonymousTotalsNote),
         const SizedBox(height: 16),
-        Text(
-          l10n.progressSection,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
+        Text(l10n.progressSection, style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
         Text(
           l10n.achievedOfTarget(
-            _format(dashboard.progress.achievedValue),
-            _format(dashboard.progress.targetValue),
+            formatNumber(dashboard.progress.achievedValue),
+            formatNumber(dashboard.progress.targetValue),
             dashboard.progress.unit ?? '',
           ),
         ),
         if (dashboard.progress.completionPercent != null)
-          Text(
-            l10n.completionLabel('${dashboard.progress.completionPercent}%'),
-          ),
+          Text(l10n.completionLabel('${dashboard.progress.completionPercent}%')),
         const SizedBox(height: 16),
         Text(
           l10n.visualizationSection,
@@ -56,7 +52,7 @@ class AggregateDashboardView extends StatelessWidget {
         ...dashboard.measurements.map(
           (row) => Text(
             l10n.measurementQuantityLabel(
-              _format(row.quantity),
+              formatNumber(row.quantity),
               row.sourceUnit,
             ),
           ),
@@ -146,7 +142,7 @@ class _OutcomeTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '${outcome.outcomeMetric}: ${l10n.outcomeValueLabel(_format(outcome.value), outcome.outcomeUnit)}',
+            '${outcome.outcomeMetric}: ${l10n.outcomeValueLabel(formatNumber(outcome.value), outcome.outcomeUnit)}',
           ),
           if (source.isNotEmpty) Text(l10n.factorSourceLabel(source)),
         ],
@@ -175,11 +171,4 @@ class _QuantityBar extends StatelessWidget {
       ),
     );
   }
-}
-
-String _format(num value) {
-  if (value % 1 == 0) {
-    return value.toInt().toString();
-  }
-  return value.toString();
 }

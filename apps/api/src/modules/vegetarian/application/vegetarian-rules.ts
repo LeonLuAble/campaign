@@ -2,6 +2,7 @@ import { InvalidRequestException } from '../../../shared/errors/domain-http.exce
 import type {
   ActionRuleInput,
   CampaignRuleStrategy,
+  CommitmentOptionsDescriptor,
   CommitmentRuleInput,
   ProgressContributionInput,
   ProgressTarget,
@@ -104,6 +105,23 @@ export class VegetarianRuleStrategy implements CampaignRuleStrategy {
       ...input,
       typeKey: normalizeVegetarianChoice(input.typeKey),
       unit: input.unit.trim(),
+    };
+  }
+
+  describeCommitmentOptions(): CommitmentOptionsDescriptor {
+    return {
+      strategy: this.key,
+      units: [...VEGETARIAN_UNITS],
+      choices: VEGETARIAN_CHOICES.map((choice) => {
+        const spec = VEGETARIAN_CHOICE_TARGETS[choice.key];
+        return {
+          key: choice.key,
+          name: choice.name,
+          canonicalUnit: spec.canonicalUnit,
+          suggestedTarget: spec.suggestedTarget,
+          usesCampaignDuration: spec.usesCampaignDuration,
+        };
+      }),
     };
   }
 

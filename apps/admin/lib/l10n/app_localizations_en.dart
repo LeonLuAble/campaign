@@ -13,7 +13,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'Community Campaign Admin';
 
   @override
-  String get homeMessage => 'Administration shell';
+  String get homeMessage => 'Administration';
 
   @override
   String environmentLabel(String environment) {
@@ -120,4 +120,258 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get anonymousReportNote =>
       'Aggregate reports exclude contact details and do not rank people.';
+
+  @override
+  String get loginTitle => 'Sign in';
+
+  @override
+  String get identifierLabel => 'Email or mobile';
+
+  @override
+  String get passwordLabel => 'Password';
+
+  @override
+  String get loginButton => 'Sign in';
+
+  @override
+  String get setupTitle => 'First admin setup';
+
+  @override
+  String get setupSubtitle =>
+      'Create the first platform administrator for this environment.';
+
+  @override
+  String get setupKeyLabel => 'Setup key';
+
+  @override
+  String get setupEmailLabel => 'Admin email';
+
+  @override
+  String get setupConfirmPasswordLabel => 'Confirm password';
+
+  @override
+  String get setupDisplayNameLabel => 'Display name (optional)';
+
+  @override
+  String get setupSubmitButton => 'Create admin';
+
+  @override
+  String get setupKeyRequired => 'Enter the full setup key.';
+
+  @override
+  String get setupEmailRequired => 'Enter a valid email address.';
+
+  @override
+  String get setupPasswordMismatch => 'Passwords do not match.';
+
+  @override
+  String get checkingSetup => 'Checking setup status…';
+
+  @override
+  String get logout => 'Sign out';
+
+  @override
+  String get customersTitle => 'Customers';
+
+  @override
+  String get createCustomer => 'Create customer';
+
+  @override
+  String get customerNameLabel => 'Customer name';
+
+  @override
+  String get communitiesTitle => 'Communities';
+
+  @override
+  String get createCommunity => 'Create community';
+
+  @override
+  String get communityNameLabel => 'Community name';
+
+  @override
+  String get importTitle => 'CSV import';
+
+  @override
+  String get uploadCsv => 'Upload CSV';
+
+  @override
+  String get mapFields => 'Save mapping';
+
+  @override
+  String get validateImport => 'Validate';
+
+  @override
+  String get previewImport => 'Preview';
+
+  @override
+  String get confirmImport => 'Confirm import';
+
+  @override
+  String get importResult => 'Import result';
+
+  @override
+  String get campaignsTitle => 'Campaigns';
+
+  @override
+  String get createCampaign => 'Create campaign';
+
+  @override
+  String get campaignNameLabel => 'Campaign name';
+
+  @override
+  String get timezoneLabel => 'Timezone';
+
+  @override
+  String get startsOnLabel => 'Starts on';
+
+  @override
+  String get endsOnLabel => 'Ends on';
+
+  @override
+  String get publishCampaign => 'Publish';
+
+  @override
+  String get startCampaign => 'Start';
+
+  @override
+  String get participantsTitle => 'Participants';
+
+  @override
+  String get submissionsTitle => 'Submissions';
+
+  @override
+  String get rejectSubmission => 'Reject';
+
+  @override
+  String get rejectNoteLabel => 'Review note';
+
+  @override
+  String get impactFactorsTitle => 'Impact factors';
+
+  @override
+  String get sourceUnitLabel => 'Source unit';
+
+  @override
+  String get outcomeMetricLabel => 'Outcome metric';
+
+  @override
+  String get outcomeUnitLabel => 'Outcome unit';
+
+  @override
+  String get factorValueLabel => 'Factor value';
+
+  @override
+  String get citationLabel => 'Source citation';
+
+  @override
+  String get effectiveFromLabel => 'Effective from';
+
+  @override
+  String get saveImpactFactor => 'Save impact factor';
+
+  @override
+  String get identifierRequired => 'Enter an email or mobile number.';
+
+  @override
+  String get passwordTooShort => 'Password must be at least 8 characters.';
+
+  @override
+  String get nameRequired => 'Enter a name.';
+
+  @override
+  String get openImport => 'CSV import';
+
+  @override
+  String get openCampaigns => 'Campaigns';
+
+  @override
+  String get openCommunities => 'Communities';
+
+  @override
+  String get openParticipants => 'Participants';
+
+  @override
+  String get openSubmissions => 'Submissions';
+
+  @override
+  String get openImpactFactors => 'Impact factors';
+
+  @override
+  String get rulesStrategyLabel => 'Rules strategy';
+
+  @override
+  String get templateLabel => 'Template';
+
+  @override
+  String get scopeLabel => 'Scope';
+
+  @override
+  String get emailColumn => 'Email column';
+
+  @override
+  String get mobileColumn => 'Mobile column';
+
+  @override
+  String get exportReady => 'CSV export is ready.';
+
+  @override
+  String get errorInvalidCredentials =>
+      'Email, mobile, or password is incorrect.';
+
+  @override
+  String get errorTokenInvalid => 'This token is not valid.';
+
+  @override
+  String get errorTokenReused =>
+      'Your session was reused. Please sign in again.';
+
+  @override
+  String get errorTokenExpired => 'This token has expired.';
+
+  @override
+  String get errorIdentityExists =>
+      'That email or mobile is already registered.';
+
+  @override
+  String get errorWeakPassword =>
+      'Choose a stronger password (at least 8 characters).';
+
+  @override
+  String get errorSocialTokenInvalid => 'Social sign-in could not be verified.';
+
+  @override
+  String get errorUnauthorized => 'Please sign in.';
+
+  @override
+  String get errorForbidden => 'You do not have permission for this action.';
+
+  @override
+  String get errorNotFound => 'The requested item was not found.';
+
+  @override
+  String get errorConflict => 'This change conflicts with existing data.';
+
+  @override
+  String get errorSetupNotAvailable => 'First-admin setup is not available.';
+
+  @override
+  String get errorInvalidSetupKey => 'The setup key is incorrect.';
+
+  @override
+  String get errorRateLimited => 'Too many attempts. Try again later.';
+
+  @override
+  String get errorValidation => 'Please check the form and try again.';
+
+  @override
+  String get errorUnexpected => 'Something went wrong. Try again.';
+
+  @override
+  String get noCustomers => 'No customers yet.';
+
+  @override
+  String get noCommunities => 'No communities yet.';
+
+  @override
+  String get noCampaigns => 'No campaigns yet.';
 }

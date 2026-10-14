@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
-
+import 'package:api_client/api_client.dart';
 import 'package:community_campaign/app.dart';
 import 'package:community_campaign/config/app_config.dart';
+import 'package:community_campaign/locale/app_locales.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   const config = AppConfig(
@@ -10,26 +10,57 @@ void main() {
     apiBaseUrl: 'http://localhost:3000/api/v1',
   );
 
-  testWidgets('shows the English application shell', (tester) async {
+  testWidgets('shows the English login screen when signed out', (tester) async {
     await tester.pumpWidget(
-      const CampaignApp(config: config, locale: Locale('en')),
+      CampaignApp(
+        config: config,
+        locale: AppLocales.en,
+        apiClient: FakeCampaignApiClient(),
+        tokenStore: MemoryTokenStore(),
+      ),
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Community Campaign'), findsOneWidget);
-    expect(find.text('Community Campaign Platform'), findsOneWidget);
-    expect(find.text('Environment: test'), findsOneWidget);
-    expect(find.text('Language'), findsOneWidget);
+    expect(find.text('Sign in'), findsWidgets);
+    expect(find.text('Email or mobile'), findsOneWidget);
+    expect(find.text('Continue with Google'), findsNothing);
+    expect(find.text('Continue with Apple'), findsNothing);
   });
 
-  testWidgets('shows the Simplified Chinese application shell', (tester) async {
+  testWidgets('shows the Simplified Chinese login screen', (tester) async {
     await tester.pumpWidget(
-      const CampaignApp(config: config, locale: Locale('zh')),
+      CampaignApp(
+        config: config,
+        locale: AppLocales.zhHans,
+        apiClient: FakeCampaignApiClient(),
+        tokenStore: MemoryTokenStore(),
+      ),
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('社区活动'), findsOneWidget);
-    expect(find.text('社区活动平台'), findsOneWidget);
-    expect(find.text('环境：test'), findsOneWidget);
+    expect(find.text('登录'), findsWidgets);
+    expect(find.text('邮箱或手机号'), findsOneWidget);
+  });
+
+  testWidgets('shows social buttons only when client IDs are configured', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      CampaignApp(
+        config: const AppConfig(
+          environment: 'test',
+          apiBaseUrl: 'http://localhost:3000/api/v1',
+          googleClientId: 'google-id',
+          appleClientId: 'apple-id',
+        ),
+        locale: AppLocales.en,
+        apiClient: FakeCampaignApiClient(),
+        tokenStore: MemoryTokenStore(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Continue with Google'), findsOneWidget);
+    expect(find.text('Continue with Apple'), findsOneWidget);
   });
 }

@@ -8,6 +8,35 @@ import {
 describe('vegetarian rules', () => {
   const rules = new VegetarianRuleStrategy();
 
+  it('describes the seven vegetarian pledge choices for clients', () => {
+    const options = rules.describeCommitmentOptions();
+    expect(options.strategy).toBe('vegetarian');
+    expect(options.units).toEqual(['days', 'meals']);
+    expect(options.choices).toHaveLength(7);
+    expect(options.choices.map((choice) => choice.key)).toEqual([
+      'sui_yuan_su',
+      'huan_xi_su',
+      'ding_ri_su',
+      'yi_zhou_su',
+      'quan_yue_su',
+      'fa_yuan_su',
+      'yi_quan_su',
+    ]);
+    expect(
+      options.choices.find((choice) => choice.key === 'yi_zhou_su'),
+    ).toEqual({
+      key: 'yi_zhou_su',
+      name: '一周素',
+      canonicalUnit: 'days',
+      suggestedTarget: 7,
+      usesCampaignDuration: false,
+    });
+    expect(
+      options.choices.find((choice) => choice.key === 'yi_quan_su')
+        ?.usesCampaignDuration,
+    ).toBe(true);
+  });
+
   it('accepts the seven choice slugs and Chinese labels', () => {
     expect(normalizeVegetarianChoice('发愿素')).toBe('fa_yuan_su');
     expect(normalizeVegetarianChoice('yi_quan_su')).toBe('yi_quan_su');

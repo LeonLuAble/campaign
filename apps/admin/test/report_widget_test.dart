@@ -1,9 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
-
-import 'package:community_campaign_admin/dashboards/dashboard_models.dart';
+import 'package:api_client/api_client.dart';
 import 'package:community_campaign_admin/l10n/app_localizations.dart';
 import 'package:community_campaign_admin/reports/campaign_report_page.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 Widget wrap(Widget child) {
   return MaterialApp(
@@ -26,7 +25,7 @@ void main() {
     await tester.pumpWidget(
       wrap(
         const CampaignReportPage(
-          data: AggregateDashboardData(
+          data: AggregateDashboard(
             scope: 'campaign',
             progress: DashboardProgress(
               achievedValue: 4,
@@ -47,10 +46,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(
-      find.textContaining('exclude contact details'),
-      findsOneWidget,
-    );
+    expect(find.textContaining('exclude contact details'), findsOneWidget);
     expect(find.text('Export CSV'), findsOneWidget);
     expect(find.text('rankings'), findsNothing);
   });

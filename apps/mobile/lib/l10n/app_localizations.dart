@@ -95,6 +95,7 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
+    Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
     Locale('zh'),
   ];
 
@@ -271,6 +272,414 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Read'**
   String get readLabel;
+
+  /// No description provided for @loginTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get loginTitle;
+
+  /// No description provided for @identifierLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Email or mobile'**
+  String get identifierLabel;
+
+  /// No description provided for @passwordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get passwordLabel;
+
+  /// No description provided for @loginButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get loginButton;
+
+  /// No description provided for @googleSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Google'**
+  String get googleSignIn;
+
+  /// No description provided for @appleSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Apple'**
+  String get appleSignIn;
+
+  /// No description provided for @activateLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Activate account'**
+  String get activateLink;
+
+  /// No description provided for @forgotPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot password'**
+  String get forgotPassword;
+
+  /// No description provided for @activateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Activate account'**
+  String get activateTitle;
+
+  /// No description provided for @activationTokenLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Activation token'**
+  String get activationTokenLabel;
+
+  /// No description provided for @newPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get newPasswordLabel;
+
+  /// No description provided for @activateButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Activate'**
+  String get activateButton;
+
+  /// No description provided for @resendActivation.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend activation'**
+  String get resendActivation;
+
+  /// No description provided for @resetPasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset password'**
+  String get resetPasswordTitle;
+
+  /// No description provided for @requestReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Send reset email'**
+  String get requestReset;
+
+  /// No description provided for @confirmReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Set new password'**
+  String get confirmReset;
+
+  /// No description provided for @resetTokenLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset token'**
+  String get resetTokenLabel;
+
+  /// No description provided for @acceptedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'If the account exists, we sent instructions.'**
+  String get acceptedMessage;
+
+  /// No description provided for @campaignsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Campaigns'**
+  String get campaignsTitle;
+
+  /// No description provided for @noCampaigns.
+  ///
+  /// In en, this message translates to:
+  /// **'No campaigns yet.'**
+  String get noCampaigns;
+
+  /// No description provided for @joinCampaign.
+  ///
+  /// In en, this message translates to:
+  /// **'Join'**
+  String get joinCampaign;
+
+  /// No description provided for @enrolledLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Enrolled'**
+  String get enrolledLabel;
+
+  /// No description provided for @withdrawnLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawn'**
+  String get withdrawnLabel;
+
+  /// No description provided for @pledgeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pledge'**
+  String get pledgeTitle;
+
+  /// No description provided for @pledgeButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save pledge'**
+  String get pledgeButton;
+
+  /// No description provided for @selectChoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a pledge'**
+  String get selectChoice;
+
+  /// No description provided for @targetValueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Target'**
+  String get targetValueLabel;
+
+  /// No description provided for @unitLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit'**
+  String get unitLabel;
+
+  /// No description provided for @recordActionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Record today'**
+  String get recordActionTitle;
+
+  /// No description provided for @quantityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity'**
+  String get quantityLabel;
+
+  /// No description provided for @recordButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Record'**
+  String get recordButton;
+
+  /// No description provided for @cancelAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel recording'**
+  String get cancelAction;
+
+  /// No description provided for @occurredOnLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get occurredOnLabel;
+
+  /// No description provided for @progressTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My progress'**
+  String get progressTitle;
+
+  /// No description provided for @openProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress'**
+  String get openProgress;
+
+  /// No description provided for @openPledge.
+  ///
+  /// In en, this message translates to:
+  /// **'Pledge'**
+  String get openPledge;
+
+  /// No description provided for @openRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'Record meals'**
+  String get openRecord;
+
+  /// No description provided for @preferencesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get preferencesTitle;
+
+  /// No description provided for @openPreferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get openPreferences;
+
+  /// No description provided for @timezoneLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Timezone'**
+  String get timezoneLabel;
+
+  /// No description provided for @remindersEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily reminders'**
+  String get remindersEnabled;
+
+  /// No description provided for @reminderTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder time'**
+  String get reminderTime;
+
+  /// No description provided for @savePreferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Save preferences'**
+  String get savePreferences;
+
+  /// No description provided for @logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get logout;
+
+  /// No description provided for @identifierRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an email or mobile number.'**
+  String get identifierRequired;
+
+  /// No description provided for @passwordTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 8 characters.'**
+  String get passwordTooShort;
+
+  /// No description provided for @tokenRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the token from your message.'**
+  String get tokenRequired;
+
+  /// No description provided for @quantityInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a whole number quantity.'**
+  String get quantityInvalid;
+
+  /// No description provided for @targetInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a whole number target.'**
+  String get targetInvalid;
+
+  /// No description provided for @campaignStatusDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft'**
+  String get campaignStatusDraft;
+
+  /// No description provided for @campaignStatusPublished.
+  ///
+  /// In en, this message translates to:
+  /// **'Published'**
+  String get campaignStatusPublished;
+
+  /// No description provided for @campaignStatusStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Started'**
+  String get campaignStatusStarted;
+
+  /// No description provided for @campaignStatusCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get campaignStatusCompleted;
+
+  /// No description provided for @usesCampaignDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Target follows the campaign dates.'**
+  String get usesCampaignDuration;
+
+  /// No description provided for @errorInvalidCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Email, mobile, or password is incorrect.'**
+  String get errorInvalidCredentials;
+
+  /// No description provided for @errorTokenInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'This token is not valid.'**
+  String get errorTokenInvalid;
+
+  /// No description provided for @errorTokenReused.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session was reused. Please sign in again.'**
+  String get errorTokenReused;
+
+  /// No description provided for @errorTokenExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'This token has expired.'**
+  String get errorTokenExpired;
+
+  /// No description provided for @errorIdentityExists.
+  ///
+  /// In en, this message translates to:
+  /// **'That email or mobile is already registered.'**
+  String get errorIdentityExists;
+
+  /// No description provided for @errorWeakPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a stronger password (at least 8 characters).'**
+  String get errorWeakPassword;
+
+  /// No description provided for @errorSocialTokenInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Social sign-in could not be verified.'**
+  String get errorSocialTokenInvalid;
+
+  /// No description provided for @errorUnauthorized.
+  ///
+  /// In en, this message translates to:
+  /// **'Please sign in.'**
+  String get errorUnauthorized;
+
+  /// No description provided for @errorForbidden.
+  ///
+  /// In en, this message translates to:
+  /// **'You do not have permission for this action.'**
+  String get errorForbidden;
+
+  /// No description provided for @errorNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'The requested item was not found.'**
+  String get errorNotFound;
+
+  /// No description provided for @errorConflict.
+  ///
+  /// In en, this message translates to:
+  /// **'This change conflicts with existing data.'**
+  String get errorConflict;
+
+  /// No description provided for @errorRateLimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Try again later.'**
+  String get errorRateLimited;
+
+  /// No description provided for @errorValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Please check the form and try again.'**
+  String get errorValidation;
+
+  /// No description provided for @errorUnexpected.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Try again.'**
+  String get errorUnexpected;
 }
 
 class _AppLocalizationsDelegate
@@ -291,6 +700,18 @@ class _AppLocalizationsDelegate
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
+  // Lookup logic when language+script codes are specified.
+  switch (locale.languageCode) {
+    case 'zh':
+      {
+        switch (locale.scriptCode) {
+          case 'Hans':
+            return AppLocalizationsZhHans();
+        }
+        break;
+      }
+  }
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
     case 'en':

@@ -75,7 +75,12 @@ Run migrations against the target database **before** serving production traffic
 5. Run `migration:run`.
 6. Start the API container or `node dist/main.js`.
 7. Confirm `GET /api/v1/health` and `GET /api/v1/health/ready`.
-8. Create the first platform admin through a controlled process (existing user + `users.is_platform_admin`, or a reviewed bootstrap). `npm run seed:tzu-chi` promotes an **existing** user and is not a production password factory.
+8. Create the first platform admin:
+   - Generate a one-time setup key: `openssl rand -hex 32`.
+   - Set `SETUP_KEY` to that value and restart the API.
+   - Open the admin web app; when `GET /setup/status` reports `setupRequired: true`, complete **First admin setup**.
+   - **Remove `SETUP_KEY` from the environment** (or set it empty) and restart so setup stays disabled.
+   - Alternatives: promote an existing user with `users.is_platform_admin`, or `npm run seed:tzu-chi` (promotes an **existing** user; not a production password factory).
 9. Do **not** run `npm run seed:demo` in production.
 
 ## Needs human decision

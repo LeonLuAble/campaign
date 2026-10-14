@@ -163,6 +163,8 @@ describe('UserImportService', () => {
         row_number: 2,
         raw_data: { email: 'a@example.com', mobile: '', external_id: 'E1' },
         status: 'pending',
+        error_code: null as string | null,
+        resolved_user_id: null as string | null,
       },
       {
         id: 'r2',
@@ -170,6 +172,8 @@ describe('UserImportService', () => {
         row_number: 3,
         raw_data: { email: 'a@example.com', mobile: '', external_id: 'E2' },
         status: 'pending',
+        error_code: null as string | null,
+        resolved_user_id: null as string | null,
       },
       {
         id: 'r3',
@@ -177,6 +181,8 @@ describe('UserImportService', () => {
         row_number: 4,
         raw_data: { email: 'b@example.com', mobile: '', external_id: '' },
         status: 'pending',
+        error_code: null as string | null,
+        resolved_user_id: null as string | null,
       },
     ];
     rowRepository.find.mockResolvedValue(rows);
@@ -406,6 +412,8 @@ describe('UserImportService', () => {
       row_number: 2,
       raw_data: { email: 'admin@example.com' },
       status: 'pending',
+      error_code: null as string | null,
+      resolved_user_id: null as string | null,
     };
     rowRepository.find.mockResolvedValue([row]);
     identities.findIdentity.mockResolvedValue({

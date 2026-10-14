@@ -1,0 +1,18 @@
+name: api_client
+description: Typed HTTP client for the Community Campaign API. The backend remains authoritative.
+publish_to: "none"
+version: 1.0.0
+
+environment:
+  sdk: ^3.13.2
+
+dependencies:
+  dio: ^5.8.1
+  flutter:
+    sdk: flutter
+  flutter_secure_storage: ^9.2.4
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter

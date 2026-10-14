@@ -9,6 +9,7 @@ import { HealthModule } from './modules/health/health.module.js';
 import { IdentityModule } from './modules/identity/identity.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { AuthorizationModule } from './modules/authorization/authorization.module.js';
+import { SetupModule } from './modules/setup/setup.module.js';
 import { CustomersModule } from './modules/customers/customers.module.js';
 import { CommunitiesModule } from './modules/communities/communities.module.js';
 import { MembershipsModule } from './modules/memberships/memberships.module.js';
@@ -60,6 +61,7 @@ import { OutboundNotificationsModule } from './platform/notifications/outbound-n
     HealthModule,
     IdentityModule,
     AuthModule,
+    SetupModule,
     CustomersModule,
     CommunitiesModule,
     MembershipsModule,

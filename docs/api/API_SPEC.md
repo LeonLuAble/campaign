@@ -7,13 +7,17 @@ Auth:
 - POST /auth/social `{ provider: 'google' | 'apple', idToken }` → 200 `{ accessToken, refreshToken }`
 - POST /auth/refresh
 - POST /auth/logout
-- GET /me
+- GET /me (`isPlatformAdmin` is included so admin clients can show customer creation without guessing)
 - POST /auth/activate `{ token, password? }` → 204; idempotent if already verified. `password` is required when the account has no credential (imported users); ignored when a password already exists.
 - POST /auth/activate/resend `{ identifier }` → 202 `{ accepted: true }`
 - POST /auth/password-reset/request `{ identifier }` → 202 `{ accepted: true }` (no enumeration)
 - POST /auth/password-reset/confirm `{ token, password }` → 204
 
-Auth error codes include `INVALID_CREDENTIALS`, `SOCIAL_TOKEN_INVALID`, `TOKEN_INVALID`, `TOKEN_REUSED`, `TOKEN_EXPIRED`, `IDENTITY_ALREADY_EXISTS`, and `WEAK_PASSWORD`.
+First-admin setup (public; disabled unless `SETUP_KEY` is set to at least 32 characters):
+- GET /setup/status → `{ setupRequired: boolean }`. `true` only when no platform admin exists **and** `SETUP_KEY` is configured. Once an admin exists, the API may cache `setupRequired: false` in memory.
+- POST /setup/admin `{ setupKey, email, password, displayName? }` → 200 `{ accessToken, refreshToken }` (same token pair as login). Creates the first platform admin with a verified email identity and credential inside one transaction guarded by `pg_advisory_xact_lock`. Rate-limited with the same auth throttler as `/auth/*`.
+
+Auth error codes include `INVALID_CREDENTIALS`, `SOCIAL_TOKEN_INVALID`, `TOKEN_INVALID`, `TOKEN_REUSED`, `TOKEN_EXPIRED`, `IDENTITY_ALREADY_EXISTS`, `WEAK_PASSWORD`, `SETUP_NOT_AVAILABLE` (409 when setup is disabled or an admin already exists), and `INVALID_SETUP_KEY` (401).
 Password policy: minimum 8 characters (configurable via `PASSWORD_MIN_LENGTH`).
 
 Customer: `/customers`
@@ -76,6 +80,7 @@ Actions (tenant-scoped via campaign/participation/action ids; generic recording,
 - POST /submissions/:submissionId/approve|reject `{ note? }` → requires `submissions.update`. Admins may reject auto-approved submissions. Phase 6 progress must count only `approved` submissions on non-cancelled actions.
 
 Commitments:
+- GET `/campaigns/:campaignId/commitment-options` → requires `commitments.read`. Returns the campaign rule strategy’s pledge choices, units, suggested targets, and whether the target uses campaign duration. Vegetarian campaigns (`rulesStrategy = "vegetarian"`) return the seven 速素数数 choices. Generic campaigns return empty `choices`. Flutter must not hardcode choice catalogs.
 - POST /participations/:participationId/commitments `{ typeKey?, targetValue, unit, payload? }` → 201 create-or-replace (one commitment per participation). Members may pledge only on their own enrolled participation (`commitments.create`). Acting on another user requires `commitments.update`. Allowed while the campaign is published or started.
 - GET /participations/:participationId/commitments → requires `commitments.read`. Members see only their own.
 - GET /commitments/:commitmentId → requires `commitments.read`

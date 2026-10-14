@@ -84,4 +84,6 @@ export const envValidationSchema = Joi.object({
   AUTH_RATE_LIMIT_ENABLED: Joi.boolean().optional(),
   AUTH_RATE_LIMIT_TTL_SECONDS: Joi.number().integer().min(1).default(60),
   AUTH_RATE_LIMIT_MAX: Joi.number().integer().min(1).default(20),
+  // Empty disables first-admin setup. When set, must be at least 32 characters.
+  SETUP_KEY: Joi.string().min(32).allow('').optional(),
 });

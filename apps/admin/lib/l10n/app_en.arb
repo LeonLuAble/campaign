@@ -1,14 +1,10 @@
 {
   "@@locale": "en",
   "appTitle": "Community Campaign Admin",
-  "homeMessage": "Administration shell",
+  "homeMessage": "Administration",
   "environmentLabel": "Environment: {environment}",
   "@environmentLabel": {
-    "placeholders": {
-      "environment": {
-        "type": "String"
-      }
-    }
+    "placeholders": { "environment": { "type": "String" } }
   },
   "openCampaignDashboard": "Campaign dashboard",
   "openCommunityDashboard": "Community dashboard",
@@ -22,9 +18,7 @@
   "visualizationSection": "Visualization",
   "completionLabel": "Completion: {percent}",
   "@completionLabel": {
-    "placeholders": {
-      "percent": { "type": "String" }
-    }
+    "placeholders": { "percent": { "type": "String" } }
   },
   "achievedOfTarget": "{achieved} of {target} {unit}",
   "@achievedOfTarget": {
@@ -37,9 +31,7 @@
   "noOutcomes": "No outcomes yet. Impact factors are configured per campaign or tenant and are never hardcoded.",
   "factorSourceLabel": "Source: {source}",
   "@factorSourceLabel": {
-    "placeholders": {
-      "source": { "type": "String" }
-    }
+    "placeholders": { "source": { "type": "String" } }
   },
   "outcomeValueLabel": "{value} {unit}",
   "@outcomeValueLabel": {
@@ -72,5 +64,88 @@
   "emptyReport": "No report data yet.",
   "exportCsv": "Export CSV",
   "exportRequiresPermission": "CSV export requires reports.export and is audited.",
-  "anonymousReportNote": "Aggregate reports exclude contact details and do not rank people."
+  "anonymousReportNote": "Aggregate reports exclude contact details and do not rank people.",
+  "loginTitle": "Sign in",
+  "identifierLabel": "Email or mobile",
+  "passwordLabel": "Password",
+  "loginButton": "Sign in",
+  "setupTitle": "First admin setup",
+  "setupSubtitle": "Create the first platform administrator for this environment.",
+  "setupKeyLabel": "Setup key",
+  "setupEmailLabel": "Admin email",
+  "setupConfirmPasswordLabel": "Confirm password",
+  "setupDisplayNameLabel": "Display name (optional)",
+  "setupSubmitButton": "Create admin",
+  "setupKeyRequired": "Enter the full setup key.",
+  "setupEmailRequired": "Enter a valid email address.",
+  "setupPasswordMismatch": "Passwords do not match.",
+  "checkingSetup": "Checking setup status…",
+  "logout": "Sign out",
+  "customersTitle": "Customers",
+  "createCustomer": "Create customer",
+  "customerNameLabel": "Customer name",
+  "communitiesTitle": "Communities",
+  "createCommunity": "Create community",
+  "communityNameLabel": "Community name",
+  "importTitle": "CSV import",
+  "uploadCsv": "Upload CSV",
+  "mapFields": "Save mapping",
+  "validateImport": "Validate",
+  "previewImport": "Preview",
+  "confirmImport": "Confirm import",
+  "importResult": "Import result",
+  "campaignsTitle": "Campaigns",
+  "createCampaign": "Create campaign",
+  "campaignNameLabel": "Campaign name",
+  "timezoneLabel": "Timezone",
+  "startsOnLabel": "Starts on",
+  "endsOnLabel": "Ends on",
+  "publishCampaign": "Publish",
+  "startCampaign": "Start",
+  "participantsTitle": "Participants",
+  "submissionsTitle": "Submissions",
+  "rejectSubmission": "Reject",
+  "rejectNoteLabel": "Review note",
+  "impactFactorsTitle": "Impact factors",
+  "sourceUnitLabel": "Source unit",
+  "outcomeMetricLabel": "Outcome metric",
+  "outcomeUnitLabel": "Outcome unit",
+  "factorValueLabel": "Factor value",
+  "citationLabel": "Source citation",
+  "effectiveFromLabel": "Effective from",
+  "saveImpactFactor": "Save impact factor",
+  "identifierRequired": "Enter an email or mobile number.",
+  "passwordTooShort": "Password must be at least 8 characters.",
+  "nameRequired": "Enter a name.",
+  "openImport": "CSV import",
+  "openCampaigns": "Campaigns",
+  "openCommunities": "Communities",
+  "openParticipants": "Participants",
+  "openSubmissions": "Submissions",
+  "openImpactFactors": "Impact factors",
+  "rulesStrategyLabel": "Rules strategy",
+  "templateLabel": "Template",
+  "scopeLabel": "Scope",
+  "emailColumn": "Email column",
+  "mobileColumn": "Mobile column",
+  "exportReady": "CSV export is ready.",
+  "errorInvalidCredentials": "Email, mobile, or password is incorrect.",
+  "errorTokenInvalid": "This token is not valid.",
+  "errorTokenReused": "Your session was reused. Please sign in again.",
+  "errorTokenExpired": "This token has expired.",
+  "errorIdentityExists": "That email or mobile is already registered.",
+  "errorWeakPassword": "Choose a stronger password (at least 8 characters).",
+  "errorSocialTokenInvalid": "Social sign-in could not be verified.",
+  "errorUnauthorized": "Please sign in.",
+  "errorForbidden": "You do not have permission for this action.",
+  "errorNotFound": "The requested item was not found.",
+  "errorConflict": "This change conflicts with existing data.",
+  "errorSetupNotAvailable": "First-admin setup is not available.",
+  "errorInvalidSetupKey": "The setup key is incorrect.",
+  "errorRateLimited": "Too many attempts. Try again later.",
+  "errorValidation": "Please check the form and try again.",
+  "errorUnexpected": "Something went wrong. Try again.",
+  "noCustomers": "No customers yet.",
+  "noCommunities": "No communities yet.",
+  "noCampaigns": "No campaigns yet."
 }

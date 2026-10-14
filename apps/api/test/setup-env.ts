@@ -3,6 +3,11 @@ process.env.PORT ??= '3000';
 process.env.DATABASE_URL ??=
   'postgresql://campaign:campaign@localhost:5432/campaign';
 process.env.REDIS_URL ??= 'redis://localhost:6379';
+// Keep auth rate limiting off for e2e unless a suite explicitly enables it
+// (security.e2e-spec). Must be set before ConfigModule loads root `.env`,
+// which enables rate limiting for local `start:dev`.
+process.env.AUTH_RATE_LIMIT_ENABLED = 'false';
+delete process.env.AUTH_RATE_LIMIT_MAX;
 process.env.JWT_ACCESS_SECRET ??= 'test-access-secret-min-32-characters-xx';
 process.env.JWT_REFRESH_SECRET ??= 'test-refresh-secret-min-32-characters-x';
 process.env.JWT_ACCESS_TTL_SECONDS ??= '900';

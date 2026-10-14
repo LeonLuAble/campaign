@@ -4,11 +4,7 @@
   "homeMessage": "Community Campaign Platform",
   "environmentLabel": "Environment: {environment}",
   "@environmentLabel": {
-    "placeholders": {
-      "environment": {
-        "type": "String"
-      }
-    }
+    "placeholders": { "environment": { "type": "String" } }
   },
   "openDashboard": "My dashboard",
   "participantDashboardTitle": "My campaign dashboard",
@@ -20,11 +16,7 @@
   "visualizationSection": "Visualization",
   "completionLabel": "Completion: {percent}",
   "@completionLabel": {
-    "placeholders": {
-      "percent": {
-        "type": "String"
-      }
-    }
+    "placeholders": { "percent": { "type": "String" } }
   },
   "achievedOfTarget": "{achieved} of {target} {unit}",
   "@achievedOfTarget": {
@@ -37,9 +29,7 @@
   "noOutcomes": "No outcomes yet. Impact factors are configured by administrators.",
   "factorSourceLabel": "Source: {source}",
   "@factorSourceLabel": {
-    "placeholders": {
-      "source": { "type": "String" }
-    }
+    "placeholders": { "source": { "type": "String" } }
   },
   "outcomeValueLabel": "{value} {unit}",
   "@outcomeValueLabel": {
@@ -72,5 +62,73 @@
   "emptyNotifications": "No notifications yet.",
   "markRead": "Mark read",
   "unreadLabel": "Unread",
-  "readLabel": "Read"
+  "readLabel": "Read",
+  "loginTitle": "Sign in",
+  "identifierLabel": "Email or mobile",
+  "passwordLabel": "Password",
+  "loginButton": "Sign in",
+  "googleSignIn": "Continue with Google",
+  "appleSignIn": "Continue with Apple",
+  "activateLink": "Activate account",
+  "forgotPassword": "Forgot password",
+  "activateTitle": "Activate account",
+  "activationTokenLabel": "Activation token",
+  "newPasswordLabel": "New password",
+  "activateButton": "Activate",
+  "resendActivation": "Resend activation",
+  "resetPasswordTitle": "Reset password",
+  "requestReset": "Send reset email",
+  "confirmReset": "Set new password",
+  "resetTokenLabel": "Reset token",
+  "acceptedMessage": "If the account exists, we sent instructions.",
+  "campaignsTitle": "Campaigns",
+  "noCampaigns": "No campaigns yet.",
+  "joinCampaign": "Join",
+  "enrolledLabel": "Enrolled",
+  "withdrawnLabel": "Withdrawn",
+  "pledgeTitle": "Pledge",
+  "pledgeButton": "Save pledge",
+  "selectChoice": "Choose a pledge",
+  "targetValueLabel": "Target",
+  "unitLabel": "Unit",
+  "recordActionTitle": "Record today",
+  "quantityLabel": "Quantity",
+  "recordButton": "Record",
+  "cancelAction": "Cancel recording",
+  "occurredOnLabel": "Date",
+  "progressTitle": "My progress",
+  "openProgress": "Progress",
+  "openPledge": "Pledge",
+  "openRecord": "Record meals",
+  "preferencesTitle": "Preferences",
+  "openPreferences": "Preferences",
+  "timezoneLabel": "Timezone",
+  "remindersEnabled": "Daily reminders",
+  "reminderTime": "Reminder time",
+  "savePreferences": "Save preferences",
+  "logout": "Sign out",
+  "identifierRequired": "Enter an email or mobile number.",
+  "passwordTooShort": "Password must be at least 8 characters.",
+  "tokenRequired": "Enter the token from your message.",
+  "quantityInvalid": "Enter a whole number quantity.",
+  "targetInvalid": "Enter a whole number target.",
+  "campaignStatusDraft": "Draft",
+  "campaignStatusPublished": "Published",
+  "campaignStatusStarted": "Started",
+  "campaignStatusCompleted": "Completed",
+  "usesCampaignDuration": "Target follows the campaign dates.",
+  "errorInvalidCredentials": "Email, mobile, or password is incorrect.",
+  "errorTokenInvalid": "This token is not valid.",
+  "errorTokenReused": "Your session was reused. Please sign in again.",
+  "errorTokenExpired": "This token has expired.",
+  "errorIdentityExists": "That email or mobile is already registered.",
+  "errorWeakPassword": "Choose a stronger password (at least 8 characters).",
+  "errorSocialTokenInvalid": "Social sign-in could not be verified.",
+  "errorUnauthorized": "Please sign in.",
+  "errorForbidden": "You do not have permission for this action.",
+  "errorNotFound": "The requested item was not found.",
+  "errorConflict": "This change conflicts with existing data.",
+  "errorRateLimited": "Too many attempts. Try again later.",
+  "errorValidation": "Please check the form and try again.",
+  "errorUnexpected": "Something went wrong. Try again."
 }

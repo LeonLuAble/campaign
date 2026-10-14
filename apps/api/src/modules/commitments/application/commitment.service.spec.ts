@@ -137,6 +137,20 @@ describe('CommitmentService', () => {
     service = module.get(CommitmentService);
   });
 
+  it('returns vegetarian pledge choices from campaign configuration', async () => {
+    const options = await service.listCommitmentOptions(
+      memberContext(),
+      campaignId,
+    );
+    expect(options).toMatchObject({
+      campaignId,
+      customerId: tenantA,
+      strategy: 'vegetarian',
+    });
+    expect(options.choices.map((choice) => choice.key)).toContain('fa_yuan_su');
+    expect(options.units).toEqual(['days', 'meals']);
+  });
+
   it('lets a member pledge a vegetarian commitment on their participation', async () => {
     commitmentRepository.findOne.mockResolvedValue(null);
     const created = await service.createOrReplace(

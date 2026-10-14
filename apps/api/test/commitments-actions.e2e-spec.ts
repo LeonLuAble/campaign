@@ -128,6 +128,19 @@ describe('Commitments and actions (e2e)', () => {
     };
   }
 
+  it('exposes vegetarian pledge choices for a campaign without the client hardcoding them', async () => {
+    const ctx = await startedCampaign();
+    const options = await request(app.getHttpServer())
+      .get(`/api/v1/campaigns/${ctx.campaignId}/commitment-options`)
+      .set(auth(ctx.member.accessToken));
+    expect(options.status).toBe(200);
+    expect(options.body.strategy).toBe('vegetarian');
+    expect(options.body.choices).toHaveLength(7);
+    expect(options.body.choices.map((choice: { key: string }) => choice.key)).toEqual(
+      expect.arrayContaining(['sui_yuan_su', 'fa_yuan_su', 'yi_quan_su']),
+    );
+  });
+
   it('lets a member pledge and record a vegetarian day, then cancel it', async () => {
     const ctx = await startedCampaign();
 

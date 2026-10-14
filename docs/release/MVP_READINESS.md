@@ -29,10 +29,11 @@ The API MVP for Tzu Chi Malaysia's 速素数数 is **feature-complete**. Remaini
 | Measurement, versioned impact factors, outcomes | done | `apps/api/src/modules/measurements`, `outcomes`; `apps/api/test/measurements-outcomes.e2e-spec.ts`. No platform-default factor values. |
 | TREE visualization | done | Generic `tree` type; display name 素心树 is settings. `apps/api/src/modules/visualizations`; `apps/api/test/measurements-outcomes.e2e-spec.ts` |
 | Notifications | done | In-app inbox, campaign-started, first-cross milestone, daily action reminders. `apps/api/src/modules/notifications`; `apps/api/test/notifications.e2e-spec.ts`, `mvp-journey.e2e-spec.ts` |
-| English + Simplified Chinese | partial | API locales `en` and `zh-Hans` (`apps/api/src/modules/localization`, `apps/api/test/localization.e2e-spec.ts`). Flutter ARB files use `en` and `zh` (`apps/mobile/lib/l10n`, `apps/admin/lib/l10n`). Server maps `zh*` → `zh-Hans`. Malay is out of MVP. |
+| Flutter HTTP wiring | done | Shared client `packages/api_client` (JWT access/refresh, `TOKEN_REUSED` logout, `zh-Hans` Accept-Language, error envelope). Mobile: login/activation/reset, campaigns, self-join, pledge from `GET /campaigns/:id/commitment-options`, meal record/cancel, progress, dashboard + TREE, notifications, preferences. Admin: customers/communities, CSV import, campaign create/publish/start, participants, submission reject, impact factors, dashboards, report CSV export. Widget tests use `FakeCampaignApiClient`. |
+| English + Simplified Chinese | done | API locales `en` and `zh-Hans` (`apps/api/src/modules/localization`, `apps/api/test/localization.e2e-spec.ts`). Flutter ARB files use `en` and `zh_Hans`; clients send `zh-Hans` (`packages/api_client`, `apps/mobile/lib/l10n`, `apps/admin/lib/l10n`). Server still maps `zh*` → `zh-Hans`. Malay is out of MVP. |
 | Privacy | partial | Privacy levels are stored on actions (default `private`) (`apps/api/src/modules/actions/domain/action.entity.ts`). Member list visibility is still self-scoped; privacy does not expand or restrict admin/member reads beyond that. |
 | Audit | partial | Structured `report_exported` logs (`apps/api/src/modules/reports/application/report.service.ts`). No `audit_logs` table or dedicated audit module. Sensitive auth/import/campaign operations log structured events without secrets. |
-| Participant / group / community / campaign dashboards | done | API: `apps/api/src/modules/visualizations/application/dashboard.service.ts`; `apps/api/test/measurements-outcomes.e2e-spec.ts`. Flutter dashboard **views** render backend-shaped payloads but are not wired to HTTP (see larger gaps). |
+| Participant / group / community / campaign dashboards | done | API: `apps/api/src/modules/visualizations/application/dashboard.service.ts`; `apps/api/test/measurements-outcomes.e2e-spec.ts`. Flutter mobile and admin dashboards load these payloads over HTTP (`apps/mobile`, `apps/admin`). |
 | Reports and CSV export without contact PII | done | `apps/api/src/modules/reports`; `apps/api/test/reports.e2e-spec.ts`, `mvp-journey.e2e-spec.ts` |
 
 ## Key requirements
@@ -70,7 +71,7 @@ Object storage env vars exist; no `files` module uploads yet. CSV import stores 
 
 ## Larger gaps (not built)
 
-1. **Flutter clients are presentation shells.** Mobile and admin render dashboard/notification/report widgets from injected sample data. There is no HTTP client, login, import, campaign admin, or CSV export wiring (`apps/mobile`, `apps/admin`). Admin CSV button is a stub.
+1. **Native Google/Apple SDKs** are not bundled. Sign-in buttons stay hidden unless `GOOGLE_CLIENT_ID` / `APPLE_CLIENT_ID` dart-defines are set; production still needs the platform plugins and human-issued client IDs.
 2. **Tags** (descriptive attributes that never grant permissions).
 3. **Dedicated goals resource** (commitments cover participant targets).
 4. **`audit_logs` table** and query API (export currently uses structured logs).

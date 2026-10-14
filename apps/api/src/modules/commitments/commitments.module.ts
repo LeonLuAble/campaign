@@ -9,6 +9,7 @@ import { ParticipationModule } from '../participation/participation.module.js';
 import { VegetarianModule } from '../vegetarian/vegetarian.module.js';
 import { CommitmentService } from './application/commitment.service.js';
 import { Commitment } from './domain/commitment.entity.js';
+import { CampaignCommitmentOptionsController } from './presentation/campaign-commitment-options.controller.js';
 import { CommitmentsController } from './presentation/commitments.controller.js';
 import { ParticipationCommitmentsController } from './presentation/participation-commitments.controller.js';
 
@@ -22,7 +23,11 @@ import { ParticipationCommitmentsController } from './presentation/participation
     forwardRef(() => CustomersModule),
     forwardRef(() => ParticipationModule),
   ],
-  controllers: [ParticipationCommitmentsController, CommitmentsController],
+  controllers: [
+    CampaignCommitmentOptionsController,
+    ParticipationCommitmentsController,
+    CommitmentsController,
+  ],
   providers: [
     CommitmentService,
     { provide: COMMITMENT_READER, useExisting: CommitmentService },
