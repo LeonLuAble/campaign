@@ -142,6 +142,7 @@ describe('Commitments and actions (e2e)', () => {
   });
 
   it('lets a member pledge and record a vegetarian day, then cancel it', async () => {
+    const ctx = await startedCampaign();
 
     const pledged = await request(app.getHttpServer())
       .post(`/api/v1/participations/${ctx.participationId}/commitments`)
