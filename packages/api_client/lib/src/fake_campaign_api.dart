@@ -338,6 +338,7 @@ class FakeCampaignApiClient implements CampaignApiClient {
   bool signedIn = false;
   bool failLogin = false;
   bool tokenReused = false;
+  bool setupRequired = false;
   String lastAcceptLanguage = 'en';
   final bool googleClientConfigured;
   final bool appleClientConfigured;
@@ -348,6 +349,71 @@ class FakeCampaignApiClient implements CampaignApiClient {
       code: code,
       message: message ?? code,
     );
+  }
+
+  @override
+  Future<SetupStatus> getSetupStatus() async {
+    return SetupStatus(setupRequired: setupRequired);
+  }
+
+  @override
+  Future<TokenPair> completeSetup({
+    required String setupKey,
+    required String email,
+    required String password,
+    String? displayName,
+  }) async {
+    if (!setupRequired) {
+      _throw('SETUP_NOT_AVAILABLE', status: 409);
+    }
+    if (setupKey.length < 32) {
+      _throw('INVALID_SETUP_KEY', status: 401);
+    }
+    if (password.length < 8) {
+      _throw('WEAK_PASSWORD');
+    }
+    setupRequired = false;
+    signedIn = true;
+    if (displayName != null && displayName.trim().isNotEmpty) {
+      profile = UserProfile(
+        id: profile.id,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        displayName: displayName.trim(),
+        locale: profile.locale,
+        timezone: profile.timezone,
+        isActive: true,
+        isPlatformAdmin: true,
+        identities: [
+          UserIdentity(
+            id: 'setup-id',
+            type: 'email',
+            identifier: email.trim(),
+            isVerified: true,
+          ),
+        ],
+      );
+    } else {
+      profile = UserProfile(
+        id: profile.id,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        displayName: profile.displayName,
+        locale: profile.locale,
+        timezone: profile.timezone,
+        isActive: true,
+        isPlatformAdmin: true,
+        identities: [
+          UserIdentity(
+            id: 'setup-id',
+            type: 'email',
+            identifier: email.trim(),
+            isVerified: true,
+          ),
+        ],
+      );
+    }
+    return const TokenPair(accessToken: 'access', refreshToken: 'refresh');
   }
 
   @override

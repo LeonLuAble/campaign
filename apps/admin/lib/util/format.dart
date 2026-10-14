@@ -11,6 +11,11 @@ bool looksLikeIdentifier(String value) {
   return RegExp(r'^\d{8,15}$').hasMatch(digits);
 }
 
+bool looksLikeEmail(String value) {
+  final trimmed = value.trim();
+  return trimmed.contains('@') && trimmed.contains('.');
+}
+
 String localizeApiError(AppLocalizations l10n, Object error) {
   if (error is! ApiException) {
     return l10n.errorUnexpected;
@@ -38,6 +43,10 @@ String localizeApiError(AppLocalizations l10n, Object error) {
       return l10n.errorNotFound;
     case 'errorConflict':
       return l10n.errorConflict;
+    case 'errorSetupNotAvailable':
+      return l10n.errorSetupNotAvailable;
+    case 'errorInvalidSetupKey':
+      return l10n.errorInvalidSetupKey;
     case 'errorRateLimited':
       return l10n.errorRateLimited;
     case 'errorValidation':

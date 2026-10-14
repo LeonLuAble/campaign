@@ -20,6 +20,16 @@ export class IdentityAlreadyExistsError extends Error {
   }
 }
 
+export class PlatformAdminAlreadyExistsError extends Error {
+  constructor() {
+    super('A platform admin already exists');
+    this.name = 'PlatformAdminAlreadyExistsError';
+  }
+}
+
+/** Transaction-scoped advisory lock id for first platform-admin setup. */
+export const PLATFORM_ADMIN_SETUP_LOCK_ID = 8_720_140_501;
+
 function isUniqueViolation(error: unknown): boolean {
   if (!(error instanceof QueryFailedError)) {
     return false;
@@ -174,6 +184,80 @@ export class IdentityAccountService {
       { is_platform_admin: isPlatformAdmin },
     );
     return (result.affected ?? 0) > 0;
+  }
+
+  async hasPlatformAdmin(): Promise<boolean> {
+    const count = await this.userRepository.count({
+      where: { is_platform_admin: true },
+    });
+    return count > 0;
+  }
+
+  /**
+   * Creates the first platform admin with a verified email identity and password.
+   * Uses a transaction advisory lock and re-checks that no platform admin exists.
+   */
+  async createFirstPlatformAdmin(input: {
+    email: string;
+    normalizedEmail: string;
+    passwordHash: string;
+    displayName?: string | null;
+  }): Promise<CreatedLocalAccount> {
+    try {
+      return await this.dataSource.transaction(async (manager) => {
+        await manager.query('SELECT pg_advisory_xact_lock($1)', [
+          PLATFORM_ADMIN_SETUP_LOCK_ID,
+        ]);
+
+        const userRepository = manager.getRepository(User);
+        const existingAdmins = await userRepository.count({
+          where: { is_platform_admin: true },
+        });
+        if (existingAdmins > 0) {
+          throw new PlatformAdminAlreadyExistsError();
+        }
+
+        const identityRepository = manager.getRepository(UserIdentity);
+        const credentialRepository = manager.getRepository(UserCredential);
+        const trimmedDisplayName = input.displayName?.trim() || null;
+
+        const user = await userRepository.save(
+          userRepository.create({
+            display_name: trimmedDisplayName,
+            is_active: true,
+            is_platform_admin: true,
+          }),
+        );
+
+        const identity = await identityRepository.save(
+          identityRepository.create({
+            user_id: user.id,
+            type: IdentityType.EMAIL,
+            identifier: input.email.trim(),
+            normalized_identifier: input.normalizedEmail,
+            is_verified: true,
+            verified_at: new Date(),
+          }),
+        );
+
+        await credentialRepository.save(
+          credentialRepository.create({
+            user_id: user.id,
+            password_hash: input.passwordHash,
+          }),
+        );
+
+        return { userId: user.id, identityId: identity.id };
+      });
+    } catch (error) {
+      if (error instanceof PlatformAdminAlreadyExistsError) {
+        throw error;
+      }
+      if (isUniqueViolation(error)) {
+        throw new IdentityAlreadyExistsError();
+      }
+      throw error;
+    }
   }
 
   async updateProfile(

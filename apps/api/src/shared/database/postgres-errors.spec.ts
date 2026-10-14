@@ -8,11 +8,11 @@ import {
 } from './postgres-errors.js';
 
 function queryError(code: string): QueryFailedError {
-  const error = new QueryFailedError('SELECT 1', [], new Error('driver'));
-  (error as QueryFailedError & { driverError: { code: string } }).driverError =
-    {
-      code,
-    };
+  const driver = Object.assign(new Error('driver'), { code });
+  const error = new QueryFailedError('SELECT 1', [], driver);
+  (
+    error as QueryFailedError & { driverError: Error & { code: string } }
+  ).driverError = driver;
   return error;
 }
 

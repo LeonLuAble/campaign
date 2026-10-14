@@ -84,7 +84,7 @@ docker compose up -d --wait
 
 PostgreSQL listens on `localhost:5432` and Redis on `localhost:6379`.
 
-### 3. Install API dependencies, migrate, and seed demo data
+### 3. Install API dependencies, migrate, and create an admin
 
 Use Node 22 from `.nvmrc` before installing. Node 20 fails on the Nest CLI and on native modules such as `argon2` with the macOS 27 SDK.
 
@@ -93,6 +93,21 @@ cd apps/api
 nvm use
 npm install
 npm run migration:run
+```
+
+**Option A — first-admin setup (empty database):**
+
+```sh
+# from the repository root
+openssl rand -hex 32   # copy into SETUP_KEY in .env
+```
+
+Set `SETUP_KEY` in `.env` (at least 32 characters), start the API, open the admin web app, and complete **First admin setup**. Clear `SETUP_KEY` afterward so setup cannot run again.
+
+**Option B — demo seed (local invented data):**
+
+```sh
+cd apps/api
 npm run seed:demo
 ```
 

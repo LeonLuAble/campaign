@@ -309,6 +309,72 @@ abstract class AppLocalizations {
   /// **'Sign in'**
   String get loginButton;
 
+  /// No description provided for @setupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'First admin setup'**
+  String get setupTitle;
+
+  /// No description provided for @setupSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create the first platform administrator for this environment.'**
+  String get setupSubtitle;
+
+  /// No description provided for @setupKeyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Setup key'**
+  String get setupKeyLabel;
+
+  /// No description provided for @setupEmailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin email'**
+  String get setupEmailLabel;
+
+  /// No description provided for @setupConfirmPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm password'**
+  String get setupConfirmPasswordLabel;
+
+  /// No description provided for @setupDisplayNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Display name (optional)'**
+  String get setupDisplayNameLabel;
+
+  /// No description provided for @setupSubmitButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Create admin'**
+  String get setupSubmitButton;
+
+  /// No description provided for @setupKeyRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the full setup key.'**
+  String get setupKeyRequired;
+
+  /// No description provided for @setupEmailRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email address.'**
+  String get setupEmailRequired;
+
+  /// No description provided for @setupPasswordMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match.'**
+  String get setupPasswordMismatch;
+
+  /// No description provided for @checkingSetup.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking setup status…'**
+  String get checkingSetup;
+
   /// No description provided for @logout.
   ///
   /// In en, this message translates to:
@@ -668,6 +734,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This change conflicts with existing data.'**
   String get errorConflict;
+
+  /// No description provided for @errorSetupNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'First-admin setup is not available.'**
+  String get errorSetupNotAvailable;
+
+  /// No description provided for @errorInvalidSetupKey.
+  ///
+  /// In en, this message translates to:
+  /// **'The setup key is incorrect.'**
+  String get errorInvalidSetupKey;
 
   /// No description provided for @errorRateLimited.
   ///

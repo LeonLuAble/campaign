@@ -58,6 +58,10 @@ String apiErrorMessageKey(String code) {
       return 'errorNotFound';
     case 'CONFLICT':
       return 'errorConflict';
+    case 'SETUP_NOT_AVAILABLE':
+      return 'errorSetupNotAvailable';
+    case 'INVALID_SETUP_KEY':
+      return 'errorInvalidSetupKey';
     case 'RATE_LIMITED':
       return 'errorRateLimited';
     case 'VALIDATION_FAILED':

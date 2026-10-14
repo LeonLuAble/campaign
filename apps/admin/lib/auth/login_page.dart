@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../session/api_scope.dart';
 import '../util/format.dart';
+import 'setup_admin_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -16,12 +17,41 @@ class _LoginPageState extends State<LoginPage> {
   final _password = TextEditingController();
   String? _error;
   bool _busy = false;
+  bool _checkingSetup = true;
+  bool _setupRequired = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadSetupStatus());
+  }
 
   @override
   void dispose() {
     _identifier.dispose();
     _password.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadSetupStatus() async {
+    try {
+      final status = await ApiScope.of(context).session.getSetupStatus();
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _setupRequired = status.setupRequired;
+        _checkingSetup = false;
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _setupRequired = false;
+        _checkingSetup = false;
+      });
+    }
   }
 
   Future<void> _submit() async {
@@ -54,6 +84,16 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_checkingSetup) {
+      final l10n = AppLocalizations.of(context);
+      return Scaffold(
+        body: Center(child: Text(l10n.checkingSetup)),
+      );
+    }
+    if (_setupRequired) {
+      return const SetupAdminPage();
+    }
+
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(title: Text(l10n.loginTitle)),

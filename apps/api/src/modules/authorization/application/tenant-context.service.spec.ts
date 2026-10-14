@@ -22,6 +22,9 @@ describe('TenantContextService', () => {
   const memberships = {
     listActiveForUserInTenant: vi.fn(),
     findById: vi.fn(),
+    listByIds: vi.fn(),
+    listActiveForUser: vi.fn(),
+    listTenantIdsForUser: vi.fn(),
   };
   const authorization = {
     resolvePermissionKeys: vi.fn(),

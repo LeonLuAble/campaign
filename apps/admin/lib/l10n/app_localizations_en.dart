@@ -134,6 +134,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginButton => 'Sign in';
 
   @override
+  String get setupTitle => 'First admin setup';
+
+  @override
+  String get setupSubtitle =>
+      'Create the first platform administrator for this environment.';
+
+  @override
+  String get setupKeyLabel => 'Setup key';
+
+  @override
+  String get setupEmailLabel => 'Admin email';
+
+  @override
+  String get setupConfirmPasswordLabel => 'Confirm password';
+
+  @override
+  String get setupDisplayNameLabel => 'Display name (optional)';
+
+  @override
+  String get setupSubmitButton => 'Create admin';
+
+  @override
+  String get setupKeyRequired => 'Enter the full setup key.';
+
+  @override
+  String get setupEmailRequired => 'Enter a valid email address.';
+
+  @override
+  String get setupPasswordMismatch => 'Passwords do not match.';
+
+  @override
+  String get checkingSetup => 'Checking setup status…';
+
+  @override
   String get logout => 'Sign out';
 
   @override
@@ -316,6 +350,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorConflict => 'This change conflicts with existing data.';
+
+  @override
+  String get errorSetupNotAvailable => 'First-admin setup is not available.';
+
+  @override
+  String get errorInvalidSetupKey => 'The setup key is incorrect.';
 
   @override
   String get errorRateLimited => 'Too many attempts. Try again later.';

@@ -20,6 +20,10 @@ export interface AppConfiguration {
     authRateLimitTtlMs: number;
     authRateLimitMax: number;
   };
+  setup: {
+    /** When unset, first-admin setup endpoints are disabled. */
+    key?: string;
+  };
   jwt: {
     accessSecret?: string;
     refreshSecret?: string;
@@ -90,6 +94,9 @@ export default function configuration(): AppConfiguration {
       authRateLimitTtlMs:
         Number(process.env.AUTH_RATE_LIMIT_TTL_SECONDS ?? 60) * 1000,
       authRateLimitMax: Number(process.env.AUTH_RATE_LIMIT_MAX ?? 20),
+    },
+    setup: {
+      key: emptyToUndefined(process.env.SETUP_KEY),
     },
     jwt: {
       accessSecret: emptyToUndefined(process.env.JWT_ACCESS_SECRET),

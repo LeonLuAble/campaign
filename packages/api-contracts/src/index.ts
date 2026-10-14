@@ -23,7 +23,8 @@ export type ErrorCode =
   | 'IDENTITY_ALREADY_EXISTS'
   | 'WEAK_PASSWORD'
   | 'SOCIAL_TOKEN_INVALID'
-  | 'RATE_LIMITED';
+  | 'SETUP_NOT_AVAILABLE'
+  | 'INVALID_SETUP_KEY';
 
 export interface ApiErrorResponse {
   statusCode: number;

@@ -129,6 +129,39 @@ class AppLocalizationsZh extends AppLocalizations {
   String get loginButton => '登录';
 
   @override
+  String get setupTitle => '首次管理员设置';
+
+  @override
+  String get setupSubtitle => '为此环境创建首位平台管理员。';
+
+  @override
+  String get setupKeyLabel => '设置密钥';
+
+  @override
+  String get setupEmailLabel => '管理员邮箱';
+
+  @override
+  String get setupConfirmPasswordLabel => '确认密码';
+
+  @override
+  String get setupDisplayNameLabel => '显示名称（可选）';
+
+  @override
+  String get setupSubmitButton => '创建管理员';
+
+  @override
+  String get setupKeyRequired => '请输入完整的设置密钥。';
+
+  @override
+  String get setupEmailRequired => '请输入有效的邮箱地址。';
+
+  @override
+  String get setupPasswordMismatch => '两次输入的密码不一致。';
+
+  @override
+  String get checkingSetup => '正在检查设置状态…';
+
+  @override
   String get logout => '退出登录';
 
   @override
@@ -307,6 +340,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get errorConflict => '此更改与现有数据冲突。';
+
+  @override
+  String get errorSetupNotAvailable => '首次管理员设置不可用。';
+
+  @override
+  String get errorInvalidSetupKey => '设置密钥不正确。';
 
   @override
   String get errorRateLimited => '尝试次数过多，请稍后再试。';
@@ -451,6 +490,39 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get loginButton => '登录';
 
   @override
+  String get setupTitle => '首次管理员设置';
+
+  @override
+  String get setupSubtitle => '为此环境创建首位平台管理员。';
+
+  @override
+  String get setupKeyLabel => '设置密钥';
+
+  @override
+  String get setupEmailLabel => '管理员邮箱';
+
+  @override
+  String get setupConfirmPasswordLabel => '确认密码';
+
+  @override
+  String get setupDisplayNameLabel => '显示名称（可选）';
+
+  @override
+  String get setupSubmitButton => '创建管理员';
+
+  @override
+  String get setupKeyRequired => '请输入完整的设置密钥。';
+
+  @override
+  String get setupEmailRequired => '请输入有效的邮箱地址。';
+
+  @override
+  String get setupPasswordMismatch => '两次输入的密码不一致。';
+
+  @override
+  String get checkingSetup => '正在检查设置状态…';
+
+  @override
   String get logout => '退出登录';
 
   @override
@@ -629,6 +701,12 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get errorConflict => '此更改与现有数据冲突。';
+
+  @override
+  String get errorSetupNotAvailable => '首次管理员设置不可用。';
+
+  @override
+  String get errorInvalidSetupKey => '设置密钥不正确。';
 
   @override
   String get errorRateLimited => '尝试次数过多，请稍后再试。';

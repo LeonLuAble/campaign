@@ -36,6 +36,23 @@ class SessionController extends ChangeNotifier {
     await restore();
   }
 
+  Future<SetupStatus> getSetupStatus() => api.getSetupStatus();
+
+  Future<void> completeSetup({
+    required String setupKey,
+    required String email,
+    required String password,
+    String? displayName,
+  }) async {
+    await api.completeSetup(
+      setupKey: setupKey,
+      email: email,
+      password: password,
+      displayName: displayName,
+    );
+    await restore();
+  }
+
   void expireLocalSession() {
     profile = null;
     customers = const [];

@@ -13,7 +13,11 @@ Auth:
 - POST /auth/password-reset/request `{ identifier }` → 202 `{ accepted: true }` (no enumeration)
 - POST /auth/password-reset/confirm `{ token, password }` → 204
 
-Auth error codes include `INVALID_CREDENTIALS`, `SOCIAL_TOKEN_INVALID`, `TOKEN_INVALID`, `TOKEN_REUSED`, `TOKEN_EXPIRED`, `IDENTITY_ALREADY_EXISTS`, and `WEAK_PASSWORD`.
+First-admin setup (public; disabled unless `SETUP_KEY` is set to at least 32 characters):
+- GET /setup/status → `{ setupRequired: boolean }`. `true` only when no platform admin exists **and** `SETUP_KEY` is configured. Once an admin exists, the API may cache `setupRequired: false` in memory.
+- POST /setup/admin `{ setupKey, email, password, displayName? }` → 200 `{ accessToken, refreshToken }` (same token pair as login). Creates the first platform admin with a verified email identity and credential inside one transaction guarded by `pg_advisory_xact_lock`. Rate-limited with the same auth throttler as `/auth/*`.
+
+Auth error codes include `INVALID_CREDENTIALS`, `SOCIAL_TOKEN_INVALID`, `TOKEN_INVALID`, `TOKEN_REUSED`, `TOKEN_EXPIRED`, `IDENTITY_ALREADY_EXISTS`, `WEAK_PASSWORD`, `SETUP_NOT_AVAILABLE` (409 when setup is disabled or an admin already exists), and `INVALID_SETUP_KEY` (401).
 Password policy: minimum 8 characters (configurable via `PASSWORD_MIN_LENGTH`).
 
 Customer: `/customers`

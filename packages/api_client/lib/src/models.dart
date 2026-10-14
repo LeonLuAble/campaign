@@ -31,6 +31,16 @@ List<dynamic> _list(dynamic value) {
   return const [];
 }
 
+class SetupStatus {
+  const SetupStatus({required this.setupRequired});
+
+  final bool setupRequired;
+
+  factory SetupStatus.fromJson(Map<String, dynamic> json) {
+    return SetupStatus(setupRequired: json['setupRequired'] == true);
+  }
+}
+
 class TokenPair {
   const TokenPair({required this.accessToken, required this.refreshToken});
 

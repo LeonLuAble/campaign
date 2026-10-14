@@ -8,6 +8,13 @@ import 'token_store.dart';
 typedef LocaleProvider = String Function();
 
 abstract class CampaignApiClient {
+  Future<SetupStatus> getSetupStatus();
+  Future<TokenPair> completeSetup({
+    required String setupKey,
+    required String email,
+    required String password,
+    String? displayName,
+  });
   Future<TokenPair> login({required String identifier, required String password});
   Future<TokenPair> socialLogin({
     required String provider,
@@ -240,6 +247,38 @@ class HttpCampaignApiClient implements CampaignApiClient {
       }
       throw apiError;
     }
+  }
+
+  @override
+  Future<SetupStatus> getSetupStatus() async {
+    final data = await _request('GET', '/setup/status', skipAuth: true);
+    return SetupStatus.fromJson(_asMap(data));
+  }
+
+  @override
+  Future<TokenPair> completeSetup({
+    required String setupKey,
+    required String email,
+    required String password,
+    String? displayName,
+  }) async {
+    final pair = await _post(
+      '/setup/admin',
+      data: {
+        'setupKey': setupKey,
+        'email': email,
+        'password': password,
+        if (displayName != null && displayName.trim().isNotEmpty)
+          'displayName': displayName.trim(),
+      },
+      parser: TokenPair.fromJson,
+      skipAuth: true,
+    );
+    await _tokens.writeTokens(
+      accessToken: pair.accessToken,
+      refreshToken: pair.refreshToken,
+    );
+    return pair;
   }
 
   @override

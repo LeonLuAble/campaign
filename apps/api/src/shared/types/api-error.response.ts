@@ -16,6 +16,8 @@ export const ERROR_CODES = [
   'IDENTITY_ALREADY_EXISTS',
   'WEAK_PASSWORD',
   'SOCIAL_TOKEN_INVALID',
+  'SETUP_NOT_AVAILABLE',
+  'INVALID_SETUP_KEY',
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];
