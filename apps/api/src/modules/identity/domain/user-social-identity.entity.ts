@@ -9,7 +9,7 @@ import {
   Index,
   Unique,
 } from 'typeorm';
-import { User } from './user.entity.js';
+import type { User } from './user.entity.js';
 
 export enum SocialProvider {
   GOOGLE = 'google',
@@ -47,9 +47,7 @@ export class UserSocialIdentity {
   @UpdateDateColumn({ type: 'timestamptz' })
   updated_at: Date;
 
-  @ManyToOne(() => User, (user) => user.social_identities, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne('User', 'social_identities', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 }

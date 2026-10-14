@@ -1,6 +1,9 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { COMMUNITY_READER } from '../authorization/application/access-readers.js';
+import {
+  COMMUNITY_READER,
+  COMMUNITY_SERVICE,
+} from '../authorization/application/access-readers.js';
 import { AuthorizationModule } from '../authorization/authorization.module.js';
 import { AuthModule } from '../auth/auth.module.js';
 import { CustomersModule } from '../customers/customers.module.js';
@@ -19,7 +22,8 @@ import { CommunitiesController } from './presentation/communities.controller.js'
   providers: [
     CommunityService,
     { provide: COMMUNITY_READER, useExisting: CommunityService },
+    { provide: COMMUNITY_SERVICE, useExisting: CommunityService },
   ],
-  exports: [CommunityService, COMMUNITY_READER],
+  exports: [CommunityService, COMMUNITY_READER, COMMUNITY_SERVICE],
 })
 export class CommunitiesModule {}

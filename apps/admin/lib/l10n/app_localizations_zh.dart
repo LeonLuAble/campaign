@@ -111,8 +111,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exportCsv => '导出 CSV';
 
   @override
-  String get exportRequiresPermission =>
-      'CSV 导出需要 reports.export 权限，并会写入审计日志。';
+  String get exportRequiresPermission => 'CSV 导出需要 reports.export 权限，并会写入审计日志。';
 
   @override
   String get anonymousReportNote => '合计报告不含联系方式，也不对个人排名。';

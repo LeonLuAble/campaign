@@ -2,11 +2,13 @@ import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ResourceNotFoundException } from '../../../shared/errors/domain-http.exceptions.js';
+import {
+  COMMUNITY_SERVICE,
+  TENANT_READER,
+} from '../../authorization/application/access-readers.js';
 import { AuthorizationService } from '../../authorization/application/authorization.service.js';
 import type { TenantContext } from '../../authorization/application/tenant-context.js';
 import { SYSTEM_ROLE_MEMBER } from '../../authorization/domain/permission-keys.js';
-import { CommunityService } from '../../communities/application/community.service.js';
-import { CustomerService } from '../../customers/application/customer.service.js';
 import { IdentityAccountService } from '../../identity/application/identity-account.service.js';
 import { Membership } from '../domain/membership.entity.js';
 import { MembershipService } from './membership.service.js';
@@ -22,7 +24,7 @@ describe('MembershipService', () => {
     assignRole: vi.fn(),
     listRolesByMembershipIds: vi.fn(),
   };
-  const customers = { requireActive: vi.fn() };
+  const tenants = { findById: vi.fn() };
   const communities = {};
   const identities = {};
 
@@ -51,8 +53,8 @@ describe('MembershipService', () => {
           useValue: membershipRepository,
         },
         { provide: AuthorizationService, useValue: authorization },
-        { provide: CustomerService, useValue: customers },
-        { provide: CommunityService, useValue: communities },
+        { provide: TENANT_READER, useValue: tenants },
+        { provide: COMMUNITY_SERVICE, useValue: communities },
         { provide: IdentityAccountService, useValue: identities },
       ],
     }).compile();
@@ -67,7 +69,7 @@ describe('MembershipService', () => {
       community_id: null,
       is_active: true,
     });
-    customers.requireActive.mockResolvedValue(undefined);
+    tenants.findById.mockResolvedValue({ id: 'tenant-1', isActive: true });
     authorization.findSystemRoleByKey.mockResolvedValue({
       id: 'role-member',
       key: SYSTEM_ROLE_MEMBER,

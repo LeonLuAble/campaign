@@ -1,6 +1,9 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { TENANT_READER } from '../authorization/application/access-readers.js';
+import {
+  CUSTOMER_SERVICE,
+  TENANT_READER,
+} from '../authorization/application/access-readers.js';
 import { AuthorizationModule } from '../authorization/authorization.module.js';
 import { AuthModule } from '../auth/auth.module.js';
 import { IdentityModule } from '../identity/identity.module.js';
@@ -23,7 +26,8 @@ import { PlatformAdminGuard } from './presentation/platform-admin.guard.js';
     CustomerService,
     PlatformAdminGuard,
     { provide: TENANT_READER, useExisting: CustomerService },
+    { provide: CUSTOMER_SERVICE, useExisting: CustomerService },
   ],
-  exports: [CustomerService, TENANT_READER],
+  exports: [CustomerService, TENANT_READER, CUSTOMER_SERVICE],
 })
 export class CustomersModule {}

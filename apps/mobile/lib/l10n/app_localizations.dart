@@ -116,31 +116,160 @@ abstract class AppLocalizations {
   /// **'Environment: {environment}'**
   String environmentLabel(String environment);
 
+  /// No description provided for @openDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'My dashboard'**
   String get openDashboard;
+
+  /// No description provided for @participantDashboardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My campaign dashboard'**
   String get participantDashboardTitle;
+
+  /// No description provided for @emptyDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'No dashboard data yet. Record approved actions after an admin configures measurements.'**
   String get emptyDashboard;
+
+  /// No description provided for @progressSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress'**
   String get progressSection;
+
+  /// No description provided for @measurementsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Measurements'**
   String get measurementsSection;
+
+  /// No description provided for @outcomesSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Outcomes'**
   String get outcomesSection;
+
+  /// No description provided for @timeSeriesSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Time series'**
   String get timeSeriesSection;
+
+  /// No description provided for @visualizationSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Visualization'**
   String get visualizationSection;
+
+  /// No description provided for @completionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Completion: {percent}'**
   String completionLabel(String percent);
+
+  /// No description provided for @achievedOfTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'{achieved} of {target} {unit}'**
   String achievedOfTarget(String achieved, String target, String unit);
+
+  /// No description provided for @noOutcomes.
+  ///
+  /// In en, this message translates to:
+  /// **'No outcomes yet. Impact factors are configured by administrators.'**
   String get noOutcomes;
+
+  /// No description provided for @factorSourceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Source: {source}'**
   String factorSourceLabel(String source);
+
+  /// No description provided for @outcomeValueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} {unit}'**
   String outcomeValueLabel(String value, String unit);
+
+  /// No description provided for @measurementQuantityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{quantity} {unit}'**
   String measurementQuantityLabel(String quantity, String unit);
+
+  /// No description provided for @periodLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} – {end}'**
   String periodLabel(String start, String end);
+
+  /// No description provided for @treeInactive.
+  ///
+  /// In en, this message translates to:
+  /// **'Campaign visualization is not configured.'**
   String get treeInactive;
+
+  /// No description provided for @anonymousTotalsNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Totals are anonymous. People are not ranked.'**
   String get anonymousTotalsNote;
+
+  /// No description provided for @languageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
   String get languageLabel;
+
+  /// No description provided for @languageEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
   String get languageEnglish;
+
+  /// No description provided for @languageChinese.
+  ///
+  /// In en, this message translates to:
+  /// **'简体中文'**
   String get languageChinese;
+
+  /// No description provided for @openNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
   String get openNotifications;
+
+  /// No description provided for @notificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
   String get notificationsTitle;
+
+  /// No description provided for @emptyNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications yet.'**
   String get emptyNotifications;
+
+  /// No description provided for @markRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark read'**
   String get markRead;
+
+  /// No description provided for @unreadLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Unread'**
   String get unreadLabel;
+
+  /// No description provided for @readLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
   String get readLabel;
 }
 

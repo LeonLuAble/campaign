@@ -6,9 +6,9 @@ import {
   AccessForbiddenException,
   ResourceNotFoundException,
 } from '../../../shared/errors/domain-http.exceptions.js';
+import { MEMBERSHIP_SERVICE } from '../../authorization/application/access-readers.js';
 import { AuthorizationService } from '../../authorization/application/authorization.service.js';
 import { IdentityAccountService } from '../../identity/application/identity-account.service.js';
-import { MembershipService } from '../../memberships/application/membership.service.js';
 import { Tenant } from '../domain/tenant.entity.js';
 import { CustomerService } from './customer.service.js';
 
@@ -38,7 +38,7 @@ describe('CustomerService', () => {
         CustomerService,
         { provide: getRepositoryToken(Tenant), useValue: tenantRepository },
         { provide: DataSource, useValue: dataSource },
-        { provide: MembershipService, useValue: memberships },
+        { provide: MEMBERSHIP_SERVICE, useValue: memberships },
         { provide: AuthorizationService, useValue: authorization },
         { provide: IdentityAccountService, useValue: identities },
       ],

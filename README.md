@@ -68,10 +68,19 @@ The API runs on your machine, not in Docker, so reload and debugging stay fast.
 
 ## Start the backend
 
+Use Node 22 from `.nvmrc` before installing. Node 20 fails on the Nest CLI and on native modules such as `argon2` with the macOS 27 SDK.
+
 ```sh
 cd apps/api
+nvm use
 npm install
 npm run start:dev
+```
+
+If `argon2` still fails to compile after switching Node versions, install with the macOS 26 SDK:
+
+```sh
+SDKROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.sdk npm install
 ```
 
 The API reads `.env` from `apps/api/.env` and then the repository root `.env`.

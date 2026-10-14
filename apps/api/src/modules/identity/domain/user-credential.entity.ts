@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
   Unique,
 } from 'typeorm';
-import { User } from './user.entity.js';
+import type { User } from './user.entity.js';
 
 @Entity('user_credentials')
 @Unique(['user_id'])
@@ -28,7 +28,7 @@ export class UserCredential {
   @UpdateDateColumn({ type: 'timestamptz' })
   updated_at: Date;
 
-  @ManyToOne(() => User, (user) => user.credentials, { onDelete: 'CASCADE' })
+  @ManyToOne('User', 'credentials', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 }

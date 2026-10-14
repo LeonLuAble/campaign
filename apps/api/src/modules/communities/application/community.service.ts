@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomBytes } from 'node:crypto';
 import { Repository } from 'typeorm';
@@ -13,10 +13,13 @@ import {
   isUniqueViolation,
 } from '../../../shared/database/postgres-errors.js';
 import { slugify } from '../../../shared/text/slugify.js';
-import type { CommunityRecord } from '../../authorization/application/access-readers.js';
+import {
+  TENANT_READER,
+  type CommunityRecord,
+  type TenantReader,
+} from '../../authorization/application/access-readers.js';
 import { hasTenantLevelMembership } from '../../authorization/application/membership-scope.js';
 import type { TenantContext } from '../../authorization/application/tenant-context.js';
-import { CustomerService } from '../../customers/application/customer.service.js';
 import { CommunityNode } from '../domain/community-node.entity.js';
 import {
   listAncestorIdsFrom,
@@ -43,9 +46,16 @@ export class CommunityService {
   constructor(
     @InjectRepository(CommunityNode)
     private readonly communityRepository: Repository<CommunityNode>,
-    @Inject(forwardRef(() => CustomerService))
-    private readonly customers: CustomerService,
+    @Inject(TENANT_READER)
+    private readonly tenants: TenantReader,
   ) {}
+
+  private async requireActiveCustomer(customerId: string): Promise<void> {
+    const tenant = await this.tenants.findById(customerId);
+    if (!tenant?.isActive) {
+      throw new ResourceNotFoundException('Customer not found');
+    }
+  }
 
   async findById(id: string): Promise<CommunityRecord | null> {
     const node = await this.communityRepository.findOne({ where: { id } });
@@ -97,7 +107,7 @@ export class CommunityService {
     tenant: TenantContext,
     input: { parentId?: string | null; name: string },
   ): Promise<CommunityResponse> {
-    await this.customers.requireActive(tenant.tenantId);
+    await this.requireActiveCustomer(tenant.tenantId);
     const parentId = input.parentId ?? null;
     if (parentId) {
       const parent = await this.requireVisible(tenant, parentId);
@@ -137,7 +147,7 @@ export class CommunityService {
     communityId: string,
     input: { name?: string; parentId?: string | null; isActive?: boolean },
   ): Promise<CommunityResponse> {
-    await this.customers.requireActive(tenant.tenantId);
+    await this.requireActiveCustomer(tenant.tenantId);
     const node = await this.requireVisible(tenant, communityId);
     const nodes = await this.communityRepository.find({
       where: { tenant_id: tenant.tenantId },
