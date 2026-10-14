@@ -86,8 +86,11 @@ PostgreSQL listens on `localhost:5432` and Redis on `localhost:6379`.
 
 ### 3. Install API dependencies, migrate, and seed demo data
 
+Use Node 22 from `.nvmrc` before installing. Node 20 fails on the Nest CLI and on native modules such as `argon2` with the macOS 27 SDK.
+
 ```sh
 cd apps/api
+nvm use
 npm install
 npm run migration:run
 npm run seed:demo
@@ -107,6 +110,12 @@ Use the admin account in the Flutter web admin. Use a member account in the mobi
 ```sh
 cd apps/api
 npm run start:dev
+```
+
+If `argon2` still fails to compile after switching Node versions, install with the macOS 26 SDK:
+
+```sh
+SDKROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.sdk npm install
 ```
 
 The API reads `.env` from `apps/api/.env` and then the repository root `.env`.

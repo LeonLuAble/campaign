@@ -1,6 +1,10 @@
 export const TENANT_READER = 'TENANT_READER';
 export const COMMUNITY_READER = 'COMMUNITY_READER';
 export const MEMBERSHIP_READER = 'MEMBERSHIP_READER';
+/** Concrete service tokens for writers; avoid ESM circular class metadata. */
+export const MEMBERSHIP_SERVICE = 'MEMBERSHIP_SERVICE';
+export const COMMUNITY_SERVICE = 'COMMUNITY_SERVICE';
+export const CUSTOMER_SERVICE = 'CUSTOMER_SERVICE';
 export const CAMPAIGN_READER = 'CAMPAIGN_READER';
 export const PARTICIPATION_READER = 'PARTICIPATION_READER';
 export const ACTION_READER = 'ACTION_READER';

@@ -9,7 +9,7 @@ import {
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserImport } from './user-import.entity.js';
+import type { UserImport } from './user-import.entity.js';
 
 export enum UserImportRowStatus {
   PENDING = 'pending',
@@ -83,9 +83,7 @@ export class UserImportRow {
   @UpdateDateColumn({ type: 'timestamptz' })
   updated_at: Date;
 
-  @ManyToOne(() => UserImport, (imported) => imported.rows, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne('UserImport', 'rows', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'import_id' })
   import: UserImport;
 }

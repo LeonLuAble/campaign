@@ -1,6 +1,9 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { MEMBERSHIP_READER } from '../authorization/application/access-readers.js';
+import {
+  MEMBERSHIP_READER,
+  MEMBERSHIP_SERVICE,
+} from '../authorization/application/access-readers.js';
 import { AuthorizationModule } from '../authorization/authorization.module.js';
 import { AuthModule } from '../auth/auth.module.js';
 import { CommunitiesModule } from '../communities/communities.module.js';
@@ -23,7 +26,8 @@ import { MembershipsController } from './presentation/memberships.controller.js'
   providers: [
     MembershipService,
     { provide: MEMBERSHIP_READER, useExisting: MembershipService },
+    { provide: MEMBERSHIP_SERVICE, useExisting: MembershipService },
   ],
-  exports: [MembershipService, MEMBERSHIP_READER],
+  exports: [MembershipService, MEMBERSHIP_READER, MEMBERSHIP_SERVICE],
 })
 export class MembershipsModule {}

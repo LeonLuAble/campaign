@@ -8,7 +8,7 @@ import {
   Index,
   Unique,
 } from 'typeorm';
-import { User } from './user.entity.js';
+import type { User } from './user.entity.js';
 
 @Entity('refresh_tokens')
 @Unique(['token_hash'])
@@ -43,11 +43,11 @@ export class RefreshToken {
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date;
 
-  @ManyToOne(() => User, (user) => user.refresh_tokens, { onDelete: 'CASCADE' })
+  @ManyToOne('User', 'refresh_tokens', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @ManyToOne(() => RefreshToken, { nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne('RefreshToken', { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'parent_token_id' })
   parent_token: RefreshToken | null;
 }

@@ -8,8 +8,8 @@ import {
   Index,
   Unique,
 } from 'typeorm';
-import { User } from './user.entity.js';
-import { UserIdentity } from './user-identity.entity.js';
+import type { User } from './user.entity.js';
+import type { UserIdentity } from './user-identity.entity.js';
 
 export enum UserTokenType {
   ACTIVATION = 'activation',
@@ -49,11 +49,11 @@ export class UserToken {
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date;
 
-  @ManyToOne(() => User, { onDelete: 'CASCADE' })
+  @ManyToOne('User', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @ManyToOne(() => UserIdentity, { onDelete: 'SET NULL', nullable: true })
+  @ManyToOne('UserIdentity', { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'identity_id' })
   identity: UserIdentity | null;
 }

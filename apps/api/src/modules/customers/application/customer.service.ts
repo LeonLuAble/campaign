@@ -10,15 +10,16 @@ import {
 } from '../../../shared/errors/domain-http.exceptions.js';
 import { isUniqueViolation } from '../../../shared/database/postgres-errors.js';
 import { slugify } from '../../../shared/text/slugify.js';
-import type {
-  MembershipRecord,
-  TenantRecord,
+import {
+  MEMBERSHIP_SERVICE,
+  type MembershipRecord,
+  type TenantRecord,
 } from '../../authorization/application/access-readers.js';
 import { AuthorizationService } from '../../authorization/application/authorization.service.js';
 import { hasTenantLevelMembership } from '../../authorization/application/membership-scope.js';
 import { SYSTEM_ROLE_TENANT_ADMIN } from '../../authorization/domain/permission-keys.js';
 import { IdentityAccountService } from '../../identity/application/identity-account.service.js';
-import { MembershipService } from '../../memberships/application/membership.service.js';
+import type { MembershipService } from '../../memberships/application/membership.service.js';
 import { Tenant } from '../domain/tenant.entity.js';
 import {
   toCustomerResponse,
@@ -33,7 +34,7 @@ export class CustomerService {
     @InjectRepository(Tenant)
     private readonly tenantRepository: Repository<Tenant>,
     private readonly dataSource: DataSource,
-    @Inject(forwardRef(() => MembershipService))
+    @Inject(MEMBERSHIP_SERVICE)
     private readonly memberships: MembershipService,
     @Inject(forwardRef(() => AuthorizationService))
     private readonly authorization: AuthorizationService,

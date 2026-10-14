@@ -9,7 +9,7 @@ import {
   Index,
   Unique,
 } from 'typeorm';
-import { User } from './user.entity.js';
+import type { User } from './user.entity.js';
 
 export enum IdentityType {
   EMAIL = 'email',
@@ -50,7 +50,8 @@ export class UserIdentity {
   @UpdateDateColumn({ type: 'timestamptz' })
   updated_at: Date;
 
-  @ManyToOne(() => User, (user) => user.identities, { onDelete: 'CASCADE' })
+  // String target avoids ESM circular init with User under emitDecoratorMetadata.
+  @ManyToOne('User', 'identities', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 }

@@ -9,9 +9,12 @@
     "node": ">=22.23.0"
   },
   "scripts": {
+    "prebuild": "node scripts/check-node.mjs",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "prestart": "node scripts/check-node.mjs",
     "start": "nest start",
+    "prestart:dev": "node scripts/check-node.mjs",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main.js",

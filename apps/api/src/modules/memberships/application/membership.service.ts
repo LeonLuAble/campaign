@@ -11,14 +11,18 @@ import {
   isRaiseException,
   isUniqueViolation,
 } from '../../../shared/database/postgres-errors.js';
-import type { MembershipRecord } from '../../authorization/application/access-readers.js';
+import {
+  COMMUNITY_SERVICE,
+  TENANT_READER,
+  type MembershipRecord,
+  type TenantReader,
+} from '../../authorization/application/access-readers.js';
 import { AuthorizationService } from '../../authorization/application/authorization.service.js';
 import type { RoleSummary } from '../../authorization/application/authorization.service.js';
 import { hasTenantLevelMembership } from '../../authorization/application/membership-scope.js';
 import type { TenantContext } from '../../authorization/application/tenant-context.js';
 import { SYSTEM_ROLE_TENANT_ADMIN } from '../../authorization/domain/permission-keys.js';
-import { CommunityService } from '../../communities/application/community.service.js';
-import { CustomerService } from '../../customers/application/customer.service.js';
+import type { CommunityService } from '../../communities/application/community.service.js';
 import { IdentityAccountService } from '../../identity/application/identity-account.service.js';
 import { Membership } from '../domain/membership.entity.js';
 
@@ -42,12 +46,19 @@ export class MembershipService {
     private readonly membershipRepository: Repository<Membership>,
     @Inject(forwardRef(() => AuthorizationService))
     private readonly authorization: AuthorizationService,
-    @Inject(forwardRef(() => CustomerService))
-    private readonly customers: CustomerService,
-    @Inject(forwardRef(() => CommunityService))
+    @Inject(TENANT_READER)
+    private readonly tenants: TenantReader,
+    @Inject(COMMUNITY_SERVICE)
     private readonly communities: CommunityService,
     private readonly identities: IdentityAccountService,
   ) {}
+
+  private async requireActiveCustomer(customerId: string): Promise<void> {
+    const tenant = await this.tenants.findById(customerId);
+    if (!tenant?.isActive) {
+      throw new ResourceNotFoundException('Customer not found');
+    }
+  }
 
   async findById(id: string): Promise<MembershipRecord | null> {
     const membership = await this.membershipRepository.findOne({
@@ -149,7 +160,7 @@ export class MembershipService {
     tenant: TenantContext,
     input: { userId: string; communityId?: string | null },
   ): Promise<MembershipResponse> {
-    await this.customers.requireActive(tenant.tenantId);
+    await this.requireActiveCustomer(tenant.tenantId);
     const communityId = input.communityId ?? null;
     if (communityId) {
       await this.communities.get(tenant, communityId);
@@ -187,7 +198,7 @@ export class MembershipService {
     membershipId: string,
     input: { isActive?: boolean },
   ): Promise<MembershipResponse> {
-    await this.customers.requireActive(tenant.tenantId);
+    await this.requireActiveCustomer(tenant.tenantId);
     const membership = await this.requireVisible(tenant, membershipId);
     if (input.isActive === false && membership.is_active) {
       await this.assertNotLastTenantAdmin(tenant.tenantId, membership);
@@ -238,7 +249,7 @@ export class MembershipService {
     membershipId: string,
     roleId: string,
   ): Promise<RoleSummary[]> {
-    await this.customers.requireActive(tenant.tenantId);
+    await this.requireActiveCustomer(tenant.tenantId);
     const membership = await this.requireVisible(tenant, membershipId);
     return this.authorization.assignRole(
       tenant.tenantId,
@@ -253,7 +264,7 @@ export class MembershipService {
     membershipId: string,
     roleId: string,
   ): Promise<RoleSummary[]> {
-    await this.customers.requireActive(tenant.tenantId);
+    await this.requireActiveCustomer(tenant.tenantId);
     const membership = await this.requireVisible(tenant, membershipId);
     const isAdmin = await this.authorization.membershipHasRole(
       membership.id,
