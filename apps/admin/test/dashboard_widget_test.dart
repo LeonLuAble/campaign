@@ -1,9 +1,8 @@
+import 'package:api_client/api_client.dart';
+import 'package:community_campaign_admin/dashboards/aggregate_dashboard_page.dart';
+import 'package:community_campaign_admin/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:community_campaign_admin/dashboards/aggregate_dashboard_page.dart';
-import 'package:community_campaign_admin/dashboards/dashboard_models.dart';
-import 'package:community_campaign_admin/l10n/app_localizations.dart';
 
 Widget wrap(Widget child) {
   return MaterialApp(
@@ -28,7 +27,7 @@ void main() {
   testWidgets('renders anonymous campaign totals without rankings', (
     tester,
   ) async {
-    const data = AggregateDashboardData(
+    const data = AggregateDashboard(
       scope: 'campaign',
       progress: DashboardProgress(
         achievedValue: 5,
@@ -36,9 +35,7 @@ void main() {
         completionPercent: 50,
         unit: 'days',
       ),
-      measurements: [
-        MeasurementTotal(sourceUnit: 'days', quantity: 5),
-      ],
+      measurements: [MeasurementTotal(sourceUnit: 'days', quantity: 5)],
       outcomes: [
         OutcomeTotal(
           sourceUnit: 'days',

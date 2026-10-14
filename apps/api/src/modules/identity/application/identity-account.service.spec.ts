@@ -79,6 +79,7 @@ describe('IdentityAccountService', () => {
       locale: 'en',
       timezone: 'UTC',
       is_active: true,
+      is_platform_admin: true,
       identities: [
         {
           id: 'identity-id',
@@ -95,6 +96,7 @@ describe('IdentityAccountService', () => {
     expect(profile).toMatchObject({
       id: 'user-id',
       firstName: 'Test',
+      isPlatformAdmin: true,
       identities: [
         {
           id: 'identity-id',

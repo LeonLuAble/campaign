@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
-
+import 'package:api_client/api_client.dart';
 import 'package:community_campaign_admin/app.dart';
 import 'package:community_campaign_admin/config/app_config.dart';
+import 'package:community_campaign_admin/locale/app_locales.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   const config = AppConfig(
@@ -10,28 +10,35 @@ void main() {
     apiBaseUrl: 'http://localhost:3000/api/v1',
   );
 
-  testWidgets('shows the English administration shell', (tester) async {
+  testWidgets('shows the English administration login', (tester) async {
     await tester.pumpWidget(
-      const CampaignAdminApp(config: config, locale: Locale('en')),
+      CampaignAdminApp(
+        config: config,
+        locale: AppLocales.en,
+        apiClient: FakeCampaignApiClient(),
+        tokenStore: MemoryTokenStore(),
+      ),
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Community Campaign Admin'), findsOneWidget);
-    expect(find.text('Administration shell'), findsOneWidget);
-    expect(find.text('Environment: test'), findsOneWidget);
-    expect(find.text('Language'), findsOneWidget);
+    expect(find.text('Sign in'), findsWidgets);
+    expect(find.text('Email or mobile'), findsOneWidget);
   });
 
-  testWidgets('shows the Simplified Chinese administration shell', (
+  testWidgets('shows the Simplified Chinese administration login', (
     tester,
   ) async {
     await tester.pumpWidget(
-      const CampaignAdminApp(config: config, locale: Locale('zh')),
+      CampaignAdminApp(
+        config: config,
+        locale: AppLocales.zhHans,
+        apiClient: FakeCampaignApiClient(),
+        tokenStore: MemoryTokenStore(),
+      ),
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('社区活动管理'), findsOneWidget);
-    expect(find.text('管理端应用外壳'), findsOneWidget);
-    expect(find.text('环境：test'), findsOneWidget);
+    expect(find.text('登录'), findsWidgets);
+    expect(find.text('邮箱或手机号'), findsOneWidget);
   });
 }

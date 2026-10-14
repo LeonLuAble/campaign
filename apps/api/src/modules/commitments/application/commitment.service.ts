@@ -76,6 +76,35 @@ export class CommitmentService {
       : null;
   }
 
+  async listCommitmentOptions(
+    tenant: TenantContext,
+    campaignId: string,
+  ): Promise<{
+    campaignId: string;
+    customerId: string;
+    strategy: string;
+    units: string[];
+    choices: Array<{
+      key: string;
+      name: string;
+      canonicalUnit: string;
+      suggestedTarget: number | null;
+      usesCampaignDuration: boolean;
+    }>;
+  }> {
+    const campaign = await this.campaigns.getCampaignRecord(tenant, campaignId);
+    const rules = resolveCampaignRules(
+      campaign.configuration,
+      this.strategyList(),
+      this.genericRules,
+    );
+    return {
+      campaignId: campaign.id,
+      customerId: campaign.tenantId,
+      ...rules.describeCommitmentOptions(),
+    };
+  }
+
   async listForParticipation(
     tenant: TenantContext,
     participationId: string,

@@ -1,0 +1,1109 @@
+num _num(dynamic value, [num fallback = 0]) {
+  if (value is num) {
+    return value;
+  }
+  return fallback;
+}
+
+String? _string(dynamic value) => value as String?;
+
+bool _bool(dynamic value, [bool fallback = false]) {
+  if (value is bool) {
+    return value;
+  }
+  return fallback;
+}
+
+Map<String, dynamic> _map(dynamic value) {
+  if (value is Map<String, dynamic>) {
+    return value;
+  }
+  if (value is Map) {
+    return value.map((key, item) => MapEntry(key.toString(), item));
+  }
+  return <String, dynamic>{};
+}
+
+List<dynamic> _list(dynamic value) {
+  if (value is List) {
+    return value;
+  }
+  return const [];
+}
+
+class TokenPair {
+  const TokenPair({required this.accessToken, required this.refreshToken});
+
+  final String accessToken;
+  final String refreshToken;
+
+  factory TokenPair.fromJson(Map<String, dynamic> json) {
+    return TokenPair(
+      accessToken: json['accessToken'] as String,
+      refreshToken: json['refreshToken'] as String,
+    );
+  }
+}
+
+class UserIdentity {
+  const UserIdentity({
+    required this.id,
+    required this.type,
+    required this.identifier,
+    required this.isVerified,
+  });
+
+  final String id;
+  final String type;
+  final String identifier;
+  final bool isVerified;
+
+  factory UserIdentity.fromJson(Map<String, dynamic> json) {
+    return UserIdentity(
+      id: json['id'] as String,
+      type: json['type'] as String,
+      identifier: json['identifier'] as String,
+      isVerified: _bool(json['isVerified']),
+    );
+  }
+}
+
+class UserProfile {
+  const UserProfile({
+    required this.id,
+    required this.isActive,
+    required this.isPlatformAdmin,
+    required this.identities,
+    this.firstName,
+    this.lastName,
+    this.displayName,
+    this.locale,
+    this.timezone,
+  });
+
+  final String id;
+  final String? firstName;
+  final String? lastName;
+  final String? displayName;
+  final String? locale;
+  final String? timezone;
+  final bool isActive;
+  final bool isPlatformAdmin;
+  final List<UserIdentity> identities;
+
+  factory UserProfile.fromJson(Map<String, dynamic> json) {
+    return UserProfile(
+      id: json['id'] as String,
+      firstName: _string(json['firstName']),
+      lastName: _string(json['lastName']),
+      displayName: _string(json['displayName']),
+      locale: _string(json['locale']),
+      timezone: _string(json['timezone']),
+      isActive: _bool(json['isActive'], true),
+      isPlatformAdmin: _bool(json['isPlatformAdmin']),
+      identities: _list(json['identities'])
+          .map((row) => UserIdentity.fromJson(_map(row)))
+          .toList(),
+    );
+  }
+}
+
+class NotificationPreferences {
+  const NotificationPreferences({
+    required this.userId,
+    required this.inAppEnabled,
+    required this.emailEnabled,
+    required this.smsEnabled,
+    required this.pushEnabled,
+    required this.remindersEnabled,
+    required this.reminderLocalTime,
+  });
+
+  final String userId;
+  final bool inAppEnabled;
+  final bool emailEnabled;
+  final bool smsEnabled;
+  final bool pushEnabled;
+  final bool remindersEnabled;
+  final String reminderLocalTime;
+
+  factory NotificationPreferences.fromJson(Map<String, dynamic> json) {
+    return NotificationPreferences(
+      userId: json['userId'] as String,
+      inAppEnabled: _bool(json['inAppEnabled'], true),
+      emailEnabled: _bool(json['emailEnabled'], true),
+      smsEnabled: _bool(json['smsEnabled']),
+      pushEnabled: _bool(json['pushEnabled']),
+      remindersEnabled: _bool(json['remindersEnabled'], true),
+      reminderLocalTime: json['reminderLocalTime'] as String? ?? '09:00',
+    );
+  }
+}
+
+class Customer {
+  const Customer({
+    required this.id,
+    required this.name,
+    required this.slug,
+    required this.isActive,
+  });
+
+  final String id;
+  final String name;
+  final String slug;
+  final bool isActive;
+
+  factory Customer.fromJson(Map<String, dynamic> json) {
+    return Customer(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      slug: json['slug'] as String? ?? '',
+      isActive: _bool(json['isActive'], true),
+    );
+  }
+}
+
+class Community {
+  const Community({
+    required this.id,
+    required this.customerId,
+    required this.name,
+    required this.slug,
+    required this.isActive,
+    this.parentId,
+  });
+
+  final String id;
+  final String customerId;
+  final String? parentId;
+  final String name;
+  final String slug;
+  final bool isActive;
+
+  factory Community.fromJson(Map<String, dynamic> json) {
+    return Community(
+      id: json['id'] as String,
+      customerId: json['customerId'] as String,
+      parentId: _string(json['parentId']),
+      name: json['name'] as String,
+      slug: json['slug'] as String? ?? '',
+      isActive: _bool(json['isActive'], true),
+    );
+  }
+}
+
+class RoleSummary {
+  const RoleSummary({
+    required this.id,
+    required this.key,
+    required this.name,
+  });
+
+  final String id;
+  final String key;
+  final String name;
+
+  factory RoleSummary.fromJson(Map<String, dynamic> json) {
+    return RoleSummary(
+      id: json['id'] as String,
+      key: json['key'] as String,
+      name: json['name'] as String,
+    );
+  }
+}
+
+class Membership {
+  const Membership({
+    required this.id,
+    required this.customerId,
+    required this.userId,
+    required this.isActive,
+    required this.roles,
+    this.communityId,
+  });
+
+  final String id;
+  final String customerId;
+  final String userId;
+  final String? communityId;
+  final bool isActive;
+  final List<RoleSummary> roles;
+
+  factory Membership.fromJson(Map<String, dynamic> json) {
+    return Membership(
+      id: json['id'] as String,
+      customerId: json['customerId'] as String,
+      userId: json['userId'] as String,
+      communityId: _string(json['communityId']),
+      isActive: _bool(json['isActive'], true),
+      roles: _list(json['roles'])
+          .map((row) => RoleSummary.fromJson(_map(row)))
+          .toList(),
+    );
+  }
+}
+
+class UserImportCounts {
+  const UserImportCounts({
+    required this.total,
+    required this.pending,
+    required this.valid,
+    required this.invalid,
+    required this.review,
+    required this.created,
+    required this.matched,
+  });
+
+  final int total;
+  final int pending;
+  final int valid;
+  final int invalid;
+  final int review;
+  final int created;
+  final int matched;
+
+  factory UserImportCounts.fromJson(Map<String, dynamic> json) {
+    return UserImportCounts(
+      total: _num(json['total']).toInt(),
+      pending: _num(json['pending']).toInt(),
+      valid: _num(json['valid']).toInt(),
+      invalid: _num(json['invalid']).toInt(),
+      review: _num(json['review']).toInt(),
+      created: _num(json['created']).toInt(),
+      matched: _num(json['matched']).toInt(),
+    );
+  }
+}
+
+class UserImport {
+  const UserImport({
+    required this.id,
+    required this.customerId,
+    required this.originalFilename,
+    required this.status,
+    required this.headers,
+    required this.counts,
+    this.communityId,
+    this.mapping,
+  });
+
+  final String id;
+  final String customerId;
+  final String? communityId;
+  final String originalFilename;
+  final String status;
+  final List<String> headers;
+  final Map<String, String>? mapping;
+  final UserImportCounts counts;
+
+  factory UserImport.fromJson(Map<String, dynamic> json) {
+    final rawMapping = json['mapping'];
+    return UserImport(
+      id: json['id'] as String,
+      customerId: json['customerId'] as String,
+      communityId: _string(json['communityId']),
+      originalFilename: json['originalFilename'] as String? ?? '',
+      status: json['status'] as String,
+      headers: _list(json['headers']).map((row) => row.toString()).toList(),
+      mapping: rawMapping is Map
+          ? rawMapping.map(
+              (key, value) => MapEntry(key.toString(), value?.toString() ?? ''),
+            )
+          : null,
+      counts: UserImportCounts.fromJson(_map(json['counts'])),
+    );
+  }
+}
+
+class UserImportRow {
+  const UserImportRow({
+    required this.id,
+    required this.rowNumber,
+    required this.rawData,
+    required this.status,
+    this.externalId,
+    this.email,
+    this.mobile,
+    this.errorCode,
+    this.errorMessage,
+  });
+
+  final String id;
+  final int rowNumber;
+  final Map<String, String> rawData;
+  final String status;
+  final String? externalId;
+  final String? email;
+  final String? mobile;
+  final String? errorCode;
+  final String? errorMessage;
+
+  factory UserImportRow.fromJson(Map<String, dynamic> json) {
+    return UserImportRow(
+      id: json['id'] as String,
+      rowNumber: _num(json['rowNumber']).toInt(),
+      rawData: _map(json['rawData']).map(
+        (key, value) => MapEntry(key, value?.toString() ?? ''),
+      ),
+      status: json['status'] as String,
+      externalId: _string(json['externalId']),
+      email: _string(json['email']),
+      mobile: _string(json['mobile']),
+      errorCode: _string(json['errorCode']),
+      errorMessage: _string(json['errorMessage']),
+    );
+  }
+}
+
+class UserImportPreview {
+  const UserImportPreview({required this.importRecord, required this.rows});
+
+  final UserImport importRecord;
+  final List<UserImportRow> rows;
+
+  factory UserImportPreview.fromJson(Map<String, dynamic> json) {
+    return UserImportPreview(
+      importRecord: UserImport.fromJson(_map(json['import'])),
+      rows: _list(json['rows'])
+          .map((row) => UserImportRow.fromJson(_map(row)))
+          .toList(),
+    );
+  }
+}
+
+class CampaignTemplate {
+  const CampaignTemplate({
+    required this.id,
+    required this.customerId,
+    required this.key,
+    required this.name,
+    required this.isActive,
+    this.description,
+  });
+
+  final String id;
+  final String customerId;
+  final String key;
+  final String name;
+  final String? description;
+  final bool isActive;
+
+  factory CampaignTemplate.fromJson(Map<String, dynamic> json) {
+    return CampaignTemplate(
+      id: json['id'] as String,
+      customerId: json['customerId'] as String,
+      key: json['key'] as String,
+      name: json['name'] as String,
+      description: _string(json['description']),
+      isActive: _bool(json['isActive'], true),
+    );
+  }
+}
+
+class CampaignScope {
+  const CampaignScope({
+    required this.id,
+    required this.customerId,
+    required this.templateId,
+    required this.key,
+    required this.name,
+    required this.isActive,
+    this.description,
+  });
+
+  final String id;
+  final String customerId;
+  final String templateId;
+  final String key;
+  final String name;
+  final String? description;
+  final bool isActive;
+
+  factory CampaignScope.fromJson(Map<String, dynamic> json) {
+    return CampaignScope(
+      id: json['id'] as String,
+      customerId: json['customerId'] as String,
+      templateId: json['templateId'] as String,
+      key: json['key'] as String,
+      name: json['name'] as String,
+      description: _string(json['description']),
+      isActive: _bool(json['isActive'], true),
+    );
+  }
+}
+
+class Campaign {
+  const Campaign({
+    required this.id,
+    required this.customerId,
+    required this.templateId,
+    required this.scopeId,
+    required this.name,
+    required this.status,
+    required this.timezone,
+    required this.communityIds,
+    required this.configuration,
+    this.description,
+    this.startsOn,
+    this.endsOn,
+  });
+
+  final String id;
+  final String customerId;
+  final String templateId;
+  final String scopeId;
+  final String name;
+  final String? description;
+  final String status;
+  final String timezone;
+  final String? startsOn;
+  final String? endsOn;
+  final List<String> communityIds;
+  final Map<String, dynamic> configuration;
+
+  bool get isDraft => status == 'draft';
+  bool get canJoin => status == 'published' || status == 'started';
+  bool get canRecord => status == 'started';
+
+  factory Campaign.fromJson(Map<String, dynamic> json) {
+    return Campaign(
+      id: json['id'] as String,
+      customerId: json['customerId'] as String,
+      templateId: json['templateId'] as String,
+      scopeId: json['scopeId'] as String,
+      name: json['name'] as String,
+      description: _string(json['description']),
+      status: json['status'] as String,
+      timezone: json['timezone'] as String,
+      startsOn: _string(json['startsOn']),
+      endsOn: _string(json['endsOn']),
+      communityIds: _list(json['communityIds']).map((row) => row.toString()).toList(),
+      configuration: _map(json['configuration']),
+    );
+  }
+}
+
+class Participation {
+  const Participation({
+    required this.id,
+    required this.customerId,
+    required this.campaignId,
+    required this.userId,
+    required this.status,
+    this.communityId,
+  });
+
+  final String id;
+  final String customerId;
+  final String campaignId;
+  final String userId;
+  final String? communityId;
+  final String status;
+
+  bool get isEnrolled => status == 'enrolled';
+
+  factory Participation.fromJson(Map<String, dynamic> json) {
+    return Participation(
+      id: json['id'] as String,
+      customerId: json['customerId'] as String,
+      campaignId: json['campaignId'] as String,
+      userId: json['userId'] as String,
+      communityId: _string(json['communityId']),
+      status: json['status'] as String,
+    );
+  }
+}
+
+class CommitmentChoice {
+  const CommitmentChoice({
+    required this.key,
+    required this.name,
+    required this.canonicalUnit,
+    required this.usesCampaignDuration,
+    this.suggestedTarget,
+  });
+
+  final String key;
+  final String name;
+  final String canonicalUnit;
+  final num? suggestedTarget;
+  final bool usesCampaignDuration;
+
+  factory CommitmentChoice.fromJson(Map<String, dynamic> json) {
+    return CommitmentChoice(
+      key: json['key'] as String,
+      name: json['name'] as String,
+      canonicalUnit: json['canonicalUnit'] as String,
+      suggestedTarget: json['suggestedTarget'] as num?,
+      usesCampaignDuration: _bool(json['usesCampaignDuration']),
+    );
+  }
+}
+
+class CommitmentOptions {
+  const CommitmentOptions({
+    required this.campaignId,
+    required this.customerId,
+    required this.strategy,
+    required this.units,
+    required this.choices,
+  });
+
+  final String campaignId;
+  final String customerId;
+  final String strategy;
+  final List<String> units;
+  final List<CommitmentChoice> choices;
+
+  factory CommitmentOptions.fromJson(Map<String, dynamic> json) {
+    return CommitmentOptions(
+      campaignId: json['campaignId'] as String,
+      customerId: json['customerId'] as String,
+      strategy: json['strategy'] as String,
+      units: _list(json['units']).map((row) => row.toString()).toList(),
+      choices: _list(json['choices'])
+          .map((row) => CommitmentChoice.fromJson(_map(row)))
+          .toList(),
+    );
+  }
+}
+
+class Commitment {
+  const Commitment({
+    required this.id,
+    required this.participationId,
+    required this.targetValue,
+    required this.unit,
+    this.typeKey,
+  });
+
+  final String id;
+  final String participationId;
+  final String? typeKey;
+  final num targetValue;
+  final String unit;
+
+  factory Commitment.fromJson(Map<String, dynamic> json) {
+    return Commitment(
+      id: json['id'] as String,
+      participationId: json['participationId'] as String,
+      typeKey: _string(json['typeKey']),
+      targetValue: _num(json['targetValue']),
+      unit: json['unit'] as String,
+    );
+  }
+}
+
+class ActionDefinition {
+  const ActionDefinition({
+    required this.id,
+    required this.campaignId,
+    required this.key,
+    required this.name,
+    required this.unit,
+    required this.isActive,
+  });
+
+  final String id;
+  final String campaignId;
+  final String key;
+  final String name;
+  final String unit;
+  final bool isActive;
+
+  factory ActionDefinition.fromJson(Map<String, dynamic> json) {
+    return ActionDefinition(
+      id: json['id'] as String,
+      campaignId: json['campaignId'] as String,
+      key: json['key'] as String,
+      name: json['name'] as String,
+      unit: json['unit'] as String,
+      isActive: _bool(json['isActive'], true),
+    );
+  }
+}
+
+class Submission {
+  const Submission({
+    required this.id,
+    required this.actionId,
+    required this.status,
+    this.reviewNote,
+  });
+
+  final String id;
+  final String actionId;
+  final String status;
+  final String? reviewNote;
+
+  factory Submission.fromJson(Map<String, dynamic> json) {
+    return Submission(
+      id: json['id'] as String,
+      actionId: json['actionId'] as String,
+      status: json['status'] as String,
+      reviewNote: _string(json['reviewNote']),
+    );
+  }
+}
+
+class RecordedAction {
+  const RecordedAction({
+    required this.id,
+    required this.campaignId,
+    required this.participationId,
+    required this.userId,
+    required this.actionDefinitionId,
+    required this.occurredOn,
+    required this.quantity,
+    required this.status,
+    this.submission,
+  });
+
+  final String id;
+  final String campaignId;
+  final String participationId;
+  final String userId;
+  final String actionDefinitionId;
+  final String occurredOn;
+  final num quantity;
+  final String status;
+  final Submission? submission;
+
+  bool get isCancelled => status == 'cancelled';
+
+  factory RecordedAction.fromJson(Map<String, dynamic> json) {
+    final submissionJson = json['submission'];
+    return RecordedAction(
+      id: json['id'] as String,
+      campaignId: json['campaignId'] as String,
+      participationId: json['participationId'] as String,
+      userId: json['userId'] as String,
+      actionDefinitionId: json['actionDefinitionId'] as String,
+      occurredOn: json['occurredOn'] as String,
+      quantity: _num(json['quantity'], 1),
+      status: json['status'] as String,
+      submission: submissionJson == null
+          ? null
+          : Submission.fromJson(_map(submissionJson)),
+    );
+  }
+}
+
+class MeasurementTotal {
+  const MeasurementTotal({
+    required this.sourceUnit,
+    required this.quantity,
+    this.definitionKey,
+  });
+
+  final String sourceUnit;
+  final num quantity;
+  final String? definitionKey;
+
+  factory MeasurementTotal.fromJson(Map<String, dynamic> json) {
+    return MeasurementTotal(
+      sourceUnit: json['sourceUnit'] as String,
+      quantity: _num(json['quantity']),
+      definitionKey: _string(json['definitionKey']),
+    );
+  }
+}
+
+class OutcomeContribution {
+  const OutcomeContribution({
+    required this.version,
+    required this.factorValue,
+    required this.source,
+  });
+
+  final int version;
+  final num factorValue;
+  final String source;
+
+  factory OutcomeContribution.fromJson(Map<String, dynamic> json) {
+    return OutcomeContribution(
+      version: _num(json['version']).toInt(),
+      factorValue: _num(json['factorValue']),
+      source: json['source'] as String? ?? '',
+    );
+  }
+}
+
+class OutcomeTotal {
+  const OutcomeTotal({
+    required this.sourceUnit,
+    required this.outcomeMetric,
+    required this.outcomeUnit,
+    required this.value,
+    required this.contributions,
+  });
+
+  final String sourceUnit;
+  final String outcomeMetric;
+  final String outcomeUnit;
+  final num value;
+  final List<OutcomeContribution> contributions;
+
+  factory OutcomeTotal.fromJson(Map<String, dynamic> json) {
+    return OutcomeTotal(
+      sourceUnit: json['sourceUnit'] as String,
+      outcomeMetric: json['outcomeMetric'] as String,
+      outcomeUnit: json['outcomeUnit'] as String,
+      value: _num(json['value']),
+      contributions: _list(json['contributions'])
+          .map((row) => OutcomeContribution.fromJson(_map(row)))
+          .toList(),
+    );
+  }
+}
+
+class TimeSeriesPoint {
+  const TimeSeriesPoint({
+    required this.periodStart,
+    required this.periodEnd,
+    required this.measurements,
+    required this.outcomes,
+  });
+
+  final String periodStart;
+  final String periodEnd;
+  final List<MeasurementTotal> measurements;
+  final List<OutcomeTotal> outcomes;
+
+  factory TimeSeriesPoint.fromJson(Map<String, dynamic> json) {
+    return TimeSeriesPoint(
+      periodStart: json['periodStart'] as String,
+      periodEnd: json['periodEnd'] as String,
+      measurements: _list(json['measurements'])
+          .map((row) => MeasurementTotal.fromJson(_map(row)))
+          .toList(),
+      outcomes: _list(json['outcomes'])
+          .map((row) => OutcomeTotal.fromJson(_map(row)))
+          .toList(),
+    );
+  }
+}
+
+class VisualizationData {
+  const VisualizationData({
+    required this.type,
+    required this.displayName,
+    required this.isActive,
+    this.completionPercent,
+    this.unit,
+    this.achievedValue,
+    this.targetValue,
+  });
+
+  final String type;
+  final String displayName;
+  final bool isActive;
+  final num? completionPercent;
+  final String? unit;
+  final num? achievedValue;
+  final num? targetValue;
+
+  factory VisualizationData.fromJson(Map<String, dynamic> json) {
+    return VisualizationData(
+      type: json['type'] as String? ?? 'tree',
+      displayName: json['displayName'] as String? ?? 'tree',
+      isActive: _bool(json['isActive']),
+      completionPercent: json['completionPercent'] as num?,
+      unit: _string(json['unit']),
+      achievedValue: json['achievedValue'] as num?,
+      targetValue: json['targetValue'] as num?,
+    );
+  }
+}
+
+class DashboardProgress {
+  const DashboardProgress({
+    required this.achievedValue,
+    required this.targetValue,
+    this.completionPercent,
+    this.unit,
+    this.completionStatus,
+    this.participantCount,
+    this.committedParticipantCount,
+  });
+
+  final num achievedValue;
+  final num targetValue;
+  final num? completionPercent;
+  final String? unit;
+  final String? completionStatus;
+  final int? participantCount;
+  final int? committedParticipantCount;
+
+  factory DashboardProgress.fromJson(Map<String, dynamic> json) {
+    final units = json['units'];
+    final primary = units is List && units.isNotEmpty
+        ? _map(units.first)
+        : json;
+    return DashboardProgress(
+      achievedValue: _num(primary['achievedValue']),
+      targetValue: _num(primary['targetValue']),
+      completionPercent: primary['completionPercent'] as num?,
+      unit: _string(primary['unit']),
+      completionStatus: _string(primary['completionStatus']),
+      participantCount: json['participantCount'] is num
+          ? (json['participantCount'] as num).toInt()
+          : null,
+      committedParticipantCount: json['committedParticipantCount'] is num
+          ? (json['committedParticipantCount'] as num).toInt()
+          : null,
+    );
+  }
+}
+
+class ParticipantProgress {
+  const ParticipantProgress({
+    required this.participationId,
+    required this.achievedValue,
+    required this.targetValue,
+    this.unit,
+    this.completionPercent,
+    this.completionStatus,
+  });
+
+  final String participationId;
+  final num achievedValue;
+  final num targetValue;
+  final String? unit;
+  final num? completionPercent;
+  final String? completionStatus;
+
+  factory ParticipantProgress.fromJson(Map<String, dynamic> json) {
+    return ParticipantProgress(
+      participationId: json['participationId'] as String,
+      achievedValue: _num(json['achievedValue']),
+      targetValue: _num(json['targetValue']),
+      unit: _string(json['unit']),
+      completionPercent: json['completionPercent'] as num?,
+      completionStatus: _string(json['completionStatus']),
+    );
+  }
+}
+
+class ParticipantDashboard {
+  const ParticipantDashboard({
+    required this.progress,
+    required this.measurements,
+    required this.outcomes,
+    required this.timeSeries,
+    required this.visualization,
+  });
+
+  final DashboardProgress progress;
+  final List<MeasurementTotal> measurements;
+  final List<OutcomeTotal> outcomes;
+  final List<TimeSeriesPoint> timeSeries;
+  final VisualizationData visualization;
+
+  factory ParticipantDashboard.fromJson(Map<String, dynamic> json) {
+    final timeSeriesJson = _map(json['timeSeries']);
+    return ParticipantDashboard(
+      progress: DashboardProgress.fromJson(_map(json['progress'])),
+      measurements: _list(json['measurements'])
+          .map((row) => MeasurementTotal.fromJson(_map(row)))
+          .toList(),
+      outcomes: _list(json['outcomes'])
+          .map((row) => OutcomeTotal.fromJson(_map(row)))
+          .toList(),
+      timeSeries: _list(timeSeriesJson['points'])
+          .map((row) => TimeSeriesPoint.fromJson(_map(row)))
+          .toList(),
+      visualization: VisualizationData.fromJson(_map(json['visualization'])),
+    );
+  }
+}
+
+class AggregateDashboard {
+  const AggregateDashboard({
+    required this.scope,
+    required this.progress,
+    required this.measurements,
+    required this.outcomes,
+    required this.timeSeries,
+    required this.visualization,
+  });
+
+  final String scope;
+  final DashboardProgress progress;
+  final List<MeasurementTotal> measurements;
+  final List<OutcomeTotal> outcomes;
+  final List<TimeSeriesPoint> timeSeries;
+  final VisualizationData visualization;
+
+  factory AggregateDashboard.fromJson(Map<String, dynamic> json) {
+    final timeSeriesJson = _map(json['timeSeries']);
+    return AggregateDashboard(
+      scope: json['scope'] as String? ?? 'campaign',
+      progress: DashboardProgress.fromJson(_map(json['progress'])),
+      measurements: _list(json['measurements'])
+          .map((row) => MeasurementTotal.fromJson(_map(row)))
+          .toList(),
+      outcomes: _list(json['outcomes'])
+          .map((row) => OutcomeTotal.fromJson(_map(row)))
+          .toList(),
+      timeSeries: _list(timeSeriesJson['points'])
+          .map((row) => TimeSeriesPoint.fromJson(_map(row)))
+          .toList(),
+      visualization: VisualizationData.fromJson(_map(json['visualization'])),
+    );
+  }
+}
+
+class InboxNotification {
+  const InboxNotification({
+    required this.id,
+    required this.customerId,
+    required this.type,
+    required this.title,
+    required this.body,
+    this.readAt,
+  });
+
+  final String id;
+  final String customerId;
+  final String type;
+  final String title;
+  final String body;
+  final String? readAt;
+
+  bool get isRead => readAt != null;
+
+  factory InboxNotification.fromJson(Map<String, dynamic> json) {
+    return InboxNotification(
+      id: json['id'] as String,
+      customerId: json['customerId'] as String,
+      type: json['type'] as String? ?? '',
+      title: json['title'] as String,
+      body: json['body'] as String,
+      readAt: _string(json['readAt']),
+    );
+  }
+
+  InboxNotification copyWith({String? readAt}) {
+    return InboxNotification(
+      id: id,
+      customerId: customerId,
+      type: type,
+      title: title,
+      body: body,
+      readAt: readAt ?? this.readAt,
+    );
+  }
+}
+
+class ImpactFactor {
+  const ImpactFactor({
+    required this.id,
+    required this.customerId,
+    required this.sourceUnit,
+    required this.outcomeMetric,
+    required this.outcomeUnit,
+    required this.factorValue,
+    required this.version,
+    required this.source,
+    required this.effectiveFrom,
+    required this.isActive,
+    this.campaignId,
+    this.effectiveTo,
+  });
+
+  final String id;
+  final String customerId;
+  final String? campaignId;
+  final String sourceUnit;
+  final String outcomeMetric;
+  final String outcomeUnit;
+  final num factorValue;
+  final int version;
+  final String source;
+  final String effectiveFrom;
+  final String? effectiveTo;
+  final bool isActive;
+
+  factory ImpactFactor.fromJson(Map<String, dynamic> json) {
+    return ImpactFactor(
+      id: json['id'] as String,
+      customerId: json['customerId'] as String,
+      campaignId: _string(json['campaignId']),
+      sourceUnit: json['sourceUnit'] as String,
+      outcomeMetric: json['outcomeMetric'] as String,
+      outcomeUnit: json['outcomeUnit'] as String,
+      factorValue: _num(json['factorValue']),
+      version: _num(json['version'], 1).toInt(),
+      source: json['source'] as String,
+      effectiveFrom: json['effectiveFrom'] as String,
+      effectiveTo: _string(json['effectiveTo']),
+      isActive: _bool(json['isActive'], true),
+    );
+  }
+}
+
+class ReportUnit {
+  const ReportUnit({
+    required this.unit,
+    required this.achievedValue,
+    required this.targetValue,
+    this.completionPercent,
+    this.completionStatus,
+  });
+
+  final String unit;
+  final num achievedValue;
+  final num targetValue;
+  final num? completionPercent;
+  final String? completionStatus;
+
+  factory ReportUnit.fromJson(Map<String, dynamic> json) {
+    return ReportUnit(
+      unit: json['unit'] as String? ?? '',
+      achievedValue: _num(json['achievedValue']),
+      targetValue: _num(json['targetValue']),
+      completionPercent: json['completionPercent'] as num?,
+      completionStatus: _string(json['completionStatus']),
+    );
+  }
+}
+
+class AggregateReport {
+  const AggregateReport({
+    required this.scope,
+    required this.campaignId,
+    required this.generatedAt,
+    required this.units,
+    this.communityId,
+    this.participantCount,
+    this.committedParticipantCount,
+  });
+
+  final String scope;
+  final String campaignId;
+  final String? communityId;
+  final String generatedAt;
+  final int? participantCount;
+  final int? committedParticipantCount;
+  final List<ReportUnit> units;
+
+  factory AggregateReport.fromJson(Map<String, dynamic> json) {
+    final progress = _map(json['progress']);
+    return AggregateReport(
+      scope: json['scope'] as String? ?? 'campaign',
+      campaignId: json['campaignId'] as String,
+      communityId: _string(json['communityId']),
+      generatedAt: json['generatedAt'] as String? ?? '',
+      participantCount: progress['participantCount'] is num
+          ? (progress['participantCount'] as num).toInt()
+          : null,
+      committedParticipantCount: progress['committedParticipantCount'] is num
+          ? (progress['committedParticipantCount'] as num).toInt()
+          : null,
+      units: _list(progress['units'])
+          .map((row) => ReportUnit.fromJson(_map(row)))
+          .toList(),
+    );
+  }
+}

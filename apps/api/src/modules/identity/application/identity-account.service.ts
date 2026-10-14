@@ -49,6 +49,7 @@ export interface PublicUserProfile {
   locale: string | null;
   timezone: string | null;
   isActive: boolean;
+  isPlatformAdmin: boolean;
   identities: PublicIdentity[];
 }
 
@@ -227,6 +228,7 @@ export class IdentityAccountService {
       locale: user.locale,
       timezone: user.timezone,
       isActive: user.is_active,
+      isPlatformAdmin: user.is_platform_admin === true,
       identities: (user.identities ?? []).map((identity) => ({
         id: identity.id,
         type: identity.type,

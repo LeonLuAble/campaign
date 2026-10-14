@@ -1,12 +1,13 @@
+import 'package:api_client/api_client.dart';
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
-import 'dashboard_models.dart';
+import '../util/format.dart';
 
 class ParticipantDashboardView extends StatelessWidget {
   const ParticipantDashboardView({this.data, super.key});
 
-  final ParticipantDashboardData? data;
+  final ParticipantDashboard? data;
 
   @override
   Widget build(BuildContext context) {
@@ -26,16 +27,14 @@ class ParticipantDashboardView extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           l10n.achievedOfTarget(
-            _format(dashboard.progress.achievedValue),
-            _format(dashboard.progress.targetValue),
+            formatNumber(dashboard.progress.achievedValue),
+            formatNumber(dashboard.progress.targetValue),
             dashboard.progress.unit ?? '',
           ),
         ),
         if (dashboard.progress.completionPercent != null)
           Text(
-            l10n.completionLabel(
-              '${dashboard.progress.completionPercent}%',
-            ),
+            l10n.completionLabel('${dashboard.progress.completionPercent}%'),
           ),
         const SizedBox(height: 16),
         Text(
@@ -43,7 +42,7 @@ class ParticipantDashboardView extends StatelessWidget {
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 8),
-        _TreeCard(visualization: dashboard.visualization),
+        TreeVisualizationCard(visualization: dashboard.visualization),
         const SizedBox(height: 16),
         Text(
           l10n.measurementsSection,
@@ -52,7 +51,10 @@ class ParticipantDashboardView extends StatelessWidget {
         const SizedBox(height: 8),
         ...dashboard.measurements.map(
           (row) => Text(
-            l10n.measurementQuantityLabel(_format(row.quantity), row.sourceUnit),
+            l10n.measurementQuantityLabel(
+              formatNumber(row.quantity),
+              row.sourceUnit,
+            ),
           ),
         ),
         const SizedBox(height: 16),
@@ -72,7 +74,7 @@ class ParticipantDashboardView extends StatelessWidget {
         ...dashboard.timeSeries.map((point) {
           final quantity = point.measurements.isEmpty
               ? '0'
-              : _format(point.measurements.first.quantity);
+              : formatNumber(point.measurements.first.quantity);
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Column(
@@ -90,25 +92,26 @@ class ParticipantDashboardView extends StatelessWidget {
   }
 }
 
-class _TreeCard extends StatelessWidget {
-  const _TreeCard({required this.visualization});
+class TreeVisualizationCard extends StatelessWidget {
+  const TreeVisualizationCard({this.visualization, super.key});
 
-  final VisualizationData visualization;
+  final VisualizationData? visualization;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    if (!visualization.isActive) {
+    final data = visualization;
+    if (data == null || !data.isActive) {
       return Text(l10n.treeInactive);
     }
-    final percent = visualization.completionPercent ?? 0;
+    final percent = data.completionPercent ?? 0;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             const Icon(Icons.park, size: 48),
-            Text(visualization.displayName),
+            Text(data.displayName),
             Text(l10n.completionLabel('$percent%')),
           ],
         ),
@@ -134,7 +137,7 @@ class _OutcomeTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '${outcome.outcomeMetric}: ${l10n.outcomeValueLabel(_format(outcome.value), outcome.outcomeUnit)}',
+            '${outcome.outcomeMetric}: ${l10n.outcomeValueLabel(formatNumber(outcome.value), outcome.outcomeUnit)}',
           ),
           if (source.isNotEmpty) Text(l10n.factorSourceLabel(source)),
         ],
@@ -163,11 +166,4 @@ class _QuantityBar extends StatelessWidget {
       ),
     );
   }
-}
-
-String _format(num value) {
-  if (value % 1 == 0) {
-    return value.toInt().toString();
-  }
-  return value.toString();
 }

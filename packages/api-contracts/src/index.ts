@@ -22,7 +22,8 @@ export type ErrorCode =
   | 'TOKEN_EXPIRED'
   | 'IDENTITY_ALREADY_EXISTS'
   | 'WEAK_PASSWORD'
-  | 'SOCIAL_TOKEN_INVALID';
+  | 'SOCIAL_TOKEN_INVALID'
+  | 'RATE_LIMITED';
 
 export interface ApiErrorResponse {
   statusCode: number;
@@ -108,6 +109,7 @@ export interface UserProfileResponse {
   locale: string | null;
   timezone: string | null;
   isActive: boolean;
+  isPlatformAdmin: boolean;
   identities: UserIdentityResponse[];
 }
 
@@ -483,6 +485,22 @@ export interface CreateCommitmentRequest {
   targetValue: number;
   unit: string;
   payload?: Record<string, unknown>;
+}
+
+export interface CommitmentChoiceOption {
+  key: string;
+  name: string;
+  canonicalUnit: string;
+  suggestedTarget: number | null;
+  usesCampaignDuration: boolean;
+}
+
+export interface CommitmentOptionsResponse {
+  campaignId: string;
+  customerId: string;
+  strategy: string;
+  units: string[];
+  choices: CommitmentChoiceOption[];
 }
 
 export interface UpdateCommitmentRequest {

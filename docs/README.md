@@ -28,4 +28,6 @@ This directory contains the product vision, domain model, architecture, and deve
 - `development/CURSOR_DEVELOPMENT_GUIDE.md` — Development workflow and Cursor usage guide
 - `AI_HANDOVER.md` — AI orchestration contract and phase guidelines
 
+Shared Dart HTTP client: `packages/api_client`.
+
 Working constraints and conventions also live in `.cursor/rules/`.

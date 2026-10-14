@@ -1,18 +1,19 @@
 ---
-description: Flutter mobile and admin web shell conventions
+description: Flutter mobile and admin web conventions
 globs: apps/{mobile,admin}/**/*.dart
 alwaysApply: false
 ---
 
 # Flutter conventions
 
-`apps/mobile` is the iOS and Android app. `apps/admin` is the Flutter web admin app. Keep them separate.
+`apps/mobile` is the iOS and Android participant app. `apps/admin` is the Flutter web admin app. Keep them separate. Shared HTTP types and the JWT client live in `packages/api_client`.
 
 - Route with `go_router`.
-- Read `APP_ENV` and `API_BASE_URL` from `--dart-define` via `AppConfig`.
-- Keep English (`en`) and Simplified Chinese (`zh`) ARB files in `lib/l10n`.
+- Read `APP_ENV`, `API_BASE_URL`, `GOOGLE_CLIENT_ID`, and `APPLE_CLIENT_ID` from `--dart-define` via `AppConfig`. Hide Google/Apple buttons when those client IDs are empty.
+- Keep English (`en`) and Simplified Chinese (`zh_Hans` ARB / `zh-Hans` API) files in `lib/l10n`. Send `zh-Hans` to the API. Do not use `zh` alone for API locale.
 - Generate localizations from `l10n.yaml`. Do not hardcode user-facing strings in widgets.
-- Leave campaign and administration workflows out of the shells until a later phase adds them.
+- Keep business rules on the backend. Flutter validates format only (identifier shape, password length, required fields).
+- Use the inherited `SessionController` / `ApiScope` already in the apps. Do not add a new state-management framework.
 
 ```sh
 flutter run --dart-define=APP_ENV=development --dart-define=API_BASE_URL=http://localhost:3000/api/v1

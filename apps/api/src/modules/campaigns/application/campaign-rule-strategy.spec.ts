@@ -13,6 +13,11 @@ describe('campaign rule strategies', () => {
   it('uses generic rules when no strategy is configured', () => {
     const rules = resolveCampaignRules({}, [vegetarian], generic);
     expect(rules.key).toBe('generic');
+    expect(rules.describeCommitmentOptions()).toEqual({
+      strategy: 'generic',
+      units: [],
+      choices: [],
+    });
     expect(() =>
       rules.validateCommitment({
         typeKey: null,

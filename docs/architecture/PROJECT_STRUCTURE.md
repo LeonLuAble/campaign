@@ -7,6 +7,7 @@ community-campaign-platform/
 │   └── admin/
 ├── packages/
 │   ├── api-contracts/
+│   ├── api_client/
 │   └── tooling/
 ├── docs/
 ├── infrastructure/

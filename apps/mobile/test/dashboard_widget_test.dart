@@ -1,9 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
-
-import 'package:community_campaign/dashboards/dashboard_models.dart';
+import 'package:api_client/api_client.dart';
 import 'package:community_campaign/dashboards/participant_dashboard_page.dart';
 import 'package:community_campaign/l10n/app_localizations.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 Widget wrap(Widget child) {
   return MaterialApp(
@@ -26,7 +25,7 @@ void main() {
   testWidgets('renders progress, cited outcomes, TREE and time series', (
     tester,
   ) async {
-    const data = ParticipantDashboardData(
+    const data = ParticipantDashboard(
       progress: DashboardProgress(
         achievedValue: 2,
         targetValue: 10,
@@ -55,9 +54,7 @@ void main() {
         TimeSeriesPoint(
           periodStart: '2026-10-12',
           periodEnd: '2026-10-18',
-          measurements: [
-            MeasurementTotal(sourceUnit: 'days', quantity: 2),
-          ],
+          measurements: [MeasurementTotal(sourceUnit: 'days', quantity: 2)],
           outcomes: [],
         ),
       ],

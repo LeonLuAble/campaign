@@ -608,6 +608,7 @@ describe('Auth (e2e)', () => {
         lastName: 'User',
         displayName: 'Test User',
         isActive: true,
+        isPlatformAdmin: false,
       });
       expect(response.body.identities).toEqual(
         expect.arrayContaining([

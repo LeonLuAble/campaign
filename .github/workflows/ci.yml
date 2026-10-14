@@ -61,6 +61,22 @@ jobs:
       - run: npm run test:e2e
       - run: npm run build
 
+  api_client:
+    name: API client
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/api_client
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+
   mobile:
     name: Mobile
     runs-on: ubuntu-latest

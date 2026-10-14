@@ -13,6 +13,8 @@ dependencies:
     sdk: flutter
   go_router: ^18.0.2
   intl: ^0.20.3
+  api_client:
+    path: ../../packages/api_client
 
 dev_dependencies:
   flutter_test:

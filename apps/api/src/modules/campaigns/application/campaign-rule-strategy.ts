@@ -34,11 +34,26 @@ export interface ProgressTarget {
   unit: string;
 }
 
+export interface CommitmentChoiceOption {
+  key: string;
+  name: string;
+  canonicalUnit: string;
+  suggestedTarget: number | null;
+  usesCampaignDuration: boolean;
+}
+
+export interface CommitmentOptionsDescriptor {
+  strategy: string;
+  units: string[];
+  choices: CommitmentChoiceOption[];
+}
+
 export interface CampaignRuleStrategy {
   readonly key: string;
   validateCommitment(input: CommitmentRuleInput): void;
   validateAction(input: ActionRuleInput): void;
   normalizeCommitment?(input: CommitmentRuleInput): CommitmentRuleInput;
+  describeCommitmentOptions(): CommitmentOptionsDescriptor;
   contributeToProgress(
     contribution: ProgressContributionInput,
     commitment: CommitmentRuleInput | null,
@@ -63,6 +78,14 @@ export class GenericCampaignRules implements CampaignRuleStrategy {
   validateAction(input: ActionRuleInput): void {
     assertPositiveInt('quantity', input.quantity, MAX_QUANTITY);
     assertNonBlank('unit', input.definitionUnit);
+  }
+
+  describeCommitmentOptions(): CommitmentOptionsDescriptor {
+    return {
+      strategy: this.key,
+      units: [],
+      choices: [],
+    };
   }
 
   contributeToProgress(

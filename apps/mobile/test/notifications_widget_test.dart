@@ -1,9 +1,8 @@
+import 'package:api_client/api_client.dart';
+import 'package:community_campaign/l10n/app_localizations.dart';
+import 'package:community_campaign/notifications/notifications_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:community_campaign/l10n/app_localizations.dart';
-import 'package:community_campaign/notifications/notification_models.dart';
-import 'package:community_campaign/notifications/notifications_page.dart';
 
 Widget wrap(Widget child) {
   return MaterialApp(
@@ -16,7 +15,9 @@ Widget wrap(Widget child) {
 
 void main() {
   testWidgets('shows an empty notifications inbox', (tester) async {
-    await tester.pumpWidget(wrap(const NotificationsPage()));
+    await tester.pumpWidget(
+      wrap(const NotificationsPage(items: [])),
+    );
     await tester.pumpAndSettle();
     expect(find.text('Notifications'), findsOneWidget);
     expect(find.text('No notifications yet.'), findsOneWidget);
@@ -29,11 +30,12 @@ void main() {
       wrap(
         const NotificationsPage(
           items: [
-            InAppNotificationData(
+            InboxNotification(
               id: 'n1',
+              customerId: 'cust-1',
+              type: 'campaign_started',
               title: 'Campaign started',
               body: '速素数数 has started. You can begin recording actions.',
-              read: false,
             ),
           ],
         ),
