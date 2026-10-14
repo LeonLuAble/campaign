@@ -89,6 +89,8 @@ npm run migration:show
 npm run migration:run
 ```
 
+Production API image: `docker build -t campaign-api ./apps/api`. Demo data (development/test only): `npm run seed:demo` from `apps/api`. Release checklist: `docs/release/DEPLOYMENT.md`. MVP audit: `docs/release/MVP_READINESS.md`.
+
 ## Start mobile
 
 ```sh

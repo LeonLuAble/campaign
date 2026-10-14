@@ -23,7 +23,7 @@ Phase order:
 6. Achievement/progress/milestones.
 7. Measurement/outcome/visualization.
 8. Notifications/localization/reporting.
-9. End-to-end validation/MVP release.
+9. End-to-end validation/MVP release (complete; remaining work is human release decisions).
 
 Phase 0 must establish repository, NestJS bootstrap, health endpoint, env config, PostgreSQL/Redis connectivity, logging, correlation ID, validation, error handling, migration infrastructure, Docker Compose, Flutter shells, API contracts, Cursor rules, .env.example, tests and README. Do not start business modules.
 

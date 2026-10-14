@@ -1,3 +1,5 @@
+import { isAuthRateLimitEnabled, parseCorsOrigins } from './security-config.js';
+
 export type NodeEnvironment = 'development' | 'test' | 'production';
 
 export interface AppConfiguration {
@@ -8,6 +10,15 @@ export interface AppConfiguration {
   };
   redis: {
     url: string;
+  };
+  cors: {
+    origins: string[];
+  };
+  security: {
+    helmetEnabled: boolean;
+    authRateLimitEnabled: boolean;
+    authRateLimitTtlMs: number;
+    authRateLimitMax: number;
   };
   jwt: {
     accessSecret?: string;
@@ -66,6 +77,19 @@ export default function configuration(): AppConfiguration {
     },
     redis: {
       url: process.env.REDIS_URL ?? '',
+    },
+    cors: {
+      origins: parseCorsOrigins(process.env.CORS_ORIGINS),
+    },
+    security: {
+      helmetEnabled: process.env.HELMET_ENABLED !== 'false',
+      authRateLimitEnabled: isAuthRateLimitEnabled(
+        nodeEnv,
+        process.env.AUTH_RATE_LIMIT_ENABLED,
+      ),
+      authRateLimitTtlMs:
+        Number(process.env.AUTH_RATE_LIMIT_TTL_SECONDS ?? 60) * 1000,
+      authRateLimitMax: Number(process.env.AUTH_RATE_LIMIT_MAX ?? 20),
     },
     jwt: {
       accessSecret: emptyToUndefined(process.env.JWT_ACCESS_SECRET),

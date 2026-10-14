@@ -1,5 +1,5 @@
 # Deployment
 
-Phase 0 does not include deployment manifests.
+Production runbooks live in `docs/release/DEPLOYMENT.md`.
 
-Kubernetes, service meshes, and API gateways are out of scope until a later phase asks for them.
+This repository does not choose a cloud provider and does not include Kubernetes, service mesh, API gateway, or Terraform manifests.

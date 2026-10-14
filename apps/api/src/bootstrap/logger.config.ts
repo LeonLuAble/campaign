@@ -5,6 +5,17 @@ import {
   resolveCorrelationId,
 } from '../shared/correlation/correlation-id.js';
 
+export const LOGGER_REDACT_PATHS = [
+  'req.headers.authorization',
+  'req.headers.cookie',
+  'req.body.password',
+  'req.body.token',
+  'req.body.refreshToken',
+  'req.body.idToken',
+  'req.body.accessToken',
+  'req.body.smtpPassword',
+] as const;
+
 export function createLoggerParams(config: ConfigService) {
   const isDevelopment = config.get<string>('nodeEnv') === 'development';
 
@@ -21,14 +32,10 @@ export function createLoggerParams(config: ConfigService) {
       customProps: (request: IncomingMessage & { id?: string }) => ({
         correlationId: request.id,
       }),
-      redact: [
-        'req.headers.authorization',
-        'req.headers.cookie',
-        'req.body.password',
-        'req.body.token',
-        'req.body.refreshToken',
-        'req.body.idToken',
-      ],
+      redact: {
+        paths: [...LOGGER_REDACT_PATHS],
+        censor: '[Redacted]',
+      },
       transport: isDevelopment
         ? {
             target: 'pino-pretty',
