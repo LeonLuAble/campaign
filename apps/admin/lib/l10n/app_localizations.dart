@@ -95,6 +95,7 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
+    Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
     Locale('zh'),
   ];
 
@@ -107,7 +108,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeMessage.
   ///
   /// In en, this message translates to:
-  /// **'Administration shell'**
+  /// **'Administration'**
   String get homeMessage;
 
   /// No description provided for @environmentLabel.
@@ -116,34 +117,593 @@ abstract class AppLocalizations {
   /// **'Environment: {environment}'**
   String environmentLabel(String environment);
 
+  /// No description provided for @openCampaignDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Campaign dashboard'**
   String get openCampaignDashboard;
+
+  /// No description provided for @openCommunityDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Community dashboard'**
   String get openCommunityDashboard;
+
+  /// No description provided for @campaignDashboardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Campaign dashboard'**
   String get campaignDashboardTitle;
+
+  /// No description provided for @communityDashboardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Community dashboard'**
   String get communityDashboardTitle;
+
+  /// No description provided for @emptyDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'No dashboard data yet. Configure measurement definitions and impact factors, then wait for approved actions.'**
   String get emptyDashboard;
+
+  /// No description provided for @progressSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress'**
   String get progressSection;
+
+  /// No description provided for @measurementsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Measurements'**
   String get measurementsSection;
+
+  /// No description provided for @outcomesSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Outcomes'**
   String get outcomesSection;
+
+  /// No description provided for @timeSeriesSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Time series'**
   String get timeSeriesSection;
+
+  /// No description provided for @visualizationSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Visualization'**
   String get visualizationSection;
+
+  /// No description provided for @completionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Completion: {percent}'**
   String completionLabel(String percent);
+
+  /// No description provided for @achievedOfTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'{achieved} of {target} {unit}'**
   String achievedOfTarget(String achieved, String target, String unit);
+
+  /// No description provided for @noOutcomes.
+  ///
+  /// In en, this message translates to:
+  /// **'No outcomes yet. Impact factors are configured per campaign or tenant and are never hardcoded.'**
   String get noOutcomes;
+
+  /// No description provided for @factorSourceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Source: {source}'**
   String factorSourceLabel(String source);
+
+  /// No description provided for @outcomeValueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{value} {unit}'**
   String outcomeValueLabel(String value, String unit);
+
+  /// No description provided for @measurementQuantityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{quantity} {unit}'**
   String measurementQuantityLabel(String quantity, String unit);
+
+  /// No description provided for @periodLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} – {end}'**
   String periodLabel(String start, String end);
+
+  /// No description provided for @treeInactive.
+  ///
+  /// In en, this message translates to:
+  /// **'Campaign visualization is not configured.'**
   String get treeInactive;
+
+  /// No description provided for @anonymousTotalsNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Totals are anonymous. People are not ranked or compared.'**
   String get anonymousTotalsNote;
+
+  /// No description provided for @languageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
   String get languageLabel;
+
+  /// No description provided for @languageEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
   String get languageEnglish;
+
+  /// No description provided for @languageChinese.
+  ///
+  /// In en, this message translates to:
+  /// **'简体中文'**
   String get languageChinese;
+
+  /// No description provided for @openCampaignReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Campaign report'**
   String get openCampaignReport;
+
+  /// No description provided for @campaignReportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Campaign report'**
   String get campaignReportTitle;
+
+  /// No description provided for @emptyReport.
+  ///
+  /// In en, this message translates to:
+  /// **'No report data yet.'**
   String get emptyReport;
+
+  /// No description provided for @exportCsv.
+  ///
+  /// In en, this message translates to:
+  /// **'Export CSV'**
   String get exportCsv;
+
+  /// No description provided for @exportRequiresPermission.
+  ///
+  /// In en, this message translates to:
+  /// **'CSV export requires reports.export and is audited.'**
   String get exportRequiresPermission;
+
+  /// No description provided for @anonymousReportNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Aggregate reports exclude contact details and do not rank people.'**
   String get anonymousReportNote;
+
+  /// No description provided for @loginTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get loginTitle;
+
+  /// No description provided for @identifierLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Email or mobile'**
+  String get identifierLabel;
+
+  /// No description provided for @passwordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get passwordLabel;
+
+  /// No description provided for @loginButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get loginButton;
+
+  /// No description provided for @logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get logout;
+
+  /// No description provided for @customersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Customers'**
+  String get customersTitle;
+
+  /// No description provided for @createCustomer.
+  ///
+  /// In en, this message translates to:
+  /// **'Create customer'**
+  String get createCustomer;
+
+  /// No description provided for @customerNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer name'**
+  String get customerNameLabel;
+
+  /// No description provided for @communitiesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Communities'**
+  String get communitiesTitle;
+
+  /// No description provided for @createCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Create community'**
+  String get createCommunity;
+
+  /// No description provided for @communityNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Community name'**
+  String get communityNameLabel;
+
+  /// No description provided for @importTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'CSV import'**
+  String get importTitle;
+
+  /// No description provided for @uploadCsv.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload CSV'**
+  String get uploadCsv;
+
+  /// No description provided for @mapFields.
+  ///
+  /// In en, this message translates to:
+  /// **'Save mapping'**
+  String get mapFields;
+
+  /// No description provided for @validateImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Validate'**
+  String get validateImport;
+
+  /// No description provided for @previewImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get previewImport;
+
+  /// No description provided for @confirmImport.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm import'**
+  String get confirmImport;
+
+  /// No description provided for @importResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Import result'**
+  String get importResult;
+
+  /// No description provided for @campaignsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Campaigns'**
+  String get campaignsTitle;
+
+  /// No description provided for @createCampaign.
+  ///
+  /// In en, this message translates to:
+  /// **'Create campaign'**
+  String get createCampaign;
+
+  /// No description provided for @campaignNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Campaign name'**
+  String get campaignNameLabel;
+
+  /// No description provided for @timezoneLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Timezone'**
+  String get timezoneLabel;
+
+  /// No description provided for @startsOnLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts on'**
+  String get startsOnLabel;
+
+  /// No description provided for @endsOnLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Ends on'**
+  String get endsOnLabel;
+
+  /// No description provided for @publishCampaign.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish'**
+  String get publishCampaign;
+
+  /// No description provided for @startCampaign.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get startCampaign;
+
+  /// No description provided for @participantsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Participants'**
+  String get participantsTitle;
+
+  /// No description provided for @submissionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Submissions'**
+  String get submissionsTitle;
+
+  /// No description provided for @rejectSubmission.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get rejectSubmission;
+
+  /// No description provided for @rejectNoteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Review note'**
+  String get rejectNoteLabel;
+
+  /// No description provided for @impactFactorsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Impact factors'**
+  String get impactFactorsTitle;
+
+  /// No description provided for @sourceUnitLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Source unit'**
+  String get sourceUnitLabel;
+
+  /// No description provided for @outcomeMetricLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Outcome metric'**
+  String get outcomeMetricLabel;
+
+  /// No description provided for @outcomeUnitLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Outcome unit'**
+  String get outcomeUnitLabel;
+
+  /// No description provided for @factorValueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Factor value'**
+  String get factorValueLabel;
+
+  /// No description provided for @citationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Source citation'**
+  String get citationLabel;
+
+  /// No description provided for @effectiveFromLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Effective from'**
+  String get effectiveFromLabel;
+
+  /// No description provided for @saveImpactFactor.
+  ///
+  /// In en, this message translates to:
+  /// **'Save impact factor'**
+  String get saveImpactFactor;
+
+  /// No description provided for @identifierRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an email or mobile number.'**
+  String get identifierRequired;
+
+  /// No description provided for @passwordTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 8 characters.'**
+  String get passwordTooShort;
+
+  /// No description provided for @nameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a name.'**
+  String get nameRequired;
+
+  /// No description provided for @openImport.
+  ///
+  /// In en, this message translates to:
+  /// **'CSV import'**
+  String get openImport;
+
+  /// No description provided for @openCampaigns.
+  ///
+  /// In en, this message translates to:
+  /// **'Campaigns'**
+  String get openCampaigns;
+
+  /// No description provided for @openCommunities.
+  ///
+  /// In en, this message translates to:
+  /// **'Communities'**
+  String get openCommunities;
+
+  /// No description provided for @openParticipants.
+  ///
+  /// In en, this message translates to:
+  /// **'Participants'**
+  String get openParticipants;
+
+  /// No description provided for @openSubmissions.
+  ///
+  /// In en, this message translates to:
+  /// **'Submissions'**
+  String get openSubmissions;
+
+  /// No description provided for @openImpactFactors.
+  ///
+  /// In en, this message translates to:
+  /// **'Impact factors'**
+  String get openImpactFactors;
+
+  /// No description provided for @rulesStrategyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Rules strategy'**
+  String get rulesStrategyLabel;
+
+  /// No description provided for @templateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Template'**
+  String get templateLabel;
+
+  /// No description provided for @scopeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Scope'**
+  String get scopeLabel;
+
+  /// No description provided for @emailColumn.
+  ///
+  /// In en, this message translates to:
+  /// **'Email column'**
+  String get emailColumn;
+
+  /// No description provided for @mobileColumn.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile column'**
+  String get mobileColumn;
+
+  /// No description provided for @exportReady.
+  ///
+  /// In en, this message translates to:
+  /// **'CSV export is ready.'**
+  String get exportReady;
+
+  /// No description provided for @errorInvalidCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Email, mobile, or password is incorrect.'**
+  String get errorInvalidCredentials;
+
+  /// No description provided for @errorTokenInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'This token is not valid.'**
+  String get errorTokenInvalid;
+
+  /// No description provided for @errorTokenReused.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session was reused. Please sign in again.'**
+  String get errorTokenReused;
+
+  /// No description provided for @errorTokenExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'This token has expired.'**
+  String get errorTokenExpired;
+
+  /// No description provided for @errorIdentityExists.
+  ///
+  /// In en, this message translates to:
+  /// **'That email or mobile is already registered.'**
+  String get errorIdentityExists;
+
+  /// No description provided for @errorWeakPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a stronger password (at least 8 characters).'**
+  String get errorWeakPassword;
+
+  /// No description provided for @errorSocialTokenInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Social sign-in could not be verified.'**
+  String get errorSocialTokenInvalid;
+
+  /// No description provided for @errorUnauthorized.
+  ///
+  /// In en, this message translates to:
+  /// **'Please sign in.'**
+  String get errorUnauthorized;
+
+  /// No description provided for @errorForbidden.
+  ///
+  /// In en, this message translates to:
+  /// **'You do not have permission for this action.'**
+  String get errorForbidden;
+
+  /// No description provided for @errorNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'The requested item was not found.'**
+  String get errorNotFound;
+
+  /// No description provided for @errorConflict.
+  ///
+  /// In en, this message translates to:
+  /// **'This change conflicts with existing data.'**
+  String get errorConflict;
+
+  /// No description provided for @errorRateLimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Try again later.'**
+  String get errorRateLimited;
+
+  /// No description provided for @errorValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Please check the form and try again.'**
+  String get errorValidation;
+
+  /// No description provided for @errorUnexpected.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Try again.'**
+  String get errorUnexpected;
+
+  /// No description provided for @noCustomers.
+  ///
+  /// In en, this message translates to:
+  /// **'No customers yet.'**
+  String get noCustomers;
+
+  /// No description provided for @noCommunities.
+  ///
+  /// In en, this message translates to:
+  /// **'No communities yet.'**
+  String get noCommunities;
+
+  /// No description provided for @noCampaigns.
+  ///
+  /// In en, this message translates to:
+  /// **'No campaigns yet.'**
+  String get noCampaigns;
 }
 
 class _AppLocalizationsDelegate
@@ -164,6 +724,18 @@ class _AppLocalizationsDelegate
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
+  // Lookup logic when language+script codes are specified.
+  switch (locale.languageCode) {
+    case 'zh':
+      {
+        switch (locale.scriptCode) {
+          case 'Hans':
+            return AppLocalizationsZhHans();
+        }
+        break;
+      }
+  }
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
     case 'en':

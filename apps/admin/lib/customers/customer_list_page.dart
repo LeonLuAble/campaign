@@ -32,6 +32,9 @@ class _CustomerListPageState extends State<CustomerListPage> {
     }
     try {
       await ApiScope.of(context).client.createCustomer(name: _name.text.trim());
+      if (!mounted) {
+        return;
+      }
       await ApiScope.of(context).session.refreshCustomers();
       _name.clear();
       setState(() => _error = null);

@@ -59,10 +59,16 @@ class _PreferencesPageState extends State<PreferencesPage> {
     setState(() => _message = null);
     try {
       await ApiScope.of(context).session.applyLocale(locale);
+      if (!mounted) {
+        return;
+      }
       if (_timezone.text.trim().isNotEmpty) {
         await ApiScope.of(context).client.updateMe(
           timezone: _timezone.text.trim(),
         );
+      }
+      if (!mounted) {
+        return;
       }
       await ApiScope.of(context).client.updateNotificationPreferences(
         remindersEnabled: _remindersEnabled,

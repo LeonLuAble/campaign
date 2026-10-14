@@ -54,6 +54,16 @@ class _PledgePageState extends State<PledgePage> {
     }
   }
 
+  String _choiceDetail(AppLocalizations l10n, CommitmentChoice choice) {
+    final unit = choice.usesCampaignDuration
+        ? l10n.usesCampaignDuration
+        : choice.canonicalUnit;
+    if (choice.suggestedTarget == null) {
+      return unit;
+    }
+    return '$unit · ${formatNumber(choice.suggestedTarget!)}';
+  }
+
   void _select(CommitmentChoice choice) {
     setState(() {
       _selectedKey = choice.key;
@@ -114,19 +124,27 @@ class _PledgePageState extends State<PledgePage> {
               children: [
                 Text(l10n.selectChoice),
                 const SizedBox(height: 8),
-                ...options.choices.map((choice) {
-                  return RadioListTile<String>(
-                    title: Text(choice.name),
-                    subtitle: Text(
-                      choice.usesCampaignDuration
-                          ? l10n.usesCampaignDuration
-                          : choice.canonicalUnit,
-                    ),
-                    value: choice.key,
-                    groupValue: _selectedKey,
-                    onChanged: (_) => _select(choice),
-                  );
-                }),
+                RadioGroup<String>(
+                  groupValue: _selectedKey,
+                  onChanged: (value) {
+                    final match = options.choices.where(
+                      (row) => row.key == value,
+                    );
+                    if (match.isNotEmpty) {
+                      _select(match.first);
+                    }
+                  },
+                  child: Column(
+                    children: [
+                      for (final choice in options.choices)
+                        RadioListTile<String>(
+                          title: Text(choice.name),
+                          subtitle: Text(_choiceDetail(l10n, choice)),
+                          value: choice.key,
+                        ),
+                    ],
+                  ),
+                ),
                 if (options.choices.isEmpty)
                   TextField(
                     decoration: InputDecoration(labelText: l10n.unitLabel),

@@ -36,12 +36,16 @@ class SessionController extends ChangeNotifier {
     await restore();
   }
 
-  Future<void> logout() async {
-    await api.logout();
+  void expireLocalSession() {
     profile = null;
     customers = const [];
     customer = null;
     notifyListeners();
+  }
+
+  Future<void> logout() async {
+    await api.logout();
+    expireLocalSession();
   }
 
   Future<void> applyLocale(String locale) async {

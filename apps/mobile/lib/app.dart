@@ -49,8 +49,7 @@ class _CampaignAppState extends State<CampaignApp> {
           tokenStore: store,
           localeProvider: () => AppLocales.toApi(_override ?? widget.locale ?? AppLocales.en),
           onSessionExpired: () {
-            _session.profile = null;
-            _session.notifyListeners();
+            _session.expireLocalSession();
           },
         );
     _session = widget.session ?? SessionController(api: _client);

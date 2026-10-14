@@ -77,7 +77,8 @@ class _RecordActionPageState extends State<RecordActionPage> {
         participationId: participationId,
         actionDefinitionId: definitionId,
         quantity: quantity,
-        idempotencyKey: '${participationId}-${definitionId}-${DateTime.now().microsecondsSinceEpoch}',
+        idempotencyKey:
+            '$participationId-$definitionId-${DateTime.now().microsecondsSinceEpoch}',
       );
       await _load();
     } catch (error) {
@@ -112,13 +113,18 @@ class _RecordActionPageState extends State<RecordActionPage> {
         padding: const EdgeInsets.all(16),
         children: [
           if (_error != null) Text(_error!),
-          ..._definitions.map(
-            (definition) => RadioListTile<String>(
-              title: Text(definition.name),
-              subtitle: Text(definition.unit),
-              value: definition.id,
-              groupValue: _definitionId,
-              onChanged: (value) => setState(() => _definitionId = value),
+          RadioGroup<String>(
+            groupValue: _definitionId,
+            onChanged: (value) => setState(() => _definitionId = value),
+            child: Column(
+              children: [
+                for (final definition in _definitions)
+                  RadioListTile<String>(
+                    title: Text(definition.name),
+                    subtitle: Text(definition.unit),
+                    value: definition.id,
+                  ),
+              ],
             ),
           ),
           TextField(

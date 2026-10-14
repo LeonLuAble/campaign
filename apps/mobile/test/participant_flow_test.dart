@@ -43,9 +43,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('发愿素'), findsOneWidget);
     expect(find.text('已全素'), findsOneWidget);
-    await tester.tap(find.text('一周素'));
+    await tester.ensureVisible(find.text('一周素'));
+    await tester.tap(find.widgetWithText(RadioListTile<String>, '一周素'));
     await tester.pumpAndSettle();
-    expect(find.text('7'), findsWidgets);
+    expect(find.textContaining('7'), findsWidgets);
     await tester.tap(find.widgetWithText(FilledButton, 'Save pledge'));
     await tester.pumpAndSettle();
     expect(api.commitments, isNotEmpty);

@@ -107,17 +107,18 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('started'), findsOneWidget);
 
+    final created = api.campaigns.last;
     api.actions = [
-      const RecordedAction(
+      RecordedAction(
         id: 'act-1',
-        campaignId: 'camp-1',
+        campaignId: created.id,
         participationId: 'part-1',
         userId: 'user-1',
         actionDefinitionId: 'def-meal',
         occurredOn: '2026-10-14',
         quantity: 1,
         status: 'recorded',
-        submission: Submission(
+        submission: const Submission(
           id: 'sub-1',
           actionId: 'act-1',
           status: 'approved',

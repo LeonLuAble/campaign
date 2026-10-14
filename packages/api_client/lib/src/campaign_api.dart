@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:dio/dio.dart';
 
 import 'errors.dart';
@@ -191,7 +189,7 @@ class HttpCampaignApiClient implements CampaignApiClient {
   final void Function()? _onSessionExpired;
   final Dio _http;
   final Dio _refreshHttp;
-  Completer<TokenPair>? _refreshLock;
+  Future<TokenPair>? _refreshInFlight;
 
   static String _normalizeBase(String url) {
     if (url.endsWith('/')) {
@@ -205,52 +203,42 @@ class HttpCampaignApiClient implements CampaignApiClient {
     _onSessionExpired?.call();
   }
 
-  Future<TokenPair> _refreshTokens() async {
-    final existing = _refreshLock;
-    if (existing != null) {
-      return existing.future;
+  Future<TokenPair> _refreshTokens() {
+    return _refreshInFlight ??= _doRefresh().whenComplete(() {
+      _refreshInFlight = null;
+    });
+  }
+
+  Future<TokenPair> _doRefresh() async {
+    final refreshToken = await _tokens.readRefreshToken();
+    if (refreshToken == null || refreshToken.isEmpty) {
+      throw ApiException(
+        statusCode: 401,
+        code: 'UNAUTHORIZED',
+        message: 'Not signed in',
+      );
     }
-    final lock = Completer<TokenPair>();
-    _refreshLock = lock;
     try {
-      final refreshToken = await _tokens.readRefreshToken();
-      if (refreshToken == null || refreshToken.isEmpty) {
-        throw ApiException(
-          statusCode: 401,
-          code: 'UNAUTHORIZED',
-          message: 'Not signed in',
-        );
+      final response = await _refreshHttp.post<Map<String, dynamic>>(
+        '/auth/refresh',
+        data: {'refreshToken': refreshToken},
+      );
+      final pair = TokenPair.fromJson(response.data ?? const {});
+      await _tokens.writeTokens(
+        accessToken: pair.accessToken,
+        refreshToken: pair.refreshToken,
+      );
+      return pair;
+    } catch (error) {
+      final apiError = error is DioException ? _toApiException(error) : error;
+      if (apiError is ApiException &&
+          (apiError.isTokenReused ||
+              apiError.code == 'TOKEN_INVALID' ||
+              apiError.code == 'TOKEN_EXPIRED' ||
+              apiError.statusCode == 401)) {
+        await _handleSessionExpired();
       }
-      try {
-        final response = await _refreshHttp.post<Map<String, dynamic>>(
-          '/auth/refresh',
-          data: {'refreshToken': refreshToken},
-        );
-        final pair = TokenPair.fromJson(response.data ?? const {});
-        await _tokens.writeTokens(
-          accessToken: pair.accessToken,
-          refreshToken: pair.refreshToken,
-        );
-        lock.complete(pair);
-        return pair;
-      } on DioException catch (error) {
-        final apiError = _toApiException(error);
-        if (apiError.isTokenReused ||
-            apiError.code == 'TOKEN_INVALID' ||
-            apiError.code == 'TOKEN_EXPIRED' ||
-            apiError.statusCode == 401) {
-          await _handleSessionExpired();
-        }
-        lock.completeError(apiError);
-        throw apiError;
-      }
-    } catch (error, stack) {
-      if (!lock.isCompleted) {
-        lock.completeError(error, stack);
-      }
-      rethrow;
-    } finally {
-      _refreshLock = null;
+      throw apiError;
     }
   }
 

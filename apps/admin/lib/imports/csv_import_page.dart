@@ -39,6 +39,9 @@ class _CsvImportPageState extends State<CsvImportPage> {
     }
     setState(() => _busy = true);
     try {
+      if (!mounted) {
+        return;
+      }
       final uploaded = await ApiScope.of(context).client.uploadUserImport(
         customerId: widget.customerId,
         filename: file.name,
@@ -134,6 +137,9 @@ class _CsvImportPageState extends State<CsvImportPage> {
       final confirmed = await ApiScope.of(context).client.confirmUserImport(
         current.id,
       );
+      if (!mounted) {
+        return;
+      }
       final rows = await ApiScope.of(context).client.listUserImportRows(
         current.id,
       );
