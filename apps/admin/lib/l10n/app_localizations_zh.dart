@@ -364,6 +364,66 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get noCampaigns => '暂无活动。';
+
+  @override
+  String get navCustomers => '客户';
+
+  @override
+  String get navCommunities => '社区';
+
+  @override
+  String get navCampaigns => '活动';
+
+  @override
+  String get navImports => '导入';
+
+  @override
+  String get navReports => '报表';
+
+  @override
+  String get selectCustomer => '选择客户';
+
+  @override
+  String get adminNameLabel => '管理员显示名称';
+
+  @override
+  String get adminEmailLabel => '管理员邮箱';
+
+  @override
+  String get adminEmailRequired => '请输入客户管理员邮箱。';
+
+  @override
+  String get activationLinkTitle => '分享激活链接';
+
+  @override
+  String get activationLinkNote => '邮件发送尚未接入。请复制此链接并手动发给客户管理员，以便其设置密码。';
+
+  @override
+  String get copyLink => '复制';
+
+  @override
+  String get copiedToClipboard => '已复制到剪贴板';
+
+  @override
+  String get close => '关闭';
+
+  @override
+  String get reportsTitle => '报表';
+
+  @override
+  String get activateTitle => '激活账户';
+
+  @override
+  String get activateSubtitle => '设置密码以激活管理员账户。';
+
+  @override
+  String get activationTokenLabel => '激活令牌';
+
+  @override
+  String get activateButton => '激活';
+
+  @override
+  String get tokenRequired => '请输入激活令牌。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -725,4 +785,64 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get noCampaigns => '暂无活动。';
+
+  @override
+  String get navCustomers => '客户';
+
+  @override
+  String get navCommunities => '社区';
+
+  @override
+  String get navCampaigns => '活动';
+
+  @override
+  String get navImports => '导入';
+
+  @override
+  String get navReports => '报表';
+
+  @override
+  String get selectCustomer => '选择客户';
+
+  @override
+  String get adminNameLabel => '管理员显示名称';
+
+  @override
+  String get adminEmailLabel => '管理员邮箱';
+
+  @override
+  String get adminEmailRequired => '请输入客户管理员邮箱。';
+
+  @override
+  String get activationLinkTitle => '分享激活链接';
+
+  @override
+  String get activationLinkNote => '邮件发送尚未接入。请复制此链接并手动发给客户管理员，以便其设置密码。';
+
+  @override
+  String get copyLink => '复制';
+
+  @override
+  String get copiedToClipboard => '已复制到剪贴板';
+
+  @override
+  String get close => '关闭';
+
+  @override
+  String get reportsTitle => '报表';
+
+  @override
+  String get activateTitle => '激活账户';
+
+  @override
+  String get activateSubtitle => '设置密码以激活管理员账户。';
+
+  @override
+  String get activationTokenLabel => '激活令牌';
+
+  @override
+  String get activateButton => '激活';
+
+  @override
+  String get tokenRequired => '请输入激活令牌。';
 }

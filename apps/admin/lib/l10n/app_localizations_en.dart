@@ -374,4 +374,66 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noCampaigns => 'No campaigns yet.';
+
+  @override
+  String get navCustomers => 'Customers';
+
+  @override
+  String get navCommunities => 'Communities';
+
+  @override
+  String get navCampaigns => 'Campaigns';
+
+  @override
+  String get navImports => 'Imports';
+
+  @override
+  String get navReports => 'Reports';
+
+  @override
+  String get selectCustomer => 'Select customer';
+
+  @override
+  String get adminNameLabel => 'Admin display name';
+
+  @override
+  String get adminEmailLabel => 'Admin email';
+
+  @override
+  String get adminEmailRequired => 'Enter the customer admin email.';
+
+  @override
+  String get activationLinkTitle => 'Share activation link';
+
+  @override
+  String get activationLinkNote =>
+      'Email delivery is not built yet. Copy this link and share it with the customer admin so they can set a password.';
+
+  @override
+  String get copyLink => 'Copy';
+
+  @override
+  String get copiedToClipboard => 'Copied to clipboard';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get reportsTitle => 'Reports';
+
+  @override
+  String get activateTitle => 'Activate account';
+
+  @override
+  String get activateSubtitle =>
+      'Set a password to activate your admin account.';
+
+  @override
+  String get activationTokenLabel => 'Activation token';
+
+  @override
+  String get activateButton => 'Activate';
+
+  @override
+  String get tokenRequired => 'Enter the activation token.';
 }

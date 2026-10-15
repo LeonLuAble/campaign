@@ -38,7 +38,16 @@ export class CustomersController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CreateCustomerDto,
   ) {
-    return this.customers.create(user.userId, dto.name, dto.initialAdminUserId);
+    return this.customers.create(user.userId, {
+      name: dto.name,
+      initialAdminUserId: dto.initialAdminUserId,
+      initialAdmin: dto.initialAdmin
+        ? {
+            displayName: dto.initialAdmin.displayName,
+            email: dto.initialAdmin.email,
+          }
+        : undefined,
+    });
   }
 
   @Get()

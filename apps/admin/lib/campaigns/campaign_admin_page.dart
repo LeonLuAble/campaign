@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../l10n/app_localizations.dart';
 import '../session/api_scope.dart';
 import '../util/format.dart';
+import '../widgets/admin_ui.dart';
 
 class CampaignAdminPage extends StatefulWidget {
   const CampaignAdminPage({
@@ -39,7 +40,9 @@ class _CampaignAdminPageState extends State<CampaignAdminPage> {
       );
       setState(() => _campaign = campaign);
     } catch (error) {
-      setState(() => _error = localizeApiError(AppLocalizations.of(context), error));
+      setState(
+        () => _error = localizeApiError(AppLocalizations.of(context), error),
+      );
     }
   }
 
@@ -63,51 +66,51 @@ class _CampaignAdminPageState extends State<CampaignAdminPage> {
     final campaign = _campaign;
     final prefix =
         '/customers/${widget.customerId}/campaigns/${widget.campaignId}';
-    return Scaffold(
-      appBar: AppBar(title: Text(campaign?.name ?? l10n.campaignsTitle)),
-      body: campaign == null
-          ? Center(
-              child: _error == null
-                  ? const CircularProgressIndicator()
-                  : Text(_error!),
-            )
-          : ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                Text(campaign.status),
-                if (campaign.isDraft)
-                  FilledButton(
-                    onPressed: _publish,
-                    child: Text(l10n.publishCampaign),
-                  ),
-                if (campaign.status == 'published')
-                  FilledButton(
-                    onPressed: _start,
-                    child: Text(l10n.startCampaign),
-                  ),
-                const SizedBox(height: 16),
-                OutlinedButton(
-                  onPressed: () => context.push('$prefix/participants'),
-                  child: Text(l10n.openParticipants),
-                ),
-                OutlinedButton(
-                  onPressed: () => context.push('$prefix/submissions'),
-                  child: Text(l10n.openSubmissions),
-                ),
-                OutlinedButton(
-                  onPressed: () => context.push('$prefix/impact-factors'),
-                  child: Text(l10n.openImpactFactors),
-                ),
-                OutlinedButton(
-                  onPressed: () => context.push('$prefix/dashboard'),
-                  child: Text(l10n.openCampaignDashboard),
-                ),
-                OutlinedButton(
-                  onPressed: () => context.push('$prefix/report'),
-                  child: Text(l10n.openCampaignReport),
-                ),
-              ],
+    if (campaign == null) {
+      return _error == null
+          ? const AdminLoadingState()
+          : AdminErrorState(message: _error!);
+    }
+    return AdminPageBody(
+      child: ListView(
+        children: [
+          AdminPageHeader(
+            title: campaign.name,
+            subtitle: campaign.status,
+          ),
+          if (campaign.isDraft)
+            FilledButton(
+              onPressed: _publish,
+              child: Text(l10n.publishCampaign),
             ),
+          if (campaign.status == 'published')
+            FilledButton(
+              onPressed: _start,
+              child: Text(l10n.startCampaign),
+            ),
+          const SizedBox(height: 16),
+          OutlinedButton(
+            onPressed: () => context.push('$prefix/participants'),
+            child: Text(l10n.openParticipants),
+          ),
+          OutlinedButton(
+            onPressed: () => context.push('$prefix/submissions'),
+            child: Text(l10n.openSubmissions),
+          ),
+          OutlinedButton(
+            onPressed: () => context.push('$prefix/impact-factors'),
+            child: Text(l10n.openImpactFactors),
+          ),
+          OutlinedButton(
+            onPressed: () => context.push('$prefix/dashboard'),
+            child: Text(l10n.openCampaignDashboard),
+          ),
+          OutlinedButton(
+            onPressed: () => context.push('$prefix/report'),
+            child: Text(l10n.openCampaignReport),
+          ),
+        ],
+      ),
     );
   }
 }

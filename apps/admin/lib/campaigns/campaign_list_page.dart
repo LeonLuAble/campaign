@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../l10n/app_localizations.dart';
 import '../session/api_scope.dart';
 import '../util/format.dart';
+import '../widgets/admin_ui.dart';
 
 class AdminCampaignListPage extends StatefulWidget {
   const AdminCampaignListPage({required this.customerId, super.key});
@@ -48,32 +49,47 @@ class _AdminCampaignListPageState extends State<AdminCampaignListPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.campaignsTitle)),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                FilledButton(
-                  onPressed: () => context.push(
-                    '/customers/${widget.customerId}/campaigns/new',
-                  ),
-                  child: Text(l10n.createCampaign),
+    if (_loading) {
+      return const AdminLoadingState();
+    }
+    if (_error != null && _campaigns.isEmpty) {
+      return AdminErrorState(message: _error!, onRetry: _load);
+    }
+    return AdminPageBody(
+      child: ListView(
+        children: [
+          AdminPageHeader(
+            title: l10n.campaignsTitle,
+            actions: [
+              FilledButton(
+                onPressed: () => context.push(
+                  '/customers/${widget.customerId}/campaigns/new',
                 ),
-                if (_campaigns.isEmpty) Text(l10n.noCampaigns),
-                ..._campaigns.map(
-                  (campaign) => ListTile(
+                child: Text(l10n.createCampaign),
+              ),
+            ],
+          ),
+          if (_campaigns.isEmpty)
+            AdminEmptyState(message: l10n.noCampaigns)
+          else
+            AdminDataList(
+              itemCount: _campaigns.length,
+              itemBuilder: (context, index) {
+                final campaign = _campaigns[index];
+                return Card(
+                  child: ListTile(
                     title: Text(campaign.name),
                     subtitle: Text(campaign.status),
                     onTap: () => context.push(
                       '/customers/${widget.customerId}/campaigns/${campaign.id}',
                     ),
                   ),
-                ),
-                if (_error != null) Text(_error!),
-              ],
+                );
+              },
             ),
+          if (_error != null) Text(_error!),
+        ],
+      ),
     );
   }
 }

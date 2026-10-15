@@ -7,9 +7,14 @@ export interface CustomerResponse {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  /** Present when a new or unactivated initial admin needs to set a password. */
+  activationToken?: string;
 }
 
-export function toCustomerResponse(tenant: Tenant): CustomerResponse {
+export function toCustomerResponse(
+  tenant: Tenant,
+  extras?: { activationToken?: string },
+): CustomerResponse {
   return {
     id: tenant.id,
     name: tenant.name,
@@ -17,5 +22,8 @@ export function toCustomerResponse(tenant: Tenant): CustomerResponse {
     isActive: tenant.is_active,
     createdAt: tenant.created_at.toISOString(),
     updatedAt: tenant.updated_at.toISOString(),
+    ...(extras?.activationToken
+      ? { activationToken: extras.activationToken }
+      : {}),
   };
 }

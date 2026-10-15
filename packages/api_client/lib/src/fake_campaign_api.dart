@@ -537,15 +537,22 @@ class FakeCampaignApiClient implements CampaignApiClient {
   Future<Customer> createCustomer({
     required String name,
     String? initialAdminUserId,
+    CreateCustomerInitialAdmin? initialAdmin,
   }) async {
     if (!profile.isPlatformAdmin) {
       _throw('FORBIDDEN', status: 403);
+    }
+    if (initialAdminUserId != null && initialAdmin != null) {
+      _throw('VALIDATION_FAILED', status: 400);
     }
     final created = Customer(
       id: 'cust-${customers.length + 1}',
       name: name,
       slug: name.toLowerCase().replaceAll(' ', '-'),
       isActive: true,
+      activationToken: initialAdmin == null
+          ? null
+          : 'fake-activation-${customers.length + 1}',
     );
     customers = [...customers, created];
     return created;

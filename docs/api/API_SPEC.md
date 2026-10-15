@@ -15,14 +15,15 @@ Auth:
 
 First-admin setup (public; disabled unless `SETUP_KEY` is set to at least 32 characters):
 - GET /setup/status → `{ setupRequired: boolean }`. `true` only when no platform admin exists **and** `SETUP_KEY` is configured. Once an admin exists, the API may cache `setupRequired: false` in memory.
-- POST /setup/admin `{ setupKey, email, password, displayName? }` → 200 `{ accessToken, refreshToken }` (same token pair as login). Creates the first platform admin with a verified email identity and credential inside one transaction guarded by `pg_advisory_xact_lock`. Rate-limited with the same auth throttler as `/auth/*`.
+- POST /setup/admin `{ setupKey, email, password, displayName? }` → 200 `{ accessToken, refreshToken }` (same token pair as login). Creates the first platform admin with a verified email identity and credential inside one transaction guarded by `pg_advisory_xact_lock`. Uses the auth throttler with a tighter per-route limit (5 requests / 60s when rate limiting is enabled).
 
 Auth error codes include `INVALID_CREDENTIALS`, `SOCIAL_TOKEN_INVALID`, `TOKEN_INVALID`, `TOKEN_REUSED`, `TOKEN_EXPIRED`, `IDENTITY_ALREADY_EXISTS`, `WEAK_PASSWORD`, `SETUP_NOT_AVAILABLE` (409 when setup is disabled or an admin already exists), and `INVALID_SETUP_KEY` (401).
 Password policy: minimum 8 characters (configurable via `PASSWORD_MIN_LENGTH`).
 
 Customer: `/customers`
-- POST /customers `{ name, initialAdminUserId? }` → 201. Platform-admin only (`users.is_platform_admin`); other authenticated users get 403 `FORBIDDEN`. Platform admin is a platform-level user flag, not a tenant role, and grants no implicit access to customer data beyond create.
-- `initialAdminUserId` (optional UUID) is the user who receives the seeded `tenant_admin` membership. If omitted, the creating platform admin becomes `tenant_admin`. The creator is not added as a member when a different `initialAdminUserId` is supplied.
+- POST /customers `{ name, initialAdminUserId?, initialAdmin?: { displayName?, email } }` → 201. Platform-admin only (`users.is_platform_admin`); other authenticated users get 403 `FORBIDDEN`. Platform admin is a platform-level user flag, not a tenant role, and grants no implicit access to customer data beyond create. Provide either `initialAdminUserId` or `initialAdmin`, not both.
+- `initialAdminUserId` (optional UUID) is an existing active user who receives the seeded `tenant_admin` membership. If both admin fields are omitted, the creating platform admin becomes `tenant_admin`. The creator is not added as a member when a different admin is supplied.
+- `initialAdmin` (optional) finds the user by email or creates a pending-activation account, then assigns `tenant_admin` in the same transaction. When the admin is new or still unverified, the 201 body includes `activationToken` (one-time; share out of band — email delivery is not required for this path). Active verified users get membership only and no token.
 - GET /customers → tenants the caller has an active membership in (no `customers.read` required)
 - GET /customers/:customerId → requires `customers.read` in that tenant; missing membership is 404
 - PATCH /customers/:customerId `{ name?, isActive? }` → requires `customers.update` and a tenant-level membership

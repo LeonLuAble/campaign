@@ -45,6 +45,7 @@ abstract class CampaignApiClient {
   Future<Customer> createCustomer({
     required String name,
     String? initialAdminUserId,
+    CreateCustomerInitialAdmin? initialAdmin,
   });
   Future<Customer> updateCustomer(
     String customerId, {
@@ -438,12 +439,14 @@ class HttpCampaignApiClient implements CampaignApiClient {
   Future<Customer> createCustomer({
     required String name,
     String? initialAdminUserId,
+    CreateCustomerInitialAdmin? initialAdmin,
   }) {
     return _post(
       '/customers',
       data: {
         'name': name,
         if (initialAdminUserId != null) 'initialAdminUserId': initialAdminUserId,
+        if (initialAdmin != null) 'initialAdmin': initialAdmin.toJson(),
       },
       parser: Customer.fromJson,
     );

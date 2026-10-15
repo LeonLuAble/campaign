@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, IsNull, QueryFailedError, Repository } from 'typeorm';
+import {
+  DataSource,
+  type EntityManager,
+  IsNull,
+  QueryFailedError,
+  Repository,
+} from 'typeorm';
 import { InvalidRequestException } from '../../../shared/errors/domain-http.exceptions.js';
 import { assertStoredLocale } from '../../localization/application/locale-catalog.js';
 import { RefreshToken } from '../domain/refresh-token.entity.js';
@@ -351,45 +357,62 @@ export class IdentityAccountService {
   async createImportedAccount(
     input: CreateImportedAccountInput,
   ): Promise<CreatedImportedAccount> {
+    try {
+      return await this.dataSource.transaction(async (manager) =>
+        this.createImportedAccountInTransaction(manager, input),
+      );
+    } catch (error) {
+      if (error instanceof IdentityAlreadyExistsError) {
+        throw error;
+      }
+      if (isUniqueViolation(error)) {
+        throw new IdentityAlreadyExistsError();
+      }
+      throw error;
+    }
+  }
+
+  async createImportedAccountInTransaction(
+    manager: EntityManager,
+    input: CreateImportedAccountInput,
+  ): Promise<CreatedImportedAccount> {
     if (input.identities.length === 0) {
       throw new Error('Imported accounts require at least one identity');
     }
 
     try {
-      return await this.dataSource.transaction(async (manager) => {
-        const userRepository = manager.getRepository(User);
-        const identityRepository = manager.getRepository(UserIdentity);
+      const userRepository = manager.getRepository(User);
+      const identityRepository = manager.getRepository(UserIdentity);
 
-        const user = await userRepository.save(
-          userRepository.create({
-            first_name: input.firstName,
-            last_name: input.lastName,
-            display_name: input.displayName,
-            is_active: true,
+      const user = await userRepository.save(
+        userRepository.create({
+          first_name: input.firstName,
+          last_name: input.lastName,
+          display_name: input.displayName,
+          is_active: true,
+        }),
+      );
+
+      const identities = [];
+      for (const identityInput of input.identities) {
+        const identity = await identityRepository.save(
+          identityRepository.create({
+            user_id: user.id,
+            type: identityInput.type,
+            identifier: identityInput.identifier,
+            normalized_identifier: identityInput.normalizedIdentifier,
+            is_verified: false,
+            verified_at: null,
           }),
         );
+        identities.push({
+          id: identity.id,
+          type: identity.type,
+          identifier: identity.identifier,
+        });
+      }
 
-        const identities = [];
-        for (const identityInput of input.identities) {
-          const identity = await identityRepository.save(
-            identityRepository.create({
-              user_id: user.id,
-              type: identityInput.type,
-              identifier: identityInput.identifier,
-              normalized_identifier: identityInput.normalizedIdentifier,
-              is_verified: false,
-              verified_at: null,
-            }),
-          );
-          identities.push({
-            id: identity.id,
-            type: identity.type,
-            identifier: identity.identifier,
-          });
-        }
-
-        return { userId: user.id, identities };
-      });
+      return { userId: user.id, identities };
     } catch (error) {
       if (isUniqueViolation(error)) {
         throw new IdentityAlreadyExistsError();

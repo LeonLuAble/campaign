@@ -10,6 +10,7 @@ import {
 } from '../../../shared/errors/domain-http.exceptions.js';
 import { isUniqueViolation } from '../../../shared/database/postgres-errors.js';
 import { slugify } from '../../../shared/text/slugify.js';
+import { RegistrationService } from '../../auth/application/registration.service.js';
 import {
   MEMBERSHIP_SERVICE,
   type MembershipRecord,
@@ -18,13 +19,29 @@ import {
 import { AuthorizationService } from '../../authorization/application/authorization.service.js';
 import { hasTenantLevelMembership } from '../../authorization/application/membership-scope.js';
 import { SYSTEM_ROLE_TENANT_ADMIN } from '../../authorization/domain/permission-keys.js';
-import { IdentityAccountService } from '../../identity/application/identity-account.service.js';
+import { CredentialService } from '../../identity/application/credential.service.js';
+import {
+  IdentityAccountService,
+  IdentityAlreadyExistsError,
+} from '../../identity/application/identity-account.service.js';
+import { IdentityType } from '../../identity/domain/user-identity.entity.js';
 import type { MembershipService } from '../../memberships/application/membership.service.js';
 import { Tenant } from '../domain/tenant.entity.js';
 import {
   toCustomerResponse,
   type CustomerResponse,
 } from './customer.mapper.js';
+
+export interface CreateCustomerInitialAdmin {
+  displayName?: string;
+  email: string;
+}
+
+export interface CreateCustomerInput {
+  name: string;
+  initialAdminUserId?: string;
+  initialAdmin?: CreateCustomerInitialAdmin;
+}
 
 @Injectable()
 export class CustomerService {
@@ -39,6 +56,8 @@ export class CustomerService {
     @Inject(forwardRef(() => AuthorizationService))
     private readonly authorization: AuthorizationService,
     private readonly identities: IdentityAccountService,
+    private readonly credentials: CredentialService,
+    private readonly registration: RegistrationService,
   ) {}
 
   async findById(id: string): Promise<TenantRecord | null> {
@@ -58,7 +77,7 @@ export class CustomerService {
       where: { id: In(tenantIds) },
       order: { created_at: 'ASC' },
     });
-    return tenants.map(toCustomerResponse);
+    return tenants.map((tenant) => toCustomerResponse(tenant));
   }
 
   async getForUser(
@@ -88,85 +107,206 @@ export class CustomerService {
 
   async create(
     creatorUserId: string,
-    name: string,
+    input: CreateCustomerInput | string,
     initialAdminUserId?: string,
   ): Promise<CustomerResponse> {
+    const normalized: CreateCustomerInput =
+      typeof input === 'string'
+        ? { name: input, initialAdminUserId }
+        : input;
+
     if (!(await this.identities.isPlatformAdmin(creatorUserId))) {
       throw new AccessForbiddenException(
         'Only platform admins can create customers',
       );
     }
-    const trimmed = name.trim();
+    const trimmed = normalized.name.trim();
     if (!trimmed) {
       throw new InvalidRequestException('name is required');
     }
-    const tenantAdminUserId = initialAdminUserId ?? creatorUserId;
-    if (!(await this.identities.isUserActive(tenantAdminUserId))) {
+    if (normalized.initialAdminUserId && normalized.initialAdmin) {
+      throw new InvalidRequestException(
+        'Provide either initialAdminUserId or initialAdmin, not both',
+      );
+    }
+
+    let resolvedAdminUserId = creatorUserId;
+    let activationIdentity:
+      | {
+          userId: string;
+          identityId: string;
+          identifier: string;
+          type: string;
+          needsToken: boolean;
+          createPending?: {
+            displayName: string | null;
+            email: string;
+            normalizedEmail: string;
+          };
+        }
+      | undefined;
+
+    if (normalized.initialAdminUserId) {
+      if (!(await this.identities.isUserActive(normalized.initialAdminUserId))) {
+        throw new ResourceNotFoundException('User not found');
+      }
+      resolvedAdminUserId = normalized.initialAdminUserId;
+    } else if (normalized.initialAdmin) {
+      const email = normalized.initialAdmin.email.trim();
+      if (!email) {
+        throw new InvalidRequestException('initialAdmin.email is required');
+      }
+      const normalizedEmail = this.credentials.normalizeEmail(email);
+      const existing = await this.identities.findIdentity(
+        IdentityType.EMAIL,
+        normalizedEmail,
+      );
+      if (existing) {
+        if (!existing.isActive) {
+          throw new ResourceNotFoundException('User not found');
+        }
+        resolvedAdminUserId = existing.userId;
+        activationIdentity = {
+          userId: existing.userId,
+          identityId: existing.identityId,
+          identifier: existing.identifier,
+          type: existing.type,
+          needsToken: !existing.isVerified,
+        };
+      } else {
+        activationIdentity = {
+          userId: '',
+          identityId: '',
+          identifier: email,
+          type: IdentityType.EMAIL,
+          needsToken: true,
+          createPending: {
+            displayName: normalized.initialAdmin.displayName?.trim() || null,
+            email,
+            normalizedEmail,
+          },
+        };
+      }
+    } else if (!(await this.identities.isUserActive(creatorUserId))) {
       throw new ResourceNotFoundException('User not found');
     }
+
     const baseSlug = slugify(
       trimmed,
       `customer-${randomBytes(4).toString('hex')}`,
     );
 
-    return this.dataSource.transaction(async (manager) => {
-      const tenantRepository = manager.getRepository(Tenant);
-      let tenant: Tenant | null = null;
-      const slugCandidates = [
-        baseSlug,
-        `${baseSlug.slice(0, 71)}-${randomBytes(4).toString('hex')}`,
-        `customer-${randomBytes(6).toString('hex')}`,
-      ];
+    let activationToken: string | undefined;
 
-      for (const slug of slugCandidates) {
-        try {
-          tenant = await tenantRepository.save(
-            tenantRepository.create({
-              name: trimmed,
-              slug,
-              is_active: true,
-            }),
-          );
-          break;
-        } catch (error) {
-          if (isUniqueViolation(error)) {
-            continue;
+    try {
+      const customer = await this.dataSource.transaction(async (manager) => {
+        const tenantRepository = manager.getRepository(Tenant);
+        let tenant: Tenant | null = null;
+        const slugCandidates = [
+          baseSlug,
+          `${baseSlug.slice(0, 71)}-${randomBytes(4).toString('hex')}`,
+          `customer-${randomBytes(6).toString('hex')}`,
+        ];
+
+        for (const slug of slugCandidates) {
+          try {
+            tenant = await tenantRepository.save(
+              tenantRepository.create({
+                name: trimmed,
+                slug,
+                is_active: true,
+              }),
+            );
+            break;
+          } catch (error) {
+            if (isUniqueViolation(error)) {
+              continue;
+            }
+            throw error;
           }
-          throw error;
         }
-      }
 
-      if (!tenant) {
-        throw new ResourceConflictException(
-          'Unable to allocate a unique customer slug',
+        if (!tenant) {
+          throw new ResourceConflictException(
+            'Unable to allocate a unique customer slug',
+          );
+        }
+
+        let tenantAdminUserId = resolvedAdminUserId;
+        if (activationIdentity?.createPending) {
+          const created = await this.identities.createImportedAccountInTransaction(
+            manager,
+            {
+              firstName: null,
+              lastName: null,
+              displayName: activationIdentity.createPending.displayName,
+              identities: [
+                {
+                  type: IdentityType.EMAIL,
+                  identifier: activationIdentity.createPending.email,
+                  normalizedIdentifier:
+                    activationIdentity.createPending.normalizedEmail,
+                },
+              ],
+            },
+          );
+          tenantAdminUserId = created.userId;
+          activationIdentity = {
+            userId: created.userId,
+            identityId: created.identities[0].id,
+            identifier: created.identities[0].identifier,
+            type: created.identities[0].type,
+            needsToken: true,
+          };
+        }
+
+        await this.authorization.seedSystemRoles(manager, tenant.id);
+        const membership = await this.memberships.createInTransaction(manager, {
+          tenantId: tenant.id,
+          userId: tenantAdminUserId,
+          communityId: null,
+        });
+        const adminRole = await this.authorization.findSystemRole(
+          manager,
+          tenant.id,
+          SYSTEM_ROLE_TENANT_ADMIN,
+        );
+        await this.authorization.assignRoleInTransaction(
+          manager,
+          membership.id,
+          adminRole.id,
+        );
+
+        this.logger.log({
+          msg: 'customer_created',
+          tenantId: tenant.id,
+          creatorUserId,
+          tenantAdminUserId,
+          initialAdminPending: Boolean(activationIdentity?.needsToken),
+        });
+        return toCustomerResponse(tenant);
+      });
+
+      if (activationIdentity?.needsToken) {
+        activationToken = await this.registration.issueActivationTokenForIdentity(
+          {
+            userId: activationIdentity.userId,
+            identityId: activationIdentity.identityId,
+            identifier: activationIdentity.identifier,
+            type: activationIdentity.type,
+          },
         );
       }
 
-      await this.authorization.seedSystemRoles(manager, tenant.id);
-      const membership = await this.memberships.createInTransaction(manager, {
-        tenantId: tenant.id,
-        userId: tenantAdminUserId,
-        communityId: null,
-      });
-      const adminRole = await this.authorization.findSystemRole(
-        manager,
-        tenant.id,
-        SYSTEM_ROLE_TENANT_ADMIN,
-      );
-      await this.authorization.assignRoleInTransaction(
-        manager,
-        membership.id,
-        adminRole.id,
-      );
-
-      this.logger.log({
-        msg: 'customer_created',
-        tenantId: tenant.id,
-        creatorUserId,
-        tenantAdminUserId,
-      });
-      return toCustomerResponse(tenant);
-    });
+      return activationToken
+        ? { ...customer, activationToken }
+        : customer;
+    } catch (error) {
+      if (error instanceof IdentityAlreadyExistsError) {
+        throw new ResourceConflictException('Identity already exists');
+      }
+      throw error;
+    }
   }
 
   async update(

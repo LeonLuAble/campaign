@@ -7,7 +7,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { ThrottlerGuard } from '@nestjs/throttler';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { SetupService } from '../application/setup.service.js';
 import { SetupAdminDto } from '../dto/setup-admin.dto.js';
 
@@ -21,8 +21,10 @@ export class SetupController {
     return this.setupService.getStatus();
   }
 
+  /** Tighter than the default auth throttler (20/min). */
   @Post('admin')
   @HttpCode(HttpStatus.OK)
+  @Throttle({ auth: { limit: 5, ttl: 60_000 } })
   createAdmin(@Body() body: SetupAdminDto) {
     return this.setupService.createAdmin({
       setupKey: body.setupKey,

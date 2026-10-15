@@ -189,6 +189,25 @@ export class RegistrationService {
     await this.resendActivation(identifier);
   }
 
+  /**
+   * Issues an activation token for a known identity and returns the raw token
+   * so callers (e.g. customer create) can share it once. Still notifies via the
+   * existing sender; the raw value is never logged here.
+   */
+  async issueActivationTokenForIdentity(input: {
+    userId: string;
+    identityId: string;
+    identifier: string;
+    type: string;
+  }): Promise<string> {
+    return this.issueActivationToken(
+      input.userId,
+      input.identityId,
+      input.identifier,
+      input.type,
+    );
+  }
+
   async resendActivation(identifier: string): Promise<void> {
     const identity = await this.findIdentityQuietly(identifier);
     if (!identity || identity.isVerified || !identity.isActive) {
@@ -209,7 +228,7 @@ export class RegistrationService {
     identityId: string,
     to: string,
     type: string,
-  ): Promise<void> {
+  ): Promise<string> {
     const rawToken = generateOneTimeToken();
     await this.userTokenService.supersedeUnusedAndCreate({
       userId,
@@ -224,6 +243,7 @@ export class RegistrationService {
       template: 'activation',
       token: rawToken,
     });
+    return rawToken;
   }
 
   private async hashActivationPassword(

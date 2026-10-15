@@ -75,7 +75,19 @@ class SessionController extends ChangeNotifier {
 
   Future<void> refreshCustomers() async {
     customers = await api.listCustomers();
-    customer = customers.isEmpty ? null : customer ?? customers.first;
+    if (customers.isEmpty) {
+      customer = null;
+    } else if (customer == null ||
+        customers.every((row) => row.id != customer!.id)) {
+      customer = customers.first;
+    } else {
+      customer = customers.firstWhere((row) => row.id == customer!.id);
+    }
+    notifyListeners();
+  }
+
+  void selectCustomer(Customer next) {
+    customer = next;
     notifyListeners();
   }
 }

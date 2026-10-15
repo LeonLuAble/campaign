@@ -3,7 +3,8 @@ template-arb-file: app_en.arb
 output-localization-file: app_localizations.dart
 output-dir: lib/l10n
 nullable-getter: false
+# Maintain strings in app_en.arb and app_zh_Hans.arb.
+# app_zh.arb exists only because Flutter requires a zh fallback for zh_Hans.
 preferred-supported-locales:
   - en
   - zh_Hans
-  - zh

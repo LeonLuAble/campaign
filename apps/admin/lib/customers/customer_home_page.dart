@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../l10n/app_localizations.dart';
 import '../session/api_scope.dart';
+import '../widgets/admin_ui.dart';
 
 class CustomerHomePage extends StatelessWidget {
   const CustomerHomePage({required this.customerId, super.key});
@@ -17,11 +18,10 @@ class CustomerHomePage extends StatelessWidget {
         .where((row) => row.id == customerId)
         .map((row) => row.name)
         .firstWhere((row) => true, orElse: () => l10n.customersTitle);
-    return Scaffold(
-      appBar: AppBar(title: Text(name)),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+    return AdminPageBody(
+      child: ListView(
         children: [
+          AdminPageHeader(title: name),
           FilledButton(
             onPressed: () => context.push('/customers/$customerId/communities'),
             child: Text(l10n.openCommunities),
@@ -35,6 +35,11 @@ class CustomerHomePage extends StatelessWidget {
           OutlinedButton(
             onPressed: () => context.push('/customers/$customerId/campaigns'),
             child: Text(l10n.openCampaigns),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton(
+            onPressed: () => context.push('/customers/$customerId/reports'),
+            child: Text(l10n.navReports),
           ),
         ],
       ),

@@ -782,6 +782,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No campaigns yet.'**
   String get noCampaigns;
+
+  /// No description provided for @navCustomers.
+  ///
+  /// In en, this message translates to:
+  /// **'Customers'**
+  String get navCustomers;
+
+  /// No description provided for @navCommunities.
+  ///
+  /// In en, this message translates to:
+  /// **'Communities'**
+  String get navCommunities;
+
+  /// No description provided for @navCampaigns.
+  ///
+  /// In en, this message translates to:
+  /// **'Campaigns'**
+  String get navCampaigns;
+
+  /// No description provided for @navImports.
+  ///
+  /// In en, this message translates to:
+  /// **'Imports'**
+  String get navImports;
+
+  /// No description provided for @navReports.
+  ///
+  /// In en, this message translates to:
+  /// **'Reports'**
+  String get navReports;
+
+  /// No description provided for @selectCustomer.
+  ///
+  /// In en, this message translates to:
+  /// **'Select customer'**
+  String get selectCustomer;
+
+  /// No description provided for @adminNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin display name'**
+  String get adminNameLabel;
+
+  /// No description provided for @adminEmailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin email'**
+  String get adminEmailLabel;
+
+  /// No description provided for @adminEmailRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the customer admin email.'**
+  String get adminEmailRequired;
+
+  /// No description provided for @activationLinkTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Share activation link'**
+  String get activationLinkTitle;
+
+  /// No description provided for @activationLinkNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Email delivery is not built yet. Copy this link and share it with the customer admin so they can set a password.'**
+  String get activationLinkNote;
+
+  /// No description provided for @copyLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get copyLink;
+
+  /// No description provided for @copiedToClipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied to clipboard'**
+  String get copiedToClipboard;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @reportsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reports'**
+  String get reportsTitle;
+
+  /// No description provided for @activateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Activate account'**
+  String get activateTitle;
+
+  /// No description provided for @activateSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a password to activate your admin account.'**
+  String get activateSubtitle;
+
+  /// No description provided for @activationTokenLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Activation token'**
+  String get activationTokenLabel;
+
+  /// No description provided for @activateButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Activate'**
+  String get activateButton;
+
+  /// No description provided for @tokenRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the activation token.'**
+  String get tokenRequired;
 }
 
 class _AppLocalizationsDelegate

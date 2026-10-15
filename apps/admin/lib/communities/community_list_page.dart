@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../session/api_scope.dart';
 import '../util/format.dart';
+import '../widgets/admin_ui.dart';
 
 class CommunityListPage extends StatefulWidget {
   const CommunityListPage({required this.customerId, super.key});
@@ -72,27 +73,41 @@ class _CommunityListPageState extends State<CommunityListPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.communitiesTitle)),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                if (_communities.isEmpty) Text(l10n.noCommunities),
-                ..._communities.map((row) => ListTile(title: Text(row.name))),
-                TextField(
-                  controller: _name,
-                  decoration: InputDecoration(labelText: l10n.communityNameLabel),
-                ),
-                const SizedBox(height: 8),
-                FilledButton(
-                  onPressed: _create,
-                  child: Text(l10n.createCommunity),
-                ),
-                if (_error != null) Text(_error!),
-              ],
+    if (_loading) {
+      return const AdminLoadingState();
+    }
+    if (_error != null && _communities.isEmpty) {
+      return AdminErrorState(message: _error!, onRetry: _load);
+    }
+    return AdminPageBody(
+      child: ListView(
+        children: [
+          AdminPageHeader(title: l10n.communitiesTitle),
+          if (_communities.isEmpty)
+            AdminEmptyState(message: l10n.noCommunities)
+          else
+            AdminDataList(
+              itemCount: _communities.length,
+              itemBuilder: (context, index) => Card(
+                child: ListTile(title: Text(_communities[index].name)),
+              ),
             ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _name,
+            decoration: InputDecoration(labelText: l10n.communityNameLabel),
+          ),
+          const SizedBox(height: 8),
+          FilledButton(
+            onPressed: _create,
+            child: Text(l10n.createCommunity),
+          ),
+          if (_error != null) ...[
+            const SizedBox(height: 8),
+            Text(_error!),
+          ],
+        ],
+      ),
     );
   }
 }

@@ -121,11 +121,19 @@ export interface CustomerResponse {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  /** One-time activation token when initialAdmin is new or unactivated. */
+  activationToken?: string;
+}
+
+export interface CreateCustomerInitialAdmin {
+  displayName?: string;
+  email: string;
 }
 
 export interface CreateCustomerRequest {
   name: string;
   initialAdminUserId?: string;
+  initialAdmin?: CreateCustomerInitialAdmin;
 }
 
 export interface UpdateCustomerRequest {

@@ -279,6 +279,107 @@ describe('Customers, communities, memberships (e2e)', () => {
     expect(tenantList.body[0].id).toBe(created.body.id);
   });
 
+  it('creates a customer with a new initialAdmin and returns an activation token', async () => {
+    const platformAdmin = await registerActivatedUser(
+      app,
+      notifications,
+      'platform@example.com',
+    );
+    await promotePlatformAdmin(dataSource, platformAdmin.userId);
+
+    const created = await request(app.getHttpServer())
+      .post('/api/v1/customers')
+      .set(auth(platformAdmin.accessToken))
+      .send({
+        name: 'Acme Org',
+        initialAdmin: {
+          displayName: 'Acme Admin',
+          email: 'acme.admin@example.com',
+        },
+      });
+    expect(created.status).toBe(201);
+    expect(created.body.activationToken).toEqual(expect.any(String));
+
+    await request(app.getHttpServer())
+      .post('/api/v1/auth/activate')
+      .send({
+        token: created.body.activationToken,
+        password: 'password123',
+      })
+      .expect(204);
+
+    const login = await request(app.getHttpServer())
+      .post('/api/v1/auth/login')
+      .send({
+        identifier: 'acme.admin@example.com',
+        password: 'password123',
+      });
+    expect(login.status).toBe(200);
+
+    const list = await request(app.getHttpServer())
+      .get('/api/v1/customers')
+      .set(auth(login.body.accessToken));
+    expect(list.status).toBe(200);
+    expect(list.body).toHaveLength(1);
+    expect(list.body[0].id).toBe(created.body.id);
+  });
+
+  it('adds an existing activated user as initialAdmin without an activation token', async () => {
+    const platformAdmin = await registerActivatedUser(
+      app,
+      notifications,
+      'platform2@example.com',
+    );
+    await promotePlatformAdmin(dataSource, platformAdmin.userId);
+    const existing = await registerActivatedUser(
+      app,
+      notifications,
+      'existing.admin@example.com',
+    );
+
+    const created = await request(app.getHttpServer())
+      .post('/api/v1/customers')
+      .set(auth(platformAdmin.accessToken))
+      .send({
+        name: 'Beta Org',
+        initialAdmin: { email: 'existing.admin@example.com' },
+      });
+    expect(created.status).toBe(201);
+    expect(created.body.activationToken).toBeUndefined();
+
+    const list = await request(app.getHttpServer())
+      .get('/api/v1/customers')
+      .set(auth(existing.accessToken));
+    expect(list.status).toBe(200);
+    expect(list.body.map((row: { id: string }) => row.id)).toContain(
+      created.body.id,
+    );
+  });
+
+  it('rejects create when both initialAdminUserId and initialAdmin are supplied', async () => {
+    const platformAdmin = await registerActivatedUser(
+      app,
+      notifications,
+      'platform3@example.com',
+    );
+    await promotePlatformAdmin(dataSource, platformAdmin.userId);
+    const existing = await registerActivatedUser(
+      app,
+      notifications,
+      'both@example.com',
+    );
+
+    const created = await request(app.getHttpServer())
+      .post('/api/v1/customers')
+      .set(auth(platformAdmin.accessToken))
+      .send({
+        name: 'Dup Fields',
+        initialAdminUserId: existing.userId,
+        initialAdmin: { email: 'both@example.com' },
+      });
+    expect(created.status).toBe(400);
+  });
+
   it('lists the permission catalog for an authenticated user', async () => {
     const user = await registerActivatedUser(
       app,

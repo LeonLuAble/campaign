@@ -156,12 +156,14 @@ class Customer {
     required this.name,
     required this.slug,
     required this.isActive,
+    this.activationToken,
   });
 
   final String id;
   final String name;
   final String slug;
   final bool isActive;
+  final String? activationToken;
 
   factory Customer.fromJson(Map<String, dynamic> json) {
     return Customer(
@@ -169,8 +171,25 @@ class Customer {
       name: json['name'] as String,
       slug: json['slug'] as String? ?? '',
       isActive: _bool(json['isActive'], true),
+      activationToken: json['activationToken'] as String?,
     );
   }
+}
+
+class CreateCustomerInitialAdmin {
+  const CreateCustomerInitialAdmin({
+    required this.email,
+    this.displayName,
+  });
+
+  final String email;
+  final String? displayName;
+
+  Map<String, dynamic> toJson() => {
+        'email': email,
+        if (displayName != null && displayName!.trim().isNotEmpty)
+          'displayName': displayName!.trim(),
+      };
 }
 
 class Community {

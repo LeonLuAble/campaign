@@ -42,6 +42,11 @@ void main() {
     tester,
   ) async {
     final api = adminApi();
+    final view = tester.view;
+    view.physicalSize = const Size(1400, 1000);
+    view.devicePixelRatio = 1.0;
+    addTearDown(view.resetPhysicalSize);
+    addTearDown(view.resetDevicePixelRatio);
     await tester.pumpWidget(
       CampaignAdminApp(
         config: config,
@@ -57,26 +62,40 @@ void main() {
     await tester.pumpAndSettle();
     await signIn(tester);
 
-    expect(find.text('Tzu Chi Malaysia'), findsOneWidget);
-    expect(find.text('Create customer'), findsOneWidget);
+    expect(find.text('Tzu Chi Malaysia'), findsWidgets);
+    expect(find.text('Create customer'), findsWidgets);
 
-    await tester.enterText(find.byType(TextField).first, 'New Tenant');
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Customer name'),
+      'New Tenant',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Admin display name'),
+      'Tenant Admin',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Admin email'),
+      'tenant.admin@example.com',
+    );
     await tester.tap(find.widgetWithText(FilledButton, 'Create customer'));
     await tester.pumpAndSettle();
-    expect(find.text('New Tenant'), findsOneWidget);
+    // Activation dialog when initialAdmin is new (fake returns a token).
+    if (find.text('Share activation link').evaluate().isNotEmpty) {
+      await tester.tap(find.widgetWithText(FilledButton, 'Close'));
+      await tester.pumpAndSettle();
+    }
+    expect(find.text('New Tenant'), findsWidgets);
 
-    await tester.tap(find.text('Tzu Chi Malaysia'));
+    await tester.tap(find.widgetWithText(ListTile, 'Tzu Chi Malaysia'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Communities'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Communities'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField).first, 'KL Chapter');
     await tester.tap(find.widgetWithText(FilledButton, 'Create community'));
     await tester.pumpAndSettle();
     expect(find.text('KL Chapter'), findsOneWidget);
 
-    await tester.pageBack();
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('CSV import'));
+    await tester.tap(find.byIcon(Icons.upload_file_outlined));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Upload CSV'));
     await tester.pumpAndSettle();
@@ -91,9 +110,7 @@ void main() {
     expect(find.text('Import result'), findsOneWidget);
     expect(find.text('created'), findsWidgets);
 
-    await tester.pageBack();
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Campaigns'));
+    await tester.tap(find.byIcon(Icons.flag_outlined));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Create campaign'));
     await tester.pumpAndSettle();
@@ -125,14 +142,17 @@ void main() {
         ),
       ),
     ];
-    await tester.tap(find.text('Submissions'));
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Submissions'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Reject'));
     await tester.pumpAndSettle();
 
-    await tester.pageBack();
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Campaign report'));
+    final reportFinder = find.widgetWithText(OutlinedButton, 'Campaign report');
+    if (reportFinder.evaluate().isEmpty) {
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+    }
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Campaign report'));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Export CSV'));
     await tester.pumpAndSettle();
