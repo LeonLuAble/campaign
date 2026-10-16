@@ -9,6 +9,7 @@ import { CreateCommitmentActionTables1792465709000 } from '../src/platform/datab
 import { CreateProgressMilestoneTables1792565810000 } from '../src/platform/database/migrations/1792565810000-CreateProgressMilestoneTables.js';
 import { CreateMeasurementOutcomeVisualizationTables1792665911000 } from '../src/platform/database/migrations/1792665911000-CreateMeasurementOutcomeVisualizationTables.js';
 import { CreateNotificationLocalizationReportTables1792766012000 } from '../src/platform/database/migrations/1792766012000-CreateNotificationLocalizationReportTables.js';
+import { TightenMemberRolePermissions1792866113000 } from '../src/platform/database/migrations/1792866113000-TightenMemberRolePermissions.js';
 
 type MigrationCtor = new () => MigrationInterface;
 
@@ -24,6 +25,7 @@ const SCHEMA_MIGRATIONS: MigrationCtor[] = [
   CreateProgressMilestoneTables1792565810000,
   CreateMeasurementOutcomeVisualizationTables1792665911000,
   CreateNotificationLocalizationReportTables1792766012000,
+  TightenMemberRolePermissions1792866113000,
 ];
 
 export async function revertSchemaMigrationsNewestFirst(
@@ -202,6 +204,9 @@ export async function ensureTenantSchema(
       queryRunner,
     );
   }
+  // Data-only: always apply so member roles lose import/membership/role reads
+  // even when older migrations re-granted them during schema bootstrap.
+  await new TightenMemberRolePermissions1792866113000().up(queryRunner);
 }
 
 async function ensureIdentitySchemaWithoutTenant(
