@@ -11,7 +11,7 @@ import 'locale/locale_scope.dart';
 import 'routing/app_router.dart';
 import 'session/api_scope.dart';
 import 'session/session_controller.dart';
-import 'theme/admin_theme.dart';
+import 'package:ui_kit/ui_kit.dart';
 
 class CampaignAdminApp extends StatefulWidget {
   const CampaignAdminApp({
@@ -97,7 +97,7 @@ class _CampaignAdminAppState extends State<CampaignAdminApp> {
             onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            theme: buildAdminTheme(),
+            theme: AppTheme.light(),
             routerConfig: _router,
           ),
         ),

@@ -10,6 +10,7 @@ import 'locale/locale_scope.dart';
 import 'routing/app_router.dart';
 import 'session/api_scope.dart';
 import 'session/session_controller.dart';
+import 'package:ui_kit/ui_kit.dart';
 
 class CampaignApp extends StatefulWidget {
   const CampaignApp({
@@ -91,11 +92,7 @@ class _CampaignAppState extends State<CampaignApp> {
             onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(
-                seedColor: const Color(0xFF1F4E79),
-              ),
-            ),
+            theme: AppTheme.light(),
             routerConfig: _router,
           ),
         ),

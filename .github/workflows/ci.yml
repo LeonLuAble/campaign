@@ -77,6 +77,22 @@ jobs:
       - run: flutter analyze
       - run: flutter test
 
+  ui_kit:
+    name: UI kit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/ui_kit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+
   mobile:
     name: Mobile
     runs-on: ubuntu-latest

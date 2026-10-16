@@ -1,0 +1,19 @@
+name: ui_kit
+description: Shared Material 3 presentation kit for Community Campaign apps. Labels are passed in; no api_client or l10n dependency.
+publish_to: "none"
+version: 0.1.0
+
+environment:
+  sdk: ^3.13.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true

@@ -1,5 +1,6 @@
 import 'package:api_client/api_client.dart';
 import 'package:flutter/material.dart';
+import 'package:ui_kit/ui_kit.dart';
 
 import '../l10n/app_localizations.dart';
 import '../util/format.dart';
@@ -14,80 +15,65 @@ class ParticipantDashboardView extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final dashboard = data;
     if (dashboard == null) {
-      return ListView(
-        padding: const EdgeInsets.all(24),
-        children: [Text(l10n.emptyDashboard)],
-      );
+      return CampaignDashboardView(emptyMessage: l10n.emptyDashboard);
     }
 
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Text(l10n.progressSection, style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 8),
-        Text(
-          l10n.achievedOfTarget(
-            formatNumber(dashboard.progress.achievedValue),
-            formatNumber(dashboard.progress.targetValue),
-            dashboard.progress.unit ?? '',
-          ),
+    return CampaignDashboardView(
+      emptyMessage: l10n.emptyDashboard,
+      data: CampaignDashboardData(
+        progressTitle: l10n.progressSection,
+        achievedLine: l10n.achievedOfTarget(
+          formatNumber(dashboard.progress.achievedValue),
+          formatNumber(dashboard.progress.targetValue),
+          dashboard.progress.unit ?? '',
         ),
-        if (dashboard.progress.completionPercent != null)
-          Text(
-            l10n.completionLabel('${dashboard.progress.completionPercent}%'),
-          ),
-        const SizedBox(height: 16),
-        Text(
-          l10n.visualizationSection,
-          style: Theme.of(context).textTheme.titleMedium,
+        completionLine: dashboard.progress.completionPercent == null
+            ? null
+            : l10n.completionLabel('${dashboard.progress.completionPercent}%'),
+        visualizationTitle: l10n.visualizationSection,
+        treeDisplayName: dashboard.visualization.displayName,
+        treeCompletionLabel: l10n.completionLabel(
+          '${dashboard.visualization.completionPercent ?? 0}%',
         ),
-        const SizedBox(height: 8),
-        TreeVisualizationCard(visualization: dashboard.visualization),
-        const SizedBox(height: 16),
-        Text(
-          l10n.measurementsSection,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: 8),
-        ...dashboard.measurements.map(
-          (row) => Text(
-            l10n.measurementQuantityLabel(
-              formatNumber(row.quantity),
-              row.sourceUnit,
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          l10n.outcomesSection,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: 8),
-        if (dashboard.outcomes.isEmpty) Text(l10n.noOutcomes),
-        ...dashboard.outcomes.map((row) => _OutcomeTile(outcome: row)),
-        const SizedBox(height: 16),
-        Text(
-          l10n.timeSeriesSection,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: 8),
-        ...dashboard.timeSeries.map((point) {
-          final quantity = point.measurements.isEmpty
-              ? '0'
-              : formatNumber(point.measurements.first.quantity);
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(l10n.periodLabel(point.periodStart, point.periodEnd)),
-                const SizedBox(height: 4),
-                _QuantityBar(value: double.tryParse(quantity) ?? 0),
-              ],
-            ),
+        treeCompletionPercent: dashboard.visualization.completionPercent,
+        treeIsActive: dashboard.visualization.isActive,
+        treeInactiveLabel: l10n.treeInactive,
+        treeAxis: Axis.vertical,
+        measurementsTitle: l10n.measurementsSection,
+        measurementLines: dashboard.measurements
+            .map(
+              (row) => l10n.measurementQuantityLabel(
+                formatNumber(row.quantity),
+                row.sourceUnit,
+              ),
+            )
+            .toList(),
+        outcomesTitle: l10n.outcomesSection,
+        noOutcomesLabel: l10n.noOutcomes,
+        outcomeLines: dashboard.outcomes.map((row) {
+          final source = row.contributions.isEmpty
+              ? null
+              : row.contributions.first.source;
+          return DashboardOutcomeLine(
+            primary:
+                '${row.outcomeMetric}: ${l10n.outcomeValueLabel(formatNumber(row.value), row.outcomeUnit)}',
+            caption: source == null || source.isEmpty
+                ? null
+                : l10n.factorSourceLabel(source),
           );
-        }),
-      ],
+        }).toList(),
+        timeSeriesTitle: l10n.timeSeriesSection,
+        timeSeries: dashboard.timeSeries.map((point) {
+          final quantity = point.measurements.isEmpty
+              ? 0.0
+              : point.measurements.first.quantity.toDouble();
+          return DashboardTimeSeriesLine(
+            periodLabel: l10n.periodLabel(point.periodStart, point.periodEnd),
+            quantity: quantity,
+          );
+        }).toList(),
+        timeSeriesBarMaxWidth: 240,
+      ),
     );
   }
 }
@@ -102,68 +88,21 @@ class TreeVisualizationCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final data = visualization;
     if (data == null || !data.isActive) {
-      return Text(l10n.treeInactive);
+      return TreeVisualization(
+        displayName: '',
+        completionLabel: '',
+        isActive: false,
+        inactiveLabel: l10n.treeInactive,
+        axis: Axis.vertical,
+      );
     }
-    final percent = data.completionPercent ?? 0;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            const Icon(Icons.park, size: 48),
-            Text(data.displayName),
-            Text(l10n.completionLabel('$percent%')),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _OutcomeTile extends StatelessWidget {
-  const _OutcomeTile({required this.outcome});
-
-  final OutcomeTotal outcome;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final source = outcome.contributions.isEmpty
-        ? ''
-        : outcome.contributions.first.source;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '${outcome.outcomeMetric}: ${l10n.outcomeValueLabel(formatNumber(outcome.value), outcome.outcomeUnit)}',
-          ),
-          if (source.isNotEmpty) Text(l10n.factorSourceLabel(source)),
-        ],
-      ),
-    );
-  }
-}
-
-class _QuantityBar extends StatelessWidget {
-  const _QuantityBar({required this.value});
-
-  final double value;
-
-  @override
-  Widget build(BuildContext context) {
-    final width = (value * 24).clamp(8, 240).toDouble();
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Container(
-        height: 12,
-        width: width,
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.primary,
-          borderRadius: BorderRadius.circular(6),
-        ),
-      ),
+    return TreeVisualization(
+      displayName: data.displayName,
+      completionLabel: l10n.completionLabel('${data.completionPercent ?? 0}%'),
+      completionPercent: data.completionPercent,
+      isActive: true,
+      inactiveLabel: l10n.treeInactive,
+      axis: Axis.vertical,
     );
   }
 }
