@@ -8,3 +8,4 @@ nullable-getter: false
 preferred-supported-locales:
   - en
   - zh_Hans
+  - zh
