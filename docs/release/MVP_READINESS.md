@@ -14,7 +14,7 @@ The API MVP for Tzu Chi Malaysia's 速素数数 is **feature-complete**. Remaini
 | Activation / password reset / refresh tokens | done | `apps/api/src/modules/auth/application/registration.service.ts`, `password-reset.service.ts`, `token.service.ts`; `apps/api/test/auth-account.e2e-spec.ts`, `auth.e2e-spec.ts` |
 | Customer / tenant | done | `apps/api/src/modules/customers`; `apps/api/test/customers.e2e-spec.ts`. DB table is `tenants`; API uses customers. |
 | Arbitrary-depth communities | done | `apps/api/src/modules/communities`; `apps/api/test/customers.e2e-spec.ts`, `progress-milestones.e2e-spec.ts` |
-| Membership, roles, permissions | done | `apps/api/src/modules/memberships`, `authorization`; `apps/api/test/customers.e2e-spec.ts` |
+| Membership, roles, permissions | done | `apps/api/src/modules/memberships`, `authorization`; `apps/api/test/customers.e2e-spec.ts`. F1 / F-SEC-1: system `member` role uses an explicit allow-list (no `memberships.read`, `roles.read`, `user_imports.read`); additive migration `1792866113000-TightenMemberRolePermissions`; `apps/api/test/member-role-permissions.e2e-spec.ts`. |
 | Tags | missing | No `tags` / `user_tags` tables, APIs, or tests. Roles grant permissions; tags were specified as descriptive only. Larger than a release fix. |
 | CSV user import (upload → mapping → validate → preview → confirm → result) | done | `apps/api/src/modules/user-imports`; `apps/api/test/user-imports.e2e-spec.ts`, `apps/api/test/mvp-journey.e2e-spec.ts` |
 | Idempotent matching: external_id → email → mobile → manual review | done | `apps/api/src/modules/user-imports/application/import-match.ts`; `apps/api/test/user-imports.e2e-spec.ts` |
@@ -31,7 +31,7 @@ The API MVP for Tzu Chi Malaysia's 速素数数 is **feature-complete**. Remaini
 | Notifications | done | In-app inbox, campaign-started, first-cross milestone, daily action reminders. `apps/api/src/modules/notifications`; `apps/api/test/notifications.e2e-spec.ts`, `mvp-journey.e2e-spec.ts` |
 | Flutter HTTP wiring | done | Shared client `packages/api_client` (JWT access/refresh, `TOKEN_REUSED` logout, `zh-Hans` Accept-Language, error envelope). Mobile: login/activation/reset, campaigns, self-join, pledge from `GET /campaigns/:id/commitment-options`, meal record/cancel, progress, dashboard + TREE, notifications, preferences. Admin: customers/communities, CSV import, campaign create/publish/start, participants, submission reject, impact factors, dashboards, report CSV export. Widget tests use `FakeCampaignApiClient`. |
 | English + Simplified Chinese | done | API locales `en` and `zh-Hans` (`apps/api/src/modules/localization`, `apps/api/test/localization.e2e-spec.ts`). Flutter ARB files use `en` and `zh_Hans`; clients send `zh-Hans` (`packages/api_client`, `apps/mobile/lib/l10n`, `apps/admin/lib/l10n`). Server still maps `zh*` → `zh-Hans`. Malay is out of MVP. |
-| Privacy | partial | Privacy levels are stored on actions (default `private`) (`apps/api/src/modules/actions/domain/action.entity.ts`). Member list visibility is still self-scoped; privacy does not expand or restrict admin/member reads beyond that. |
+| Privacy | partial | Privacy levels are stored on actions (default `private`) (`apps/api/src/modules/actions/domain/action.entity.ts`). Member list visibility is still self-scoped; privacy does not expand or restrict admin/member reads beyond that. F1 removes member access to import rows and membership/role directories so members cannot read other users' email, mobile, or raw CSV. |
 | Audit | partial | Structured `report_exported` logs (`apps/api/src/modules/reports/application/report.service.ts`). No `audit_logs` table or dedicated audit module. Sensitive auth/import/campaign operations log structured events without secrets. |
 | Participant / group / community / campaign dashboards | done | API: `apps/api/src/modules/visualizations/application/dashboard.service.ts`; `apps/api/test/measurements-outcomes.e2e-spec.ts`. Flutter mobile and admin dashboards load these payloads over HTTP (`apps/mobile`, `apps/admin`). |
 | Reports and CSV export without contact PII | done | `apps/api/src/modules/reports`; `apps/api/test/reports.e2e-spec.ts`, `mvp-journey.e2e-spec.ts` |
@@ -41,7 +41,7 @@ The API MVP for Tzu Chi Malaysia's 速素数数 is **feature-complete**. Remaini
 | Requirement | Status | Evidence |
 |-------------|--------|----------|
 | Tenant isolation | done | `apps/api/test/tenant-isolation.e2e-spec.ts`, `mvp-journey.e2e-spec.ts` |
-| Backend authorization | done | `PermissionsGuard`, `TenantScopeGuard`; permission catalog in `apps/api/src/modules/authorization` |
+| Backend authorization | done | `PermissionsGuard`, `TenantScopeGuard`; permission catalog in `apps/api/src/modules/authorization`; member allow-list in `MEMBER_PERMISSION_KEYS` |
 | UTC timestamps | done | `timestamptz` columns in TypeORM migrations under `apps/api/src/platform/database/migrations` |
 | PostgreSQL migrations; no ORM auto-sync | done | `synchronize: false`, `migrationsRun: false` in `apps/api/src/platform/database/database-options.ts` |
 | Historical actions/outcomes preserved | done | Cancel sets `status=cancelled`; reject changes submission status; rows are not deleted. Progress/outcomes recompute on read. |

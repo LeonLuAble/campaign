@@ -33,7 +33,9 @@ Bootstrap (idempotent, no hardcoded credentials): from `apps/api`, `npm run seed
 Communities: `/communities`
 Membership/roles/permissions: `/memberships`, `/roles`, `/permissions`
 
-User import: `/user-imports` (tenant-scoped via `customerId` query; requires `user_imports.create` / `user_imports.read`)
+System `member` role (F1 / F-SEC-1): seeded with an explicit allow-list — `customers.read`, `communities.read`, `campaigns.read`, `campaign_templates.read`, `campaign_scopes.read`, `action_definitions.read`, `participations.read`, `actions.read`, `submissions.read`, `commitments.read`, `progress.read`, `achievements.read`, `milestones.read`, `measurement_definitions.read`, `measurements.read`, `impact_factors.read`, `outcomes.read`, `visualizations.read`, `dashboards.read`, `notifications.read`, `reports.read`, plus self-create `commitments.create`, `actions.create`, and `notifications.update`. It does **not** receive `memberships.read`, `roles.read`, or `user_imports.read` (import rows contain email, mobile, and raw CSV). Member-visible list endpoints that return `userId` remain self-scoped; campaign/community aggregates and reports omit contact PII. `tenant_admin` retains the full permission catalog.
+
+User import: `/user-imports` (tenant-scoped via `customerId` query; requires `user_imports.create` / `user_imports.read`; tenant admins only — members get 403)
 - POST /user-imports (multipart `file`, query `customerId`, optional query `communityId`) → upload CSV
 - PATCH /user-imports/:userImportId/mapping `{ mapping }` → map CSV headers to canonical fields
 - POST /user-imports/:userImportId/validate → per-row validation without writes
@@ -151,7 +153,5 @@ Reporting (reuses Phase 6/7 aggregate privacy: no private individual rows in cam
 - GET `/participations/:participationId/report` → requires `reports.read`. Members see only their own.
 - GET `/campaigns/:campaignId/report` and `/campaigns/:campaignId/communities/:communityId/report` → anonymous aggregates.
 - GET `.../report/export` → `text/csv`; requires `reports.export`. Structured log `report_exported`. Campaign/community CSV omit `userId` and `participationId`.
-
-Authorization must enforce authentication, tenant scope, permission, community scope, privacy and ownership where applicable. Never trust client-supplied tenantId.
 
 Authorization must enforce authentication, tenant scope, permission, community scope, privacy and ownership where applicable. Never trust client-supplied tenantId.

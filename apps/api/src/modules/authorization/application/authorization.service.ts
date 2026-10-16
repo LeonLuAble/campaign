@@ -111,7 +111,7 @@ export class AuthorizationService {
       tenantId,
       SYSTEM_ROLE_MEMBER,
       'Member',
-      'Read access within the tenant',
+      'Self-scoped campaign reads and creates within the tenant',
     );
 
     await this.replaceRolePermissions(
