@@ -154,6 +154,21 @@ export class AuthorizationService {
     return role;
   }
 
+  async findRoleByKey(tenantId: string, key: string): Promise<Role> {
+    const role = await this.roleRepository.findOne({
+      where: { tenant_id: tenantId, key },
+    });
+    if (!role) {
+      throw new ResourceNotFoundException('Role not found');
+    }
+    return role;
+  }
+
+  async getRoleByKey(tenantId: string, key: string): Promise<RoleResponse> {
+    const role = await this.findRoleByKey(tenantId, key);
+    return this.getRole(tenantId, role.id);
+  }
+
   async assignRoleInTransaction(
     manager: EntityManager,
     membershipId: string,

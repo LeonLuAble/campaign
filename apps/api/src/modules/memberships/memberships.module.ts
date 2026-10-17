@@ -9,6 +9,7 @@ import { AuthModule } from '../auth/auth.module.js';
 import { CommunitiesModule } from '../communities/communities.module.js';
 import { CustomersModule } from '../customers/customers.module.js';
 import { IdentityModule } from '../identity/identity.module.js';
+import { MembershipInvitationService } from './application/membership-invitation.service.js';
 import { MembershipService } from './application/membership.service.js';
 import { Membership } from './domain/membership.entity.js';
 import { MembershipsController } from './presentation/memberships.controller.js';
@@ -25,6 +26,7 @@ import { MembershipsController } from './presentation/memberships.controller.js'
   controllers: [MembershipsController],
   providers: [
     MembershipService,
+    MembershipInvitationService,
     { provide: MEMBERSHIP_READER, useExisting: MembershipService },
     { provide: MEMBERSHIP_SERVICE, useExisting: MembershipService },
   ],

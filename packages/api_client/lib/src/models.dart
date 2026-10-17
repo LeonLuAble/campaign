@@ -416,6 +416,61 @@ class MembershipListPage {
   }
 }
 
+class MembershipInvitationResult {
+  const MembershipInvitationResult({
+    required this.membershipId,
+    required this.userId,
+    required this.customerId,
+    required this.activationStatus,
+    required this.created,
+    this.communityId,
+    this.email,
+    this.mobile,
+    this.activationLink,
+  });
+
+  final String membershipId;
+  final String userId;
+  final String customerId;
+  final String? communityId;
+  final String? email;
+  final String? mobile;
+  final String activationStatus;
+  final bool created;
+  final String? activationLink;
+
+  factory MembershipInvitationResult.fromJson(Map<String, dynamic> json) {
+    return MembershipInvitationResult(
+      membershipId: json['membershipId'] as String,
+      userId: json['userId'] as String,
+      customerId: json['customerId'] as String,
+      communityId: _string(json['communityId']),
+      email: _string(json['email']),
+      mobile: _string(json['mobile']),
+      activationStatus: json['activationStatus'] as String? ?? 'pending',
+      created: _bool(json['created'], false),
+      activationLink: _string(json['activationLink']),
+    );
+  }
+}
+
+class ResendMembershipActivationResult {
+  const ResendMembershipActivationResult({
+    required this.accepted,
+    this.activationLink,
+  });
+
+  final bool accepted;
+  final String? activationLink;
+
+  factory ResendMembershipActivationResult.fromJson(Map<String, dynamic> json) {
+    return ResendMembershipActivationResult(
+      accepted: _bool(json['accepted'], true),
+      activationLink: _string(json['activationLink']),
+    );
+  }
+}
+
 class CustomerAccess {
   const CustomerAccess({
     required this.roles,

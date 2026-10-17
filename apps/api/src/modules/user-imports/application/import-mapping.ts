@@ -6,6 +6,7 @@ export const CANONICAL_IMPORT_FIELDS = [
   'lastName',
   'displayName',
   'communityId',
+  'communityPath',
 ] as const;
 
 export type CanonicalImportField = (typeof CANONICAL_IMPORT_FIELDS)[number];
@@ -20,6 +21,8 @@ const HEADER_ALIASES: Record<string, CanonicalImportField> = {
   last_name: 'lastName',
   display_name: 'displayName',
   community_id: 'communityId',
+  community_path: 'communityPath',
+  communitypath: 'communityPath',
 };
 
 export function normalizeHeader(header: string): string {

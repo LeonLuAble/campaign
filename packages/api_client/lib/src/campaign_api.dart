@@ -90,6 +90,17 @@ abstract class CampaignApiClient {
     String? cursor,
   });
   Future<CustomerAccess> getCustomerAccess(String customerId);
+  Future<MembershipInvitationResult> inviteMembership({
+    required String customerId,
+    String? email,
+    String? mobile,
+    String? displayName,
+    String? communityId,
+    List<String>? roleKeys,
+  });
+  Future<ResendMembershipActivationResult> resendMembershipActivation(
+    String membershipId,
+  );
 
   Future<UserImport> uploadUserImport({
     required String customerId,
@@ -607,6 +618,39 @@ class HttpCampaignApiClient implements CampaignApiClient {
     return _get(
       '/customers/$customerId/access',
       parser: CustomerAccess.fromJson,
+    );
+  }
+
+  @override
+  Future<MembershipInvitationResult> inviteMembership({
+    required String customerId,
+    String? email,
+    String? mobile,
+    String? displayName,
+    String? communityId,
+    List<String>? roleKeys,
+  }) {
+    return _post(
+      '/memberships/invitations',
+      data: {
+        'customerId': customerId,
+        if (email != null) 'email': email,
+        if (mobile != null) 'mobile': mobile,
+        if (displayName != null) 'displayName': displayName,
+        if (communityId != null) 'communityId': communityId,
+        if (roleKeys != null) 'roleKeys': roleKeys,
+      },
+      parser: MembershipInvitationResult.fromJson,
+    );
+  }
+
+  @override
+  Future<ResendMembershipActivationResult> resendMembershipActivation(
+    String membershipId,
+  ) {
+    return _post(
+      '/memberships/$membershipId/resend-activation',
+      parser: ResendMembershipActivationResult.fromJson,
     );
   }
 

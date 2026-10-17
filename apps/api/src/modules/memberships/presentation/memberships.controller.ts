@@ -19,16 +19,21 @@ import { CurrentTenant } from '../../authorization/presentation/current-tenant.d
 import { PermissionsGuard } from '../../authorization/presentation/permissions.guard.js';
 import { RequirePermission } from '../../authorization/presentation/require-permission.decorator.js';
 import { TenantScopeGuard } from '../../authorization/presentation/tenant-scope.guard.js';
+import { MembershipInvitationService } from '../application/membership-invitation.service.js';
 import { MembershipService } from '../application/membership.service.js';
 import { AssignRoleDto } from '../dto/assign-role.dto.js';
 import { CreateMembershipDto } from '../dto/create-membership.dto.js';
+import { InviteMembershipDto } from '../dto/invite-membership.dto.js';
 import { ListMembershipsDto } from '../dto/list-memberships.dto.js';
 import { UpdateMembershipDto } from '../dto/update-membership.dto.js';
 
 @Controller('memberships')
 @UseGuards(JwtAuthGuard, TenantScopeGuard, PermissionsGuard)
 export class MembershipsController {
-  constructor(private readonly memberships: MembershipService) {}
+  constructor(
+    private readonly memberships: MembershipService,
+    private readonly invitations: MembershipInvitationService,
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -40,6 +45,22 @@ export class MembershipsController {
     return this.memberships.create(tenant, {
       userId: dto.userId,
       communityId: dto.communityId ?? null,
+    });
+  }
+
+  @Post('invitations')
+  @HttpCode(HttpStatus.CREATED)
+  @RequirePermission(PERMISSIONS.MEMBERSHIPS_CREATE)
+  invite(
+    @CurrentTenant() tenant: TenantContext,
+    @Body() dto: InviteMembershipDto,
+  ) {
+    return this.invitations.invite(tenant, {
+      email: dto.email,
+      mobile: dto.mobile,
+      displayName: dto.displayName,
+      communityId: dto.communityId ?? null,
+      roleKeys: dto.roleKeys,
     });
   }
 
@@ -77,6 +98,16 @@ export class MembershipsController {
     @Body() dto: UpdateMembershipDto,
   ) {
     return this.memberships.update(tenant, membershipId, dto);
+  }
+
+  @Post(':membershipId/resend-activation')
+  @HttpCode(HttpStatus.ACCEPTED)
+  @RequirePermission(PERMISSIONS.MEMBERSHIPS_UPDATE)
+  resendActivation(
+    @CurrentTenant() tenant: TenantContext,
+    @Param('membershipId', ParseUUIDPipe) membershipId: string,
+  ) {
+    return this.invitations.resendActivation(tenant, membershipId);
   }
 
   @Delete(':membershipId')

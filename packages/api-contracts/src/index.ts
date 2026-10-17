@@ -285,6 +285,32 @@ export interface CreateMembershipRequest {
   communityId?: string | null;
 }
 
+export interface InviteMembershipRequest {
+  customerId: string;
+  email?: string;
+  mobile?: string;
+  displayName?: string;
+  communityId?: string | null;
+  roleKeys?: string[];
+}
+
+export interface MembershipInvitationResponse {
+  membershipId: string;
+  userId: string;
+  customerId: string;
+  communityId: string | null;
+  email: string | null;
+  mobile: string | null;
+  activationStatus: MembershipActivationStatus;
+  created: boolean;
+  activationLink?: string;
+}
+
+export interface ResendMembershipActivationResponse {
+  accepted: true;
+  activationLink?: string;
+}
+
 export interface UpdateMembershipRequest {
   isActive?: boolean;
 }
@@ -315,6 +341,7 @@ export interface UserImportMapping {
   lastName?: string;
   displayName?: string;
   communityId?: string;
+  communityPath?: string;
 }
 
 export interface MapUserImportRequest {

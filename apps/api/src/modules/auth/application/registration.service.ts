@@ -191,20 +191,23 @@ export class RegistrationService {
 
   /**
    * Issues an activation token for a known identity and returns the raw token
-   * so callers (e.g. customer create) can share it once. Still notifies via the
-   * existing sender; the raw value is never logged here.
+   * so callers (e.g. customer create) can share it once. When [notify] is true
+   * (default), still notifies via the existing sender; the raw value is never
+   * logged here. Pass notify=false for mobile-only one-time links (Q5).
    */
   async issueActivationTokenForIdentity(input: {
     userId: string;
     identityId: string;
     identifier: string;
     type: string;
+    notify?: boolean;
   }): Promise<string> {
     return this.issueActivationToken(
       input.userId,
       input.identityId,
       input.identifier,
       input.type,
+      input.notify !== false,
     );
   }
 
@@ -245,6 +248,7 @@ export class RegistrationService {
     identityId: string,
     to: string,
     type: string,
+    notify = true,
   ): Promise<string> {
     const rawToken = generateOneTimeToken();
     await this.userTokenService.supersedeUnusedAndCreate({
@@ -254,14 +258,16 @@ export class RegistrationService {
       tokenHash: hashOneTimeToken(rawToken),
       expiresAt: new Date(Date.now() + this.activationTtlSeconds * 1000),
     });
-    const profile = await this.identityAccountService.getProfile(userId);
-    await this.notificationSender.send({
-      channel: channelForIdentityType(type),
-      to,
-      template: 'activation',
-      token: rawToken,
-      locale: profile?.locale ?? undefined,
-    });
+    if (notify) {
+      const profile = await this.identityAccountService.getProfile(userId);
+      await this.notificationSender.send({
+        channel: channelForIdentityType(type),
+        to,
+        template: 'activation',
+        token: rawToken,
+        locale: profile?.locale ?? undefined,
+      });
+    }
     return rawToken;
   }
 

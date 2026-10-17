@@ -7,12 +7,19 @@ import {
 describe('import mapping', () => {
   it('detects case-insensitive canonical headers', () => {
     expect(
-      detectCanonicalMapping(['Email', 'Mobile', 'External_ID', 'First Name']),
+      detectCanonicalMapping([
+        'Email',
+        'Mobile',
+        'External_ID',
+        'First Name',
+        'community_path',
+      ]),
     ).toEqual({
       email: 'Email',
       mobile: 'Mobile',
       externalId: 'External_ID',
       firstName: 'First Name',
+      communityPath: 'community_path',
     });
   });
 

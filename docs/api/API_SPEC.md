@@ -42,17 +42,21 @@ Membership/roles/permissions: `/memberships`, `/roles`, `/permissions`
 Membership directory (B1 / B-API-4):
 - GET /memberships?customerId&q&communityId&includeDescendants&roleKey&status&limit&cursor → `{ items, nextCursor }` with `memberships.read`. Default `limit` 50 (max 100). Cursor is opaque. Each item includes `user: { id, displayName, email?, mobile?, activationStatus: 'pending'|'active' }`, `community: { id, name } | null`, and `roles`. `activationStatus` is `active` when the user has at least one verified identity, otherwise `pending`. Community-scoped callers see only memberships in their visible subtree; tenant-level callers see the whole tenant. `email` / `mobile` are included only for tenant-level callers (omitted for community-scoped callers). Members without `memberships.read` get 403 (after F1).
 
+Membership invitations (B6 / B-API-6 / B-API-7):
+- POST /memberships/invitations `{ customerId, email?, mobile?, displayName?, communityId?, roleKeys? }` → 201. Requires `memberships.create`. At least one of `email` or `mobile`. Finds or creates the user (IdentityAccountService), finds or creates the membership (idempotent per identifier + community), and assigns `roleKeys` (default `['member']`). Email invites send the F4 activation email. Mobile-only invites do not send SMS; the 201 body includes a one-time `activationLink` (24 h TTL via `ACTIVATION_TOKEN_TTL_SECONDS`) shown once; structured logs record issuance without the token. Community-scoped callers may invite only into their visible subtree, cannot omit `communityId`, cannot assign `tenant_admin`, and cannot assign roles whose permissions exceed their own.
+- POST /memberships/:membershipId/resend-activation → 202 `{ accepted: true, activationLink? }` with `memberships.update`. Resends email activation, or issues a new one-time link for mobile-only users. 409 if the user is already active (`activationStatus === 'active'`).
+
 System `member` role (F1 / F-SEC-1): seeded with an explicit allow-list — `customers.read`, `communities.read`, `campaigns.read`, `campaign_templates.read`, `campaign_scopes.read`, `action_definitions.read`, `participations.read`, `actions.read`, `submissions.read`, `commitments.read`, `progress.read`, `achievements.read`, `milestones.read`, `measurement_definitions.read`, `measurements.read`, `impact_factors.read`, `outcomes.read`, `visualizations.read`, `dashboards.read`, `notifications.read`, `reports.read`, plus self-create `commitments.create`, `actions.create`, and `notifications.update`. It does **not** receive `memberships.read`, `roles.read`, or `user_imports.read` (import rows contain email, mobile, and raw CSV). Member-visible list endpoints that return `userId` remain self-scoped; campaign/community aggregates and reports omit contact PII. `tenant_admin` retains the full permission catalog.
 
 User import: `/user-imports` (tenant-scoped via `customerId` query; requires `user_imports.create` / `user_imports.read`; tenant admins only — members get 403)
 - POST /user-imports (multipart `file`, query `customerId`, optional query `communityId`) → upload CSV
-- PATCH /user-imports/:userImportId/mapping `{ mapping }` → map CSV headers to canonical fields
-- POST /user-imports/:userImportId/validate → per-row validation without writes
+- PATCH /user-imports/:userImportId/mapping `{ mapping }` → map CSV headers to canonical fields (`email`, `mobile`, `externalId`, `firstName`, `lastName`, `displayName`, `communityId`, `communityPath`)
+- POST /user-imports/:userImportId/validate → per-row validation without writes. Canonical `communityPath` (e.g. `Region/Branch`) resolves by exact name path from the tenant root; unknown paths → row error `UNKNOWN_COMMUNITY_PATH` and do not create communities. Existing `communityId` UUID mapping and default `communityId` query still work (`communityPath` wins when both are present on a row).
 - GET /user-imports/:userImportId/preview → validated per-row preview
 - POST /user-imports/:userImportId/confirm → create identities/memberships, assign the tenant system `member` role, and send activation invitations
 - GET /user-imports, GET /user-imports/:userImportId, GET /user-imports/:userImportId/rows → list/summary/result errors
 
-Imported users activate through POST /auth/activate with a password. Invitation delivery reuses the existing activation token + NotificationSender path (SMTP when configured; tokens never logged). No `/invitations` resource in this phase.
+Imported users activate through POST /auth/activate with a password. Invitation delivery reuses the existing activation token + NotificationSender path (SMTP when configured; tokens never logged).
 
 Campaign (tenant-scoped via `customerId` query/body or resource id; generic configuration, no vegetarian schema in this module):
 - POST /campaign-templates `{ customerId, key?, name, description? }` → 201. Requires `campaign_templates.create`.

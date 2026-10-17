@@ -66,7 +66,7 @@ describe('UserImportService', () => {
     createQueryBuilder: vi.fn(),
   };
   const customers = { requireActive: vi.fn() };
-  const communities = { get: vi.fn() };
+  const communities = { get: vi.fn(), list: vi.fn() };
   const identities = {
     findIdentity: vi.fn(),
     createImportedAccount: vi.fn(),
@@ -87,6 +87,7 @@ describe('UserImportService', () => {
   beforeEach(async () => {
     vi.resetAllMocks();
     customers.requireActive.mockResolvedValue(undefined);
+    communities.list.mockResolvedValue([]);
     importRepository.save.mockImplementation(async (value: UserImport) => ({
       ...value,
       id: value.id ?? importId,

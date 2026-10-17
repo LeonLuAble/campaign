@@ -985,6 +985,98 @@ class FakeCampaignApiClient implements CampaignApiClient {
   }
 
   @override
+  Future<MembershipInvitationResult> inviteMembership({
+    required String customerId,
+    String? email,
+    String? mobile,
+    String? displayName,
+    String? communityId,
+    List<String>? roleKeys,
+  }) async {
+    if (email == null && mobile == null) {
+      _throw('BAD_REQUEST', status: 400);
+    }
+    final existing = memberships.where(
+      (row) =>
+          row.customerId == customerId &&
+          row.communityId == communityId &&
+          ((email != null && row.user?.email == email) ||
+              (mobile != null && row.user?.mobile == mobile)),
+    );
+    if (existing.isNotEmpty) {
+      final row = existing.first;
+      return MembershipInvitationResult(
+        membershipId: row.id,
+        userId: row.userId,
+        customerId: customerId,
+        communityId: communityId,
+        email: email ?? row.user?.email,
+        mobile: mobile ?? row.user?.mobile,
+        activationStatus: row.user?.activationStatus ?? 'pending',
+        created: false,
+      );
+    }
+    final userId = 'invited-user-${memberships.length + 1}';
+    final membershipId = 'mem-invite-${memberships.length + 1}';
+    final pending = email != null || mobile != null;
+    memberships = [
+      ...memberships,
+      Membership(
+        id: membershipId,
+        customerId: customerId,
+        userId: userId,
+        communityId: communityId,
+        isActive: true,
+        roles: const [
+          RoleSummary(id: 'role-member', key: 'member', name: 'Member'),
+        ],
+        user: MembershipUserSummary(
+          id: userId,
+          displayName: displayName ?? email ?? mobile,
+          email: email,
+          mobile: mobile,
+          activationStatus: pending ? 'pending' : 'active',
+        ),
+      ),
+    ];
+    return MembershipInvitationResult(
+      membershipId: membershipId,
+      userId: userId,
+      customerId: customerId,
+      communityId: communityId,
+      email: email,
+      mobile: mobile,
+      activationStatus: 'pending',
+      created: true,
+      activationLink: email == null && mobile != null
+          ? 'http://localhost:8080/activate?token=fake-mobile-token'
+          : null,
+    );
+  }
+
+  @override
+  Future<ResendMembershipActivationResult> resendMembershipActivation(
+    String membershipId,
+  ) async {
+    final match = memberships.where((row) => row.id == membershipId);
+    if (match.isEmpty) {
+      _throw('NOT_FOUND', status: 404);
+    }
+    final membership = match.first;
+    if (membership.user?.activationStatus == 'active') {
+      _throw('CONFLICT', status: 409, message: 'User is already active');
+    }
+    final mobileOnly =
+        membership.user?.email == null && membership.user?.mobile != null;
+    return ResendMembershipActivationResult(
+      accepted: true,
+      activationLink: mobileOnly
+          ? 'http://localhost:8080/activate?token=fake-mobile-resend'
+          : null,
+    );
+  }
+
+  @override
   Future<UserImport> uploadUserImport({
     required String customerId,
     required String filename,

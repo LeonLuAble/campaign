@@ -31,6 +31,10 @@ import { UserImport, UserImportStatus } from '../domain/user-import.entity.js';
 import { CsvParseError, parseCsv } from './csv.js';
 import { decideImportMatch } from './import-match.js';
 import {
+  buildCommunityPathIndex,
+  normalizeCommunityPath,
+} from './community-path.js';
+import {
   assertMappingHeaders,
   detectCanonicalMapping,
   mappingCoversIdentifier,
@@ -232,6 +236,14 @@ export class UserImportService {
     const seenExternalIds = new Map<string, number>();
     const seenEmails = new Map<string, number>();
     const seenMobiles = new Map<string, number>();
+    const communities = await this.communities.list(tenant);
+    const communityPathIndex = buildCommunityPathIndex(
+      communities.map((community) => ({
+        id: community.id,
+        parentId: community.parentId,
+        name: community.name,
+      })),
+    );
 
     for (const row of rows) {
       await this.validateRow(
@@ -242,6 +254,7 @@ export class UserImportService {
         seenExternalIds,
         seenEmails,
         seenMobiles,
+        communityPathIndex,
       );
     }
     await this.rowRepository.save(rows);
@@ -297,6 +310,7 @@ export class UserImportService {
     seenExternalIds: Map<string, number>,
     seenEmails: Map<string, number>,
     seenMobiles: Map<string, number>,
+    communityPathIndex: Map<string, string>,
   ): Promise<void> {
     this.resetRow(row);
     const extracted = this.extractMappedFields(row.raw_data, mapping);
@@ -332,12 +346,41 @@ export class UserImportService {
       return;
     }
 
-    const communityId =
-      extracted.communityId ?? imported.default_community_id ?? null;
-    if (extracted.communityId && !UUID_PATTERN.test(extracted.communityId)) {
-      this.markInvalid(row, 'INVALID_COMMUNITY', 'community_id must be a UUID');
-      return;
+    let communityId: string | null;
+    if (extracted.communityPath) {
+      const path = normalizeCommunityPath(extracted.communityPath);
+      if (!path) {
+        this.markInvalid(
+          row,
+          'UNKNOWN_COMMUNITY_PATH',
+          'communityPath is empty',
+        );
+        return;
+      }
+      const resolved = communityPathIndex.get(path);
+      if (!resolved) {
+        this.markInvalid(
+          row,
+          'UNKNOWN_COMMUNITY_PATH',
+          `Unknown community path: ${path}`,
+        );
+        return;
+      }
+      communityId = resolved;
+    } else if (extracted.communityId) {
+      if (!UUID_PATTERN.test(extracted.communityId)) {
+        this.markInvalid(
+          row,
+          'INVALID_COMMUNITY',
+          'community_id must be a UUID',
+        );
+        return;
+      }
+      communityId = extracted.communityId;
+    } else {
+      communityId = imported.default_community_id ?? null;
     }
+
     if (communityId) {
       try {
         await this.communities.get(tenant, communityId);
@@ -359,7 +402,7 @@ export class UserImportService {
       this.markInvalid(
         row,
         'COMMUNITY_REQUIRED',
-        'community_id is required for this import',
+        'community_id or communityPath is required for this import',
       );
       return;
     }
@@ -628,6 +671,7 @@ export class UserImportService {
       lastName: this.limit(mappedValue(values, mapping, 'lastName'), 100),
       displayName: this.limit(mappedValue(values, mapping, 'displayName'), 255),
       communityId: mappedValue(values, mapping, 'communityId'),
+      communityPath: mappedValue(values, mapping, 'communityPath'),
     };
   }
 

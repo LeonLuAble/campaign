@@ -49,6 +49,12 @@ export class UserImportMappingDto {
   @IsNotEmpty()
   @MaxLength(100)
   communityId?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  communityPath?: string;
 }
 
 export class MapUserImportDto {
