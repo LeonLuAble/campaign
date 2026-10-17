@@ -210,6 +210,182 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importResult => 'Import result';
 
   @override
+  String get importsSubtitle =>
+      'Upload member CSVs, review validation, and confirm imports.';
+
+  @override
+  String get newImport => 'New import';
+
+  @override
+  String get noImportsYet => 'No imports yet. Start with a template CSV.';
+
+  @override
+  String get backToImports => 'Back to imports';
+
+  @override
+  String get importWizardSubtitle =>
+      'Guided upload, mapping, validation, and confirm.';
+
+  @override
+  String get importStepUpload => 'Upload';
+
+  @override
+  String get importStepMap => 'Map';
+
+  @override
+  String get importStepValidate => 'Validate';
+
+  @override
+  String get importStepPreview => 'Preview';
+
+  @override
+  String get importStepConfirm => 'Confirm';
+
+  @override
+  String get downloadImportTemplate => 'Download template';
+
+  @override
+  String get templateDownloaded => 'Template ready.';
+
+  @override
+  String get importUploadHint =>
+      'Download the template, then choose a CSV file. Optionally set a default community for rows without communityPath.';
+
+  @override
+  String importSelectedFile(String name) {
+    return 'Selected: $name';
+  }
+
+  @override
+  String get importDefaultCommunity => 'Default community (optional)';
+
+  @override
+  String get importFileRequired => 'Choose a CSV file to continue.';
+
+  @override
+  String get importBadFileType => 'Choose a .csv file.';
+
+  @override
+  String get importEmptyFile => 'The file is empty.';
+
+  @override
+  String get importMissingRequiredColumns =>
+      'Map at least an email or mobile column.';
+
+  @override
+  String get importPickerUnavailable =>
+      'File picking is not available in this environment.';
+
+  @override
+  String get importMapHint =>
+      'Match each CSV column to a field. Email or mobile is required.';
+
+  @override
+  String get mappingUnmapped => 'Not mapped';
+
+  @override
+  String get canonicalEmail => 'Email';
+
+  @override
+  String get canonicalMobile => 'Mobile';
+
+  @override
+  String get canonicalExternalId => 'External ID';
+
+  @override
+  String get canonicalFirstName => 'First name';
+
+  @override
+  String get canonicalLastName => 'Last name';
+
+  @override
+  String get canonicalDisplayName => 'Display name';
+
+  @override
+  String get canonicalCommunityId => 'Community ID';
+
+  @override
+  String get canonicalCommunityPath => 'Community path';
+
+  @override
+  String get importValidateHeading => 'Validation results';
+
+  @override
+  String get importPreviewHeading => 'Preview';
+
+  @override
+  String importValidateSummary(int valid, int invalid, int review) {
+    return '$valid valid · $invalid errors · $review need review';
+  }
+
+  @override
+  String get importNoProblemRows => 'No error or review rows.';
+
+  @override
+  String get importNoRows => 'No rows to show.';
+
+  @override
+  String get importReviewInstruction =>
+      'Rows marked review cannot be resolved here. Fix the CSV and re-import.';
+
+  @override
+  String get importConfirmHint =>
+      'Confirm to create or match members and send activation invites where needed.';
+
+  @override
+  String importConfirmSummary(int ready, int skipped) {
+    return '$ready rows will be imported. $skipped error or review rows will be skipped.';
+  }
+
+  @override
+  String importResultSummary(int created, int matched, int errors) {
+    return 'Created $created · matched $matched · errors $errors';
+  }
+
+  @override
+  String importRowTitle(int number, String identifier) {
+    return 'Row $number: $identifier';
+  }
+
+  @override
+  String get downloadErrorCsv => 'Download error CSV';
+
+  @override
+  String get errorCsvDownloaded => 'Error CSV ready.';
+
+  @override
+  String get importColumnFile => 'File';
+
+  @override
+  String get importColumnStatus => 'Status';
+
+  @override
+  String get importColumnDate => 'Date';
+
+  @override
+  String get importColumnCounts => 'Counts';
+
+  @override
+  String importCountsSummary(int created, int matched, int errors) {
+    return 'Created $created · matched $matched · errors $errors';
+  }
+
+  @override
+  String get importStatusUploaded => 'Uploaded';
+
+  @override
+  String get importStatusMapped => 'Mapped';
+
+  @override
+  String get importStatusValidated => 'Validated';
+
+  @override
+  String get importStatusConfirmed => 'Confirmed';
+
+  @override
+  String get importStatusFailed => 'Failed';
+
+  @override
   String get campaignsTitle => 'Campaigns';
 
   @override

@@ -584,6 +584,9 @@ class UserImport {
     required this.counts,
     this.communityId,
     this.mapping,
+    this.createdAt,
+    this.updatedAt,
+    this.confirmedAt,
   });
 
   final String id;
@@ -594,6 +597,9 @@ class UserImport {
   final List<String> headers;
   final Map<String, String>? mapping;
   final UserImportCounts counts;
+  final String? createdAt;
+  final String? updatedAt;
+  final String? confirmedAt;
 
   factory UserImport.fromJson(Map<String, dynamic> json) {
     final rawMapping = json['mapping'];
@@ -610,6 +616,9 @@ class UserImport {
             )
           : null,
       counts: UserImportCounts.fromJson(_map(json['counts'])),
+      createdAt: _string(json['createdAt']),
+      updatedAt: _string(json['updatedAt']),
+      confirmedAt: _string(json['confirmedAt']),
     );
   }
 }

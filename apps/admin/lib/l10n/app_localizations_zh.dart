@@ -204,6 +204,174 @@ class AppLocalizationsZh extends AppLocalizations {
   String get importResult => '导入结果';
 
   @override
+  String get importsSubtitle => '上传成员 CSV、查看验证结果并确认导入。';
+
+  @override
+  String get newImport => '新建导入';
+
+  @override
+  String get noImportsYet => '暂无导入记录。可先下载模板 CSV。';
+
+  @override
+  String get backToImports => '返回导入';
+
+  @override
+  String get importWizardSubtitle => '引导式上传、映射、验证与确认。';
+
+  @override
+  String get importStepUpload => '上传';
+
+  @override
+  String get importStepMap => '映射';
+
+  @override
+  String get importStepValidate => '验证';
+
+  @override
+  String get importStepPreview => '预览';
+
+  @override
+  String get importStepConfirm => '确认';
+
+  @override
+  String get downloadImportTemplate => '下载模板';
+
+  @override
+  String get templateDownloaded => '模板已就绪。';
+
+  @override
+  String get importUploadHint => '先下载模板，再选择 CSV。可选择默认社区，用于没有 communityPath 的行。';
+
+  @override
+  String importSelectedFile(String name) {
+    return '已选：$name';
+  }
+
+  @override
+  String get importDefaultCommunity => '默认社区（可选）';
+
+  @override
+  String get importFileRequired => '请选择 CSV 文件后继续。';
+
+  @override
+  String get importBadFileType => '请选择 .csv 文件。';
+
+  @override
+  String get importEmptyFile => '文件为空。';
+
+  @override
+  String get importMissingRequiredColumns => '请至少映射邮箱或手机列。';
+
+  @override
+  String get importPickerUnavailable => '当前环境无法选择文件。';
+
+  @override
+  String get importMapHint => '将 CSV 列映射到字段。邮箱或手机为必填。';
+
+  @override
+  String get mappingUnmapped => '未映射';
+
+  @override
+  String get canonicalEmail => '邮箱';
+
+  @override
+  String get canonicalMobile => '手机';
+
+  @override
+  String get canonicalExternalId => '外部 ID';
+
+  @override
+  String get canonicalFirstName => '名';
+
+  @override
+  String get canonicalLastName => '姓';
+
+  @override
+  String get canonicalDisplayName => '显示名称';
+
+  @override
+  String get canonicalCommunityId => '社区 ID';
+
+  @override
+  String get canonicalCommunityPath => '社区路径';
+
+  @override
+  String get importValidateHeading => '验证结果';
+
+  @override
+  String get importPreviewHeading => '预览';
+
+  @override
+  String importValidateSummary(int valid, int invalid, int review) {
+    return '$valid 有效 · $invalid 错误 · $review 待复核';
+  }
+
+  @override
+  String get importNoProblemRows => '没有错误或待复核行。';
+
+  @override
+  String get importNoRows => '没有可显示的行。';
+
+  @override
+  String get importReviewInstruction => '标记为“待复核”的行无法在此处理。请修正 CSV 后重新导入。';
+
+  @override
+  String get importConfirmHint => '确认后将创建或匹配成员，并在需要时发送激活邀请。';
+
+  @override
+  String importConfirmSummary(int ready, int skipped) {
+    return '将导入 $ready 行。$skipped 行错误或待复核将被跳过。';
+  }
+
+  @override
+  String importResultSummary(int created, int matched, int errors) {
+    return '已创建 $created · 已匹配 $matched · 错误 $errors';
+  }
+
+  @override
+  String importRowTitle(int number, String identifier) {
+    return '第 $number 行：$identifier';
+  }
+
+  @override
+  String get downloadErrorCsv => '下载错误 CSV';
+
+  @override
+  String get errorCsvDownloaded => '错误 CSV 已就绪。';
+
+  @override
+  String get importColumnFile => '文件';
+
+  @override
+  String get importColumnStatus => '状态';
+
+  @override
+  String get importColumnDate => '日期';
+
+  @override
+  String get importColumnCounts => '计数';
+
+  @override
+  String importCountsSummary(int created, int matched, int errors) {
+    return '已创建 $created · 已匹配 $matched · 错误 $errors';
+  }
+
+  @override
+  String get importStatusUploaded => '已上传';
+
+  @override
+  String get importStatusMapped => '已映射';
+
+  @override
+  String get importStatusValidated => '已验证';
+
+  @override
+  String get importStatusConfirmed => '已确认';
+
+  @override
+  String get importStatusFailed => '失败';
+
+  @override
   String get campaignsTitle => '活动';
 
   @override
@@ -1160,6 +1328,174 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get importResult => '导入结果';
+
+  @override
+  String get importsSubtitle => '上传成员 CSV、查看验证结果并确认导入。';
+
+  @override
+  String get newImport => '新建导入';
+
+  @override
+  String get noImportsYet => '暂无导入记录。可先下载模板 CSV。';
+
+  @override
+  String get backToImports => '返回导入';
+
+  @override
+  String get importWizardSubtitle => '引导式上传、映射、验证与确认。';
+
+  @override
+  String get importStepUpload => '上传';
+
+  @override
+  String get importStepMap => '映射';
+
+  @override
+  String get importStepValidate => '验证';
+
+  @override
+  String get importStepPreview => '预览';
+
+  @override
+  String get importStepConfirm => '确认';
+
+  @override
+  String get downloadImportTemplate => '下载模板';
+
+  @override
+  String get templateDownloaded => '模板已就绪。';
+
+  @override
+  String get importUploadHint => '先下载模板，再选择 CSV。可选择默认社区，用于没有 communityPath 的行。';
+
+  @override
+  String importSelectedFile(String name) {
+    return '已选：$name';
+  }
+
+  @override
+  String get importDefaultCommunity => '默认社区（可选）';
+
+  @override
+  String get importFileRequired => '请选择 CSV 文件后继续。';
+
+  @override
+  String get importBadFileType => '请选择 .csv 文件。';
+
+  @override
+  String get importEmptyFile => '文件为空。';
+
+  @override
+  String get importMissingRequiredColumns => '请至少映射邮箱或手机列。';
+
+  @override
+  String get importPickerUnavailable => '当前环境无法选择文件。';
+
+  @override
+  String get importMapHint => '将 CSV 列映射到字段。邮箱或手机为必填。';
+
+  @override
+  String get mappingUnmapped => '未映射';
+
+  @override
+  String get canonicalEmail => '邮箱';
+
+  @override
+  String get canonicalMobile => '手机';
+
+  @override
+  String get canonicalExternalId => '外部 ID';
+
+  @override
+  String get canonicalFirstName => '名';
+
+  @override
+  String get canonicalLastName => '姓';
+
+  @override
+  String get canonicalDisplayName => '显示名称';
+
+  @override
+  String get canonicalCommunityId => '社区 ID';
+
+  @override
+  String get canonicalCommunityPath => '社区路径';
+
+  @override
+  String get importValidateHeading => '验证结果';
+
+  @override
+  String get importPreviewHeading => '预览';
+
+  @override
+  String importValidateSummary(int valid, int invalid, int review) {
+    return '$valid 有效 · $invalid 错误 · $review 待复核';
+  }
+
+  @override
+  String get importNoProblemRows => '没有错误或待复核行。';
+
+  @override
+  String get importNoRows => '没有可显示的行。';
+
+  @override
+  String get importReviewInstruction => '标记为“待复核”的行无法在此处理。请修正 CSV 后重新导入。';
+
+  @override
+  String get importConfirmHint => '确认后将创建或匹配成员，并在需要时发送激活邀请。';
+
+  @override
+  String importConfirmSummary(int ready, int skipped) {
+    return '将导入 $ready 行。$skipped 行错误或待复核将被跳过。';
+  }
+
+  @override
+  String importResultSummary(int created, int matched, int errors) {
+    return '已创建 $created · 已匹配 $matched · 错误 $errors';
+  }
+
+  @override
+  String importRowTitle(int number, String identifier) {
+    return '第 $number 行：$identifier';
+  }
+
+  @override
+  String get downloadErrorCsv => '下载错误 CSV';
+
+  @override
+  String get errorCsvDownloaded => '错误 CSV 已就绪。';
+
+  @override
+  String get importColumnFile => '文件';
+
+  @override
+  String get importColumnStatus => '状态';
+
+  @override
+  String get importColumnDate => '日期';
+
+  @override
+  String get importColumnCounts => '计数';
+
+  @override
+  String importCountsSummary(int created, int matched, int errors) {
+    return '已创建 $created · 已匹配 $matched · 错误 $errors';
+  }
+
+  @override
+  String get importStatusUploaded => '已上传';
+
+  @override
+  String get importStatusMapped => '已映射';
+
+  @override
+  String get importStatusValidated => '已验证';
+
+  @override
+  String get importStatusConfirmed => '已确认';
+
+  @override
+  String get importStatusFailed => '失败';
 
   @override
   String get campaignsTitle => '活动';

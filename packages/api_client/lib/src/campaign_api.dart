@@ -117,6 +117,8 @@ abstract class CampaignApiClient {
   Future<List<Role>> listRoles(String customerId);
   Future<Role> getRole(String roleId);
 
+  Future<List<UserImport>> listUserImports(String customerId);
+  Future<UserImport> getUserImport(String userImportId);
   Future<UserImport> uploadUserImport({
     required String customerId,
     required String filename,
@@ -719,6 +721,20 @@ class HttpCampaignApiClient implements CampaignApiClient {
   @override
   Future<Role> getRole(String roleId) {
     return _get('/roles/$roleId', parser: Role.fromJson);
+  }
+
+  @override
+  Future<List<UserImport>> listUserImports(String customerId) {
+    return _getList(
+      '/user-imports',
+      query: {'customerId': customerId},
+      parser: UserImport.fromJson,
+    );
+  }
+
+  @override
+  Future<UserImport> getUserImport(String userImportId) {
+    return _get('/user-imports/$userImportId', parser: UserImport.fromJson);
   }
 
   @override

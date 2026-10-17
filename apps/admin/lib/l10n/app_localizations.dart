@@ -459,6 +459,318 @@ abstract class AppLocalizations {
   /// **'Import result'**
   String get importResult;
 
+  /// No description provided for @importsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload member CSVs, review validation, and confirm imports.'**
+  String get importsSubtitle;
+
+  /// No description provided for @newImport.
+  ///
+  /// In en, this message translates to:
+  /// **'New import'**
+  String get newImport;
+
+  /// No description provided for @noImportsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No imports yet. Start with a template CSV.'**
+  String get noImportsYet;
+
+  /// No description provided for @backToImports.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to imports'**
+  String get backToImports;
+
+  /// No description provided for @importWizardSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Guided upload, mapping, validation, and confirm.'**
+  String get importWizardSubtitle;
+
+  /// No description provided for @importStepUpload.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload'**
+  String get importStepUpload;
+
+  /// No description provided for @importStepMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Map'**
+  String get importStepMap;
+
+  /// No description provided for @importStepValidate.
+  ///
+  /// In en, this message translates to:
+  /// **'Validate'**
+  String get importStepValidate;
+
+  /// No description provided for @importStepPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get importStepPreview;
+
+  /// No description provided for @importStepConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get importStepConfirm;
+
+  /// No description provided for @downloadImportTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Download template'**
+  String get downloadImportTemplate;
+
+  /// No description provided for @templateDownloaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Template ready.'**
+  String get templateDownloaded;
+
+  /// No description provided for @importUploadHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Download the template, then choose a CSV file. Optionally set a default community for rows without communityPath.'**
+  String get importUploadHint;
+
+  /// No description provided for @importSelectedFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected: {name}'**
+  String importSelectedFile(String name);
+
+  /// No description provided for @importDefaultCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Default community (optional)'**
+  String get importDefaultCommunity;
+
+  /// No description provided for @importFileRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a CSV file to continue.'**
+  String get importFileRequired;
+
+  /// No description provided for @importBadFileType.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a .csv file.'**
+  String get importBadFileType;
+
+  /// No description provided for @importEmptyFile.
+  ///
+  /// In en, this message translates to:
+  /// **'The file is empty.'**
+  String get importEmptyFile;
+
+  /// No description provided for @importMissingRequiredColumns.
+  ///
+  /// In en, this message translates to:
+  /// **'Map at least an email or mobile column.'**
+  String get importMissingRequiredColumns;
+
+  /// No description provided for @importPickerUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'File picking is not available in this environment.'**
+  String get importPickerUnavailable;
+
+  /// No description provided for @importMapHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Match each CSV column to a field. Email or mobile is required.'**
+  String get importMapHint;
+
+  /// No description provided for @mappingUnmapped.
+  ///
+  /// In en, this message translates to:
+  /// **'Not mapped'**
+  String get mappingUnmapped;
+
+  /// No description provided for @canonicalEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get canonicalEmail;
+
+  /// No description provided for @canonicalMobile.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile'**
+  String get canonicalMobile;
+
+  /// No description provided for @canonicalExternalId.
+  ///
+  /// In en, this message translates to:
+  /// **'External ID'**
+  String get canonicalExternalId;
+
+  /// No description provided for @canonicalFirstName.
+  ///
+  /// In en, this message translates to:
+  /// **'First name'**
+  String get canonicalFirstName;
+
+  /// No description provided for @canonicalLastName.
+  ///
+  /// In en, this message translates to:
+  /// **'Last name'**
+  String get canonicalLastName;
+
+  /// No description provided for @canonicalDisplayName.
+  ///
+  /// In en, this message translates to:
+  /// **'Display name'**
+  String get canonicalDisplayName;
+
+  /// No description provided for @canonicalCommunityId.
+  ///
+  /// In en, this message translates to:
+  /// **'Community ID'**
+  String get canonicalCommunityId;
+
+  /// No description provided for @canonicalCommunityPath.
+  ///
+  /// In en, this message translates to:
+  /// **'Community path'**
+  String get canonicalCommunityPath;
+
+  /// No description provided for @importValidateHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Validation results'**
+  String get importValidateHeading;
+
+  /// No description provided for @importPreviewHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get importPreviewHeading;
+
+  /// No description provided for @importValidateSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{valid} valid · {invalid} errors · {review} need review'**
+  String importValidateSummary(int valid, int invalid, int review);
+
+  /// No description provided for @importNoProblemRows.
+  ///
+  /// In en, this message translates to:
+  /// **'No error or review rows.'**
+  String get importNoProblemRows;
+
+  /// No description provided for @importNoRows.
+  ///
+  /// In en, this message translates to:
+  /// **'No rows to show.'**
+  String get importNoRows;
+
+  /// No description provided for @importReviewInstruction.
+  ///
+  /// In en, this message translates to:
+  /// **'Rows marked review cannot be resolved here. Fix the CSV and re-import.'**
+  String get importReviewInstruction;
+
+  /// No description provided for @importConfirmHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm to create or match members and send activation invites where needed.'**
+  String get importConfirmHint;
+
+  /// No description provided for @importConfirmSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{ready} rows will be imported. {skipped} error or review rows will be skipped.'**
+  String importConfirmSummary(int ready, int skipped);
+
+  /// No description provided for @importResultSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Created {created} · matched {matched} · errors {errors}'**
+  String importResultSummary(int created, int matched, int errors);
+
+  /// No description provided for @importRowTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Row {number}: {identifier}'**
+  String importRowTitle(int number, String identifier);
+
+  /// No description provided for @downloadErrorCsv.
+  ///
+  /// In en, this message translates to:
+  /// **'Download error CSV'**
+  String get downloadErrorCsv;
+
+  /// No description provided for @errorCsvDownloaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Error CSV ready.'**
+  String get errorCsvDownloaded;
+
+  /// No description provided for @importColumnFile.
+  ///
+  /// In en, this message translates to:
+  /// **'File'**
+  String get importColumnFile;
+
+  /// No description provided for @importColumnStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get importColumnStatus;
+
+  /// No description provided for @importColumnDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get importColumnDate;
+
+  /// No description provided for @importColumnCounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Counts'**
+  String get importColumnCounts;
+
+  /// No description provided for @importCountsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Created {created} · matched {matched} · errors {errors}'**
+  String importCountsSummary(int created, int matched, int errors);
+
+  /// No description provided for @importStatusUploaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploaded'**
+  String get importStatusUploaded;
+
+  /// No description provided for @importStatusMapped.
+  ///
+  /// In en, this message translates to:
+  /// **'Mapped'**
+  String get importStatusMapped;
+
+  /// No description provided for @importStatusValidated.
+  ///
+  /// In en, this message translates to:
+  /// **'Validated'**
+  String get importStatusValidated;
+
+  /// No description provided for @importStatusConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirmed'**
+  String get importStatusConfirmed;
+
+  /// No description provided for @importStatusFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get importStatusFailed;
+
   /// No description provided for @campaignsTitle.
   ///
   /// In en, this message translates to:

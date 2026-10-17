@@ -94,6 +94,94 @@
   "previewImport": "Preview",
   "confirmImport": "Confirm import",
   "importResult": "Import result",
+  "importsSubtitle": "Upload member CSVs, review validation, and confirm imports.",
+  "newImport": "New import",
+  "noImportsYet": "No imports yet. Start with a template CSV.",
+  "backToImports": "Back to imports",
+  "importWizardSubtitle": "Guided upload, mapping, validation, and confirm.",
+  "importStepUpload": "Upload",
+  "importStepMap": "Map",
+  "importStepValidate": "Validate",
+  "importStepPreview": "Preview",
+  "importStepConfirm": "Confirm",
+  "downloadImportTemplate": "Download template",
+  "templateDownloaded": "Template ready.",
+  "importUploadHint": "Download the template, then choose a CSV file. Optionally set a default community for rows without communityPath.",
+  "importSelectedFile": "Selected: {name}",
+  "@importSelectedFile": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "importDefaultCommunity": "Default community (optional)",
+  "importFileRequired": "Choose a CSV file to continue.",
+  "importBadFileType": "Choose a .csv file.",
+  "importEmptyFile": "The file is empty.",
+  "importMissingRequiredColumns": "Map at least an email or mobile column.",
+  "importPickerUnavailable": "File picking is not available in this environment.",
+  "importMapHint": "Match each CSV column to a field. Email or mobile is required.",
+  "mappingUnmapped": "Not mapped",
+  "canonicalEmail": "Email",
+  "canonicalMobile": "Mobile",
+  "canonicalExternalId": "External ID",
+  "canonicalFirstName": "First name",
+  "canonicalLastName": "Last name",
+  "canonicalDisplayName": "Display name",
+  "canonicalCommunityId": "Community ID",
+  "canonicalCommunityPath": "Community path",
+  "importValidateHeading": "Validation results",
+  "importPreviewHeading": "Preview",
+  "importValidateSummary": "{valid} valid · {invalid} errors · {review} need review",
+  "@importValidateSummary": {
+    "placeholders": {
+      "valid": { "type": "int" },
+      "invalid": { "type": "int" },
+      "review": { "type": "int" }
+    }
+  },
+  "importNoProblemRows": "No error or review rows.",
+  "importNoRows": "No rows to show.",
+  "importReviewInstruction": "Rows marked review cannot be resolved here. Fix the CSV and re-import.",
+  "importConfirmHint": "Confirm to create or match members and send activation invites where needed.",
+  "importConfirmSummary": "{ready} rows will be imported. {skipped} error or review rows will be skipped.",
+  "@importConfirmSummary": {
+    "placeholders": {
+      "ready": { "type": "int" },
+      "skipped": { "type": "int" }
+    }
+  },
+  "importResultSummary": "Created {created} · matched {matched} · errors {errors}",
+  "@importResultSummary": {
+    "placeholders": {
+      "created": { "type": "int" },
+      "matched": { "type": "int" },
+      "errors": { "type": "int" }
+    }
+  },
+  "importRowTitle": "Row {number}: {identifier}",
+  "@importRowTitle": {
+    "placeholders": {
+      "number": { "type": "int" },
+      "identifier": { "type": "String" }
+    }
+  },
+  "downloadErrorCsv": "Download error CSV",
+  "errorCsvDownloaded": "Error CSV ready.",
+  "importColumnFile": "File",
+  "importColumnStatus": "Status",
+  "importColumnDate": "Date",
+  "importColumnCounts": "Counts",
+  "importCountsSummary": "Created {created} · matched {matched} · errors {errors}",
+  "@importCountsSummary": {
+    "placeholders": {
+      "created": { "type": "int" },
+      "matched": { "type": "int" },
+      "errors": { "type": "int" }
+    }
+  },
+  "importStatusUploaded": "Uploaded",
+  "importStatusMapped": "Mapped",
+  "importStatusValidated": "Validated",
+  "importStatusConfirmed": "Confirmed",
+  "importStatusFailed": "Failed",
   "campaignsTitle": "Campaigns",
   "createCampaign": "Create campaign",
   "campaignNameLabel": "Campaign name",

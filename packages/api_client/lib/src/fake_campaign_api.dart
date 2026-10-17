@@ -443,7 +443,10 @@ class FakeCampaignApiClient implements CampaignApiClient {
   List<ImpactFactor> impactFactors;
   NotificationPreferences preferences;
   UserImport? currentImport;
+  List<UserImport> importHistory = [];
   List<UserImportRow> importRows = [];
+  /// When true, validate produces invalid + review rows for wizard tests.
+  bool importForceInvalidRows = false;
   bool signedIn = false;
   bool failLogin = false;
   bool tokenReused = false;
@@ -1299,29 +1302,67 @@ class FakeCampaignApiClient implements CampaignApiClient {
   }
 
   @override
+  Future<List<UserImport>> listUserImports(String customerId) async {
+    return [
+      for (final row in importHistory)
+        if (row.customerId == customerId) row,
+      if (currentImport != null &&
+          currentImport!.customerId == customerId &&
+          importHistory.every((row) => row.id != currentImport!.id))
+        currentImport!,
+    ];
+  }
+
+  @override
+  Future<UserImport> getUserImport(String userImportId) async {
+    final fromHistory = importHistory.where((row) => row.id == userImportId);
+    if (fromHistory.isNotEmpty) {
+      return fromHistory.first;
+    }
+    if (currentImport?.id == userImportId) {
+      return currentImport!;
+    }
+    _throw('NOT_FOUND', status: 404);
+  }
+
+  @override
   Future<UserImport> uploadUserImport({
     required String customerId,
     required String filename,
     required List<int> bytes,
     String? communityId,
   }) async {
+    final text = String.fromCharCodes(bytes);
+    final lines = text
+        .split(RegExp(r'\r?\n'))
+        .where((line) => line.trim().isNotEmpty)
+        .toList();
+    final headers = lines.isEmpty
+        ? <String>[]
+        : lines.first.split(',').map((h) => h.trim()).toList();
+    final id = 'import-${importHistory.length + 1}';
     currentImport = UserImport(
-      id: 'import-1',
+      id: id,
       customerId: customerId,
       communityId: communityId,
       originalFilename: filename,
       status: 'uploaded',
-      headers: const ['email', 'mobile', 'first_name'],
-      counts: const UserImportCounts(
-        total: 1,
-        pending: 1,
+      headers: headers.isEmpty
+          ? const ['email', 'mobile', 'display_name', 'communityPath']
+          : headers,
+      counts: UserImportCounts(
+        total: lines.length > 1 ? lines.length - 1 : 0,
+        pending: lines.length > 1 ? lines.length - 1 : 0,
         valid: 0,
         invalid: 0,
         review: 0,
         created: 0,
         matched: 0,
       ),
+      createdAt: '2026-10-17T00:00:00.000Z',
+      updatedAt: '2026-10-17T00:00:00.000Z',
     );
+    importRows = const [];
     return currentImport!;
   }
 
@@ -1330,47 +1371,79 @@ class FakeCampaignApiClient implements CampaignApiClient {
     String userImportId, {
     required Map<String, String> mapping,
   }) async {
+    final current = await getUserImport(userImportId);
     currentImport = UserImport(
-      id: userImportId,
-      customerId: currentImport?.customerId ?? 'cust-1',
-      originalFilename: currentImport?.originalFilename ?? 'users.csv',
+      id: current.id,
+      customerId: current.customerId,
+      communityId: current.communityId,
+      originalFilename: current.originalFilename,
       status: 'mapped',
-      headers: currentImport?.headers ?? const ['email'],
+      headers: current.headers,
       mapping: mapping,
-      counts:
-          currentImport?.counts ??
-          const UserImportCounts(
-            total: 1,
-            pending: 1,
-            valid: 0,
-            invalid: 0,
-            review: 0,
-            created: 0,
-            matched: 0,
-          ),
+      counts: current.counts,
+      createdAt: current.createdAt,
+      updatedAt: current.updatedAt,
+      confirmedAt: current.confirmedAt,
     );
     return currentImport!;
   }
 
   @override
   Future<UserImport> validateUserImport(String userImportId) async {
-    currentImport = UserImport(
-      id: userImportId,
-      customerId: currentImport?.customerId ?? 'cust-1',
-      originalFilename: currentImport?.originalFilename ?? 'users.csv',
-      status: 'validated',
-      headers: currentImport?.headers ?? const ['email'],
-      mapping: currentImport?.mapping,
-      counts: const UserImportCounts(
-        total: 1,
-        pending: 0,
-        valid: 1,
-        invalid: 0,
-        review: 0,
-        created: 0,
-        matched: 0,
-      ),
-    );
+    final current = await getUserImport(userImportId);
+    if (importForceInvalidRows) {
+      importRows = const [
+        UserImportRow(
+          id: 'row-ok',
+          rowNumber: 2,
+          rawData: {'email': 'ok@example.com', 'communityPath': 'Region/Branch'},
+          status: 'valid',
+          email: 'ok@example.com',
+        ),
+        UserImportRow(
+          id: 'row-bad',
+          rowNumber: 3,
+          rawData: {
+            'email': 'bad@example.com',
+            'communityPath': 'Region/Missing',
+          },
+          status: 'invalid',
+          email: 'bad@example.com',
+          errorCode: 'UNKNOWN_COMMUNITY_PATH',
+          errorMessage: 'Unknown community path: Region/Missing',
+        ),
+        UserImportRow(
+          id: 'row-review',
+          rowNumber: 4,
+          rawData: {'email': 'review@example.com'},
+          status: 'review',
+          email: 'review@example.com',
+          errorCode: 'IDENTITY_OUTSIDE_TENANT',
+          errorMessage: 'Identity exists outside this customer — fix CSV',
+        ),
+      ];
+      currentImport = UserImport(
+        id: current.id,
+        customerId: current.customerId,
+        communityId: current.communityId,
+        originalFilename: current.originalFilename,
+        status: 'validated',
+        headers: current.headers,
+        mapping: current.mapping,
+        counts: const UserImportCounts(
+          total: 3,
+          pending: 0,
+          valid: 1,
+          invalid: 1,
+          review: 1,
+          created: 0,
+          matched: 0,
+        ),
+        createdAt: current.createdAt,
+        updatedAt: current.updatedAt,
+      );
+      return currentImport!;
+    }
     importRows = [
       const UserImportRow(
         id: 'row-1',
@@ -1379,45 +1452,92 @@ class FakeCampaignApiClient implements CampaignApiClient {
         status: 'valid',
         email: 'imported@example.com',
       ),
+      const UserImportRow(
+        id: 'row-2',
+        rowNumber: 3,
+        rawData: {'email': 'matched@example.com'},
+        status: 'valid',
+        email: 'matched@example.com',
+      ),
     ];
+    currentImport = UserImport(
+      id: current.id,
+      customerId: current.customerId,
+      communityId: current.communityId,
+      originalFilename: current.originalFilename,
+      status: 'validated',
+      headers: current.headers,
+      mapping: current.mapping,
+      counts: const UserImportCounts(
+        total: 2,
+        pending: 0,
+        valid: 2,
+        invalid: 0,
+        review: 0,
+        created: 0,
+        matched: 0,
+      ),
+      createdAt: current.createdAt,
+      updatedAt: current.updatedAt,
+    );
     return currentImport!;
   }
 
   @override
   Future<UserImportPreview> previewUserImport(String userImportId) async {
-    return UserImportPreview(
-      importRecord: currentImport ?? await validateUserImport(userImportId),
-      rows: importRows,
-    );
+    final current = currentImport ?? await validateUserImport(userImportId);
+    return UserImportPreview(importRecord: current, rows: importRows);
   }
 
   @override
   Future<UserImport> confirmUserImport(String userImportId) async {
+    final current = await getUserImport(userImportId);
+    if (current.status == 'confirmed') {
+      return current;
+    }
+    final created = importRows.where((row) => row.status == 'valid').length;
+    final matched = 0;
+    final invalid = importRows.where((row) => row.status == 'invalid').length;
+    final review = importRows.where((row) => row.status == 'review').length;
+    importRows = [
+      for (final row in importRows)
+        if (row.status == 'valid')
+          UserImportRow(
+            id: row.id,
+            rowNumber: row.rowNumber,
+            rawData: row.rawData,
+            status: 'created',
+            email: row.email,
+            mobile: row.mobile,
+            externalId: row.externalId,
+          )
+        else
+          row,
+    ];
     currentImport = UserImport(
-      id: userImportId,
-      customerId: currentImport?.customerId ?? 'cust-1',
-      originalFilename: currentImport?.originalFilename ?? 'users.csv',
+      id: current.id,
+      customerId: current.customerId,
+      communityId: current.communityId,
+      originalFilename: current.originalFilename,
       status: 'confirmed',
-      headers: currentImport?.headers ?? const ['email'],
-      mapping: currentImport?.mapping,
-      counts: const UserImportCounts(
-        total: 1,
+      headers: current.headers,
+      mapping: current.mapping,
+      counts: UserImportCounts(
+        total: importRows.length,
         pending: 0,
         valid: 0,
-        invalid: 0,
-        review: 0,
-        created: 1,
-        matched: 0,
+        invalid: invalid,
+        review: review,
+        created: created,
+        matched: matched,
       ),
+      createdAt: current.createdAt,
+      updatedAt: current.updatedAt,
+      confirmedAt: '2026-10-17T01:00:00.000Z',
     );
-    importRows = [
-      const UserImportRow(
-        id: 'row-1',
-        rowNumber: 2,
-        rawData: {'email': 'imported@example.com'},
-        status: 'created',
-        email: 'imported@example.com',
-      ),
+    importHistory = [
+      currentImport!,
+      ...importHistory.where((row) => row.id != currentImport!.id),
     ];
     return currentImport!;
   }

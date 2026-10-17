@@ -43,7 +43,7 @@ void main() {
   ) async {
     final api = adminApi();
     final view = tester.view;
-    view.physicalSize = const Size(1400, 1000);
+    view.physicalSize = const Size(1600, 1400);
     view.devicePixelRatio = 1.0;
     addTearDown(view.resetPhysicalSize);
     addTearDown(view.resetDevicePixelRatio);
@@ -115,18 +115,27 @@ void main() {
 
     await tester.tap(navIcon(Icons.upload_file_outlined));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Upload CSV'));
+    ScaffoldMessenger.of(tester.element(find.byType(Navigator).first))
+        .clearSnackBars();
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(OutlinedButton, 'Save mapping'));
+    await tester.tap(find.widgetWithText(FilledButton, 'New import'));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(OutlinedButton, 'Validate'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(OutlinedButton, 'Preview'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Confirm import'));
-    await tester.pumpAndSettle();
+    Future<void> tapFilled(String label) async {
+      ScaffoldMessenger.of(tester.element(find.byType(Navigator).first))
+          .clearSnackBars();
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, label));
+      await tester.pumpAndSettle();
+    }
+
+    await tapFilled('Upload CSV');
+    await tapFilled('Next');
+    await tapFilled('Validate');
+    await tapFilled('Preview');
+    await tapFilled('Next');
+    await tapFilled('Confirm import');
     expect(find.text('Import result'), findsOneWidget);
-    expect(find.text('created'), findsWidgets);
+    expect(find.textContaining('Created'), findsWidgets);
 
     await tester.tap(navIcon(Icons.flag_outlined));
     await tester.pumpAndSettle();

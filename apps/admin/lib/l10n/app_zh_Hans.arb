@@ -60,6 +60,94 @@
   "previewImport": "预览",
   "confirmImport": "确认导入",
   "importResult": "导入结果",
+  "importsSubtitle": "上传成员 CSV、查看验证结果并确认导入。",
+  "newImport": "新建导入",
+  "noImportsYet": "暂无导入记录。可先下载模板 CSV。",
+  "backToImports": "返回导入",
+  "importWizardSubtitle": "引导式上传、映射、验证与确认。",
+  "importStepUpload": "上传",
+  "importStepMap": "映射",
+  "importStepValidate": "验证",
+  "importStepPreview": "预览",
+  "importStepConfirm": "确认",
+  "downloadImportTemplate": "下载模板",
+  "templateDownloaded": "模板已就绪。",
+  "importUploadHint": "先下载模板，再选择 CSV。可选择默认社区，用于没有 communityPath 的行。",
+  "importSelectedFile": "已选：{name}",
+  "@importSelectedFile": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "importDefaultCommunity": "默认社区（可选）",
+  "importFileRequired": "请选择 CSV 文件后继续。",
+  "importBadFileType": "请选择 .csv 文件。",
+  "importEmptyFile": "文件为空。",
+  "importMissingRequiredColumns": "请至少映射邮箱或手机列。",
+  "importPickerUnavailable": "当前环境无法选择文件。",
+  "importMapHint": "将 CSV 列映射到字段。邮箱或手机为必填。",
+  "mappingUnmapped": "未映射",
+  "canonicalEmail": "邮箱",
+  "canonicalMobile": "手机",
+  "canonicalExternalId": "外部 ID",
+  "canonicalFirstName": "名",
+  "canonicalLastName": "姓",
+  "canonicalDisplayName": "显示名称",
+  "canonicalCommunityId": "社区 ID",
+  "canonicalCommunityPath": "社区路径",
+  "importValidateHeading": "验证结果",
+  "importPreviewHeading": "预览",
+  "importValidateSummary": "{valid} 有效 · {invalid} 错误 · {review} 待复核",
+  "@importValidateSummary": {
+    "placeholders": {
+      "valid": { "type": "int" },
+      "invalid": { "type": "int" },
+      "review": { "type": "int" }
+    }
+  },
+  "importNoProblemRows": "没有错误或待复核行。",
+  "importNoRows": "没有可显示的行。",
+  "importReviewInstruction": "标记为“待复核”的行无法在此处理。请修正 CSV 后重新导入。",
+  "importConfirmHint": "确认后将创建或匹配成员，并在需要时发送激活邀请。",
+  "importConfirmSummary": "将导入 {ready} 行。{skipped} 行错误或待复核将被跳过。",
+  "@importConfirmSummary": {
+    "placeholders": {
+      "ready": { "type": "int" },
+      "skipped": { "type": "int" }
+    }
+  },
+  "importResultSummary": "已创建 {created} · 已匹配 {matched} · 错误 {errors}",
+  "@importResultSummary": {
+    "placeholders": {
+      "created": { "type": "int" },
+      "matched": { "type": "int" },
+      "errors": { "type": "int" }
+    }
+  },
+  "importRowTitle": "第 {number} 行：{identifier}",
+  "@importRowTitle": {
+    "placeholders": {
+      "number": { "type": "int" },
+      "identifier": { "type": "String" }
+    }
+  },
+  "downloadErrorCsv": "下载错误 CSV",
+  "errorCsvDownloaded": "错误 CSV 已就绪。",
+  "importColumnFile": "文件",
+  "importColumnStatus": "状态",
+  "importColumnDate": "日期",
+  "importColumnCounts": "计数",
+  "importCountsSummary": "已创建 {created} · 已匹配 {matched} · 错误 {errors}",
+  "@importCountsSummary": {
+    "placeholders": {
+      "created": { "type": "int" },
+      "matched": { "type": "int" },
+      "errors": { "type": "int" }
+    }
+  },
+  "importStatusUploaded": "已上传",
+  "importStatusMapped": "已映射",
+  "importStatusValidated": "已验证",
+  "importStatusConfirmed": "已确认",
+  "importStatusFailed": "失败",
   "campaignsTitle": "活动",
   "createCampaign": "创建活动",
   "campaignNameLabel": "活动名称",

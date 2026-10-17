@@ -11,7 +11,8 @@ import '../campaigns/participants_page.dart';
 import '../campaigns/submissions_page.dart';
 import '../communities/community_list_page.dart';
 import '../dashboards/aggregate_dashboard_page.dart';
-import '../imports/csv_import_page.dart';
+import '../imports/import_wizard_page.dart';
+import '../imports/imports_page.dart';
 import '../overview/overview_page.dart';
 import '../people/people_page.dart';
 import '../people/roles_page.dart';
@@ -219,9 +220,19 @@ GoRouter createRouter({required SessionController session}) {
                       GoRoute(
                         path: 'import',
                         name: 'import',
-                        builder: (context, state) => CsvImportPage(
+                        builder: (context, state) => ImportsPage(
                           customerId: state.pathParameters['customerId']!,
                         ),
+                        routes: [
+                          GoRoute(
+                            path: 'new',
+                            name: 'importNew',
+                            builder: (context, state) => ImportWizardPage(
+                              customerId:
+                                  state.pathParameters['customerId']!,
+                            ),
+                          ),
+                        ],
                       ),
                       GoRoute(
                         path: 'reports',
