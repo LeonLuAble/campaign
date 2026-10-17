@@ -133,5 +133,18 @@
   "activateSubtitle": "设置密码以激活管理员账户。",
   "activationTokenLabel": "激活令牌",
   "activateButton": "激活",
-  "tokenRequired": "请输入激活令牌。"
+  "tokenRequired": "请输入消息中的令牌。",
+  "forgotPassword": "忘记密码",
+  "resetPasswordTitle": "重置密码",
+  "resetRequestSubtitle": "请输入邮箱或手机号。如果账户存在，我们将发送重置说明。",
+  "resetConfirmSubtitle": "使用消息中的令牌设置新密码。",
+  "resetConfirmOptionalSubtitle": "已有重置令牌？在下方设置新密码。",
+  "requestReset": "发送重置邮件",
+  "confirmReset": "设置新密码",
+  "resetTokenLabel": "重置令牌",
+  "newPasswordLabel": "新密码",
+  "acceptedMessage": "如果账户存在，我们已发送说明。",
+  "activateSuccess": "账户已激活，可以登录。",
+  "resetSuccess": "密码已更新，可以登录。",
+  "goToLogin": "前往登录"
 }

@@ -1,9 +1,12 @@
 import 'errors.dart';
 import 'campaign_api.dart';
 import 'models.dart';
+import 'token_store.dart';
 
 class FakeCampaignApiClient implements CampaignApiClient {
   FakeCampaignApiClient({
+    this.tokenStore,
+    this.onSessionExpired,
     UserProfile? profile,
     List<Customer>? customers,
     List<Community>? communities,
@@ -340,8 +343,22 @@ class FakeCampaignApiClient implements CampaignApiClient {
   bool tokenReused = false;
   bool setupRequired = false;
   String lastAcceptLanguage = 'en';
+  TokenStore? tokenStore;
+  void Function()? onSessionExpired;
   final bool googleClientConfigured;
   final bool appleClientConfigured;
+
+  Future<void> _persistTokens(TokenPair pair) async {
+    await tokenStore?.writeTokens(
+      accessToken: pair.accessToken,
+      refreshToken: pair.refreshToken,
+    );
+  }
+
+  Future<void> _clearSessionTokens() async {
+    signedIn = false;
+    await tokenStore?.clear();
+  }
 
   Never _throw(String code, {int status = 400, String? message}) {
     throw ApiException(
@@ -413,7 +430,9 @@ class FakeCampaignApiClient implements CampaignApiClient {
         ],
       );
     }
-    return const TokenPair(accessToken: 'access', refreshToken: 'refresh');
+    const pair = TokenPair(accessToken: 'access', refreshToken: 'refresh');
+    await _persistTokens(pair);
+    return pair;
   }
 
   @override
@@ -425,7 +444,9 @@ class FakeCampaignApiClient implements CampaignApiClient {
       _throw('INVALID_CREDENTIALS', status: 401);
     }
     signedIn = true;
-    return const TokenPair(accessToken: 'access', refreshToken: 'refresh');
+    const pair = TokenPair(accessToken: 'access', refreshToken: 'refresh');
+    await _persistTokens(pair);
+    return pair;
   }
 
   @override
@@ -437,17 +458,22 @@ class FakeCampaignApiClient implements CampaignApiClient {
       _throw('SOCIAL_TOKEN_INVALID', status: 401);
     }
     signedIn = true;
-    return const TokenPair(accessToken: 'access', refreshToken: 'refresh');
+    const pair = TokenPair(accessToken: 'access', refreshToken: 'refresh');
+    await _persistTokens(pair);
+    return pair;
   }
 
   @override
   Future<void> logout({bool revokeFamily = true}) async {
-    signedIn = false;
+    await _clearSessionTokens();
   }
 
   @override
   Future<void> activate({required String token, String? password}) async {
-    if (token.isEmpty) {
+    if (token == 'expired') {
+      _throw('TOKEN_EXPIRED', status: 400);
+    }
+    if (token.isEmpty || token == 'invalid') {
       _throw('TOKEN_INVALID', status: 400);
     }
     if (password != null && password.length < 8) {
@@ -466,6 +492,12 @@ class FakeCampaignApiClient implements CampaignApiClient {
     required String token,
     required String password,
   }) async {
+    if (token == 'expired') {
+      _throw('TOKEN_EXPIRED', status: 400);
+    }
+    if (token.isEmpty || token == 'invalid') {
+      _throw('TOKEN_INVALID', status: 400);
+    }
     if (password.length < 8) {
       _throw('WEAK_PASSWORD');
     }
@@ -474,7 +506,13 @@ class FakeCampaignApiClient implements CampaignApiClient {
   @override
   Future<UserProfile> getMe() async {
     if (tokenReused) {
+      await _clearSessionTokens();
+      onSessionExpired?.call();
       _throw('TOKEN_REUSED', status: 401);
+    }
+    final access = await tokenStore?.readAccessToken();
+    if (access != null && access.isNotEmpty) {
+      signedIn = true;
     }
     if (!signedIn) {
       _throw('UNAUTHORIZED', status: 401);

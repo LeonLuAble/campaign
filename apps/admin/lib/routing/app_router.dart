@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 
 import '../auth/activate_page.dart';
 import '../auth/login_page.dart';
+import '../auth/password_reset_page.dart';
 import '../campaigns/campaign_admin_page.dart';
 import '../campaigns/campaign_form_page.dart';
 import '../campaigns/campaign_list_page.dart';
@@ -28,8 +29,8 @@ GoRouter createRouter({required SessionController session}) {
       }
       final loggedIn = session.isAuthenticated;
       final location = state.matchedLocation;
-      final isPublic =
-          location == '/login' || location == '/activate';
+      const publicPaths = {'/login', '/activate', '/reset-password'};
+      final isPublic = publicPaths.contains(location);
       if (!loggedIn && !isPublic) {
         return '/login';
       }
@@ -48,6 +49,13 @@ GoRouter createRouter({required SessionController session}) {
         path: '/activate',
         name: 'activate',
         builder: (context, state) => ActivatePage(
+          initialToken: state.uri.queryParameters['token'],
+        ),
+      ),
+      GoRoute(
+        path: '/reset-password',
+        name: 'resetPassword',
+        builder: (context, state) => PasswordResetPage(
           initialToken: state.uri.queryParameters['token'],
         ),
       ),

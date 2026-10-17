@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ui_kit/ui_kit.dart';
 
 import '../l10n/app_localizations.dart';
 import '../session/api_scope.dart';
@@ -19,6 +20,7 @@ class _ActivatePageState extends State<ActivatePage> {
   final _password = TextEditingController();
   String? _message;
   var _busy = false;
+  var _success = false;
 
   @override
   void initState() {
@@ -36,24 +38,37 @@ class _ActivatePageState extends State<ActivatePage> {
   Future<void> _activate() async {
     final l10n = AppLocalizations.of(context);
     if (_token.text.trim().isEmpty) {
-      setState(() => _message = l10n.tokenRequired);
+      setState(() {
+        _message = l10n.tokenRequired;
+        _success = false;
+      });
       return;
     }
     if (_password.text.length < 8) {
-      setState(() => _message = l10n.passwordTooShort);
+      setState(() {
+        _message = l10n.passwordTooShort;
+        _success = false;
+      });
       return;
     }
-    setState(() => _busy = true);
+    setState(() {
+      _busy = true;
+      _message = null;
+    });
     try {
       await ApiScope.of(context).client.activate(
         token: _token.text.trim(),
         password: _password.text,
       );
-      if (mounted) {
-        context.go('/login');
-      }
+      setState(() {
+        _success = true;
+        _message = l10n.activateSuccess;
+      });
     } catch (error) {
-      setState(() => _message = localizeApiError(l10n, error));
+      setState(() {
+        _success = false;
+        _message = localizeApiError(l10n, error);
+      });
     } finally {
       if (mounted) {
         setState(() => _busy = false);
@@ -64,32 +79,64 @@ class _ActivatePageState extends State<ActivatePage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.activateTitle)),
+    final tokens = AppTokens.of(context);
+    final theme = Theme.of(context);
+
+    if (_success) {
+      return PageScaffold(
+        title: l10n.activateTitle,
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              _message ?? l10n.activateSuccess,
+              style: theme.textTheme.bodyLarge,
+            ),
+            SizedBox(height: tokens.spaceLg),
+            FilledButton(
+              onPressed: () => context.go('/login'),
+              child: Text(l10n.goToLogin),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return PageScaffold(
+      title: l10n.activateTitle,
       body: ListView(
-        padding: const EdgeInsets.all(24),
         children: [
           Text(l10n.activateSubtitle),
-          const SizedBox(height: 16),
+          SizedBox(height: tokens.spaceMd),
           TextField(
             controller: _token,
             decoration: InputDecoration(labelText: l10n.activationTokenLabel),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: tokens.spaceMd),
           TextField(
             controller: _password,
             obscureText: true,
-            decoration: InputDecoration(labelText: l10n.passwordLabel),
+            decoration: InputDecoration(labelText: l10n.newPasswordLabel),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: tokens.spaceMd),
           FilledButton(
             onPressed: _busy ? null : _activate,
             child: Text(l10n.activateButton),
           ),
           if (_message != null) ...[
-            const SizedBox(height: 12),
-            Text(_message!),
+            SizedBox(height: tokens.spaceMd),
+            Text(
+              _message!,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.error,
+              ),
+            ),
           ],
+          SizedBox(height: tokens.spaceLg),
+          TextButton(
+            onPressed: () => context.go('/login'),
+            child: Text(l10n.goToLogin),
+          ),
         ],
       ),
     );

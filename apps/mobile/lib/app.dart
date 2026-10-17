@@ -42,7 +42,7 @@ class _CampaignAppState extends State<CampaignApp> {
   @override
   void initState() {
     super.initState();
-    final store = widget.tokenStore ?? MemoryTokenStore();
+    final store = widget.tokenStore ?? SecureTokenStore();
     _client =
         widget.apiClient ??
         HttpCampaignApiClient(
@@ -53,6 +53,13 @@ class _CampaignAppState extends State<CampaignApp> {
             _session.expireLocalSession();
           },
         );
+    final client = _client;
+    if (client is FakeCampaignApiClient) {
+      client.tokenStore ??= store;
+      client.onSessionExpired ??= () {
+        _session.expireLocalSession();
+      };
+    }
     _session = widget.session ?? SessionController(api: _client);
     _ownsSession = widget.session == null;
     _router = createRouter(session: _session);

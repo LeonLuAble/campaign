@@ -435,5 +435,47 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activateButton => 'Activate';
 
   @override
-  String get tokenRequired => 'Enter the activation token.';
+  String get tokenRequired => 'Enter the token from your message.';
+
+  @override
+  String get forgotPassword => 'Forgot password';
+
+  @override
+  String get resetPasswordTitle => 'Reset password';
+
+  @override
+  String get resetRequestSubtitle =>
+      'Enter your email or mobile. If an account exists, we will send reset instructions.';
+
+  @override
+  String get resetConfirmSubtitle =>
+      'Choose a new password using the token from your message.';
+
+  @override
+  String get resetConfirmOptionalSubtitle =>
+      'Already have a reset token? Set a new password below.';
+
+  @override
+  String get requestReset => 'Send reset email';
+
+  @override
+  String get confirmReset => 'Set new password';
+
+  @override
+  String get resetTokenLabel => 'Reset token';
+
+  @override
+  String get newPasswordLabel => 'New password';
+
+  @override
+  String get acceptedMessage => 'If the account exists, we sent instructions.';
+
+  @override
+  String get activateSuccess => 'Your account is activated. You can sign in.';
+
+  @override
+  String get resetSuccess => 'Your password was updated. You can sign in.';
+
+  @override
+  String get goToLogin => 'Go to sign in';
 }

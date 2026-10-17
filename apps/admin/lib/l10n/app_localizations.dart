@@ -900,8 +900,86 @@ abstract class AppLocalizations {
   /// No description provided for @tokenRequired.
   ///
   /// In en, this message translates to:
-  /// **'Enter the activation token.'**
+  /// **'Enter the token from your message.'**
   String get tokenRequired;
+
+  /// No description provided for @forgotPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot password'**
+  String get forgotPassword;
+
+  /// No description provided for @resetPasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset password'**
+  String get resetPasswordTitle;
+
+  /// No description provided for @resetRequestSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email or mobile. If an account exists, we will send reset instructions.'**
+  String get resetRequestSubtitle;
+
+  /// No description provided for @resetConfirmSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a new password using the token from your message.'**
+  String get resetConfirmSubtitle;
+
+  /// No description provided for @resetConfirmOptionalSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have a reset token? Set a new password below.'**
+  String get resetConfirmOptionalSubtitle;
+
+  /// No description provided for @requestReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Send reset email'**
+  String get requestReset;
+
+  /// No description provided for @confirmReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Set new password'**
+  String get confirmReset;
+
+  /// No description provided for @resetTokenLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset token'**
+  String get resetTokenLabel;
+
+  /// No description provided for @newPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get newPasswordLabel;
+
+  /// No description provided for @acceptedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'If the account exists, we sent instructions.'**
+  String get acceptedMessage;
+
+  /// No description provided for @activateSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account is activated. You can sign in.'**
+  String get activateSuccess;
+
+  /// No description provided for @resetSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Your password was updated. You can sign in.'**
+  String get resetSuccess;
+
+  /// No description provided for @goToLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to sign in'**
+  String get goToLogin;
 }
 
 class _AppLocalizationsDelegate

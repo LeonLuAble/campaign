@@ -167,5 +167,18 @@
   "activateSubtitle": "Set a password to activate your admin account.",
   "activationTokenLabel": "Activation token",
   "activateButton": "Activate",
-  "tokenRequired": "Enter the activation token."
+  "tokenRequired": "Enter the token from your message.",
+  "forgotPassword": "Forgot password",
+  "resetPasswordTitle": "Reset password",
+  "resetRequestSubtitle": "Enter your email or mobile. If an account exists, we will send reset instructions.",
+  "resetConfirmSubtitle": "Choose a new password using the token from your message.",
+  "resetConfirmOptionalSubtitle": "Already have a reset token? Set a new password below.",
+  "requestReset": "Send reset email",
+  "confirmReset": "Set new password",
+  "resetTokenLabel": "Reset token",
+  "newPasswordLabel": "New password",
+  "acceptedMessage": "If the account exists, we sent instructions.",
+  "activateSuccess": "Your account is activated. You can sign in.",
+  "resetSuccess": "Your password was updated. You can sign in.",
+  "goToLogin": "Go to sign in"
 }

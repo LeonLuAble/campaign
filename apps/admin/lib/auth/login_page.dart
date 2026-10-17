@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../l10n/app_localizations.dart';
 import '../session/api_scope.dart';
@@ -121,6 +122,11 @@ class _LoginPageState extends State<LoginPage> {
           FilledButton(
             onPressed: _busy ? null : _submit,
             child: Text(l10n.loginButton),
+          ),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: () => context.go('/reset-password'),
+            child: Text(l10n.forgotPassword),
           ),
         ],
       ),

@@ -423,7 +423,46 @@ class AppLocalizationsZh extends AppLocalizations {
   String get activateButton => '激活';
 
   @override
-  String get tokenRequired => '请输入激活令牌。';
+  String get tokenRequired => '请输入消息中的令牌。';
+
+  @override
+  String get forgotPassword => '忘记密码';
+
+  @override
+  String get resetPasswordTitle => '重置密码';
+
+  @override
+  String get resetRequestSubtitle => '请输入邮箱或手机号。如果账户存在，我们将发送重置说明。';
+
+  @override
+  String get resetConfirmSubtitle => '使用消息中的令牌设置新密码。';
+
+  @override
+  String get resetConfirmOptionalSubtitle => '已有重置令牌？在下方设置新密码。';
+
+  @override
+  String get requestReset => '发送重置邮件';
+
+  @override
+  String get confirmReset => '设置新密码';
+
+  @override
+  String get resetTokenLabel => '重置令牌';
+
+  @override
+  String get newPasswordLabel => '新密码';
+
+  @override
+  String get acceptedMessage => '如果账户存在，我们已发送说明。';
+
+  @override
+  String get activateSuccess => '账户已激活，可以登录。';
+
+  @override
+  String get resetSuccess => '密码已更新，可以登录。';
+
+  @override
+  String get goToLogin => '前往登录';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -844,5 +883,44 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get activateButton => '激活';
 
   @override
-  String get tokenRequired => '请输入激活令牌。';
+  String get tokenRequired => '请输入消息中的令牌。';
+
+  @override
+  String get forgotPassword => '忘记密码';
+
+  @override
+  String get resetPasswordTitle => '重置密码';
+
+  @override
+  String get resetRequestSubtitle => '请输入邮箱或手机号。如果账户存在，我们将发送重置说明。';
+
+  @override
+  String get resetConfirmSubtitle => '使用消息中的令牌设置新密码。';
+
+  @override
+  String get resetConfirmOptionalSubtitle => '已有重置令牌？在下方设置新密码。';
+
+  @override
+  String get requestReset => '发送重置邮件';
+
+  @override
+  String get confirmReset => '设置新密码';
+
+  @override
+  String get resetTokenLabel => '重置令牌';
+
+  @override
+  String get newPasswordLabel => '新密码';
+
+  @override
+  String get acceptedMessage => '如果账户存在，我们已发送说明。';
+
+  @override
+  String get activateSuccess => '账户已激活，可以登录。';
+
+  @override
+  String get resetSuccess => '密码已更新，可以登录。';
+
+  @override
+  String get goToLogin => '前往登录';
 }
