@@ -52,20 +52,53 @@ describe('envValidationSchema production secrets and SMTP', () => {
     expect(error).toBeDefined();
   });
 
-  it('requires SMTP host and from when the email provider is smtp', () => {
+  it('requires SMTP host, mail from, and public web base URL in production', () => {
     const missing = envValidationSchema.validate({
       ...productionBase,
-      NOTIFICATION_EMAIL_PROVIDER: 'smtp',
     });
     expect(missing.error).toBeDefined();
 
     const complete = envValidationSchema.validate({
       ...productionBase,
-      NOTIFICATION_EMAIL_PROVIDER: 'smtp',
       SMTP_HOST: 'smtp.example.org',
-      SMTP_FROM: 'campaigns@example.org',
+      MAIL_FROM: 'campaigns@example.org',
+      PUBLIC_WEB_BASE_URL: 'https://admin.example.org',
+      SMTP_SECURE: 'false',
     });
     expect(complete.error).toBeUndefined();
+    expect(complete.value.NOTIFICATION_EMAIL_PROVIDER).toBe('smtp');
+  });
+
+  it('requires SMTP host and mail from when the email provider is smtp in development', () => {
+    const missing = envValidationSchema.validate({
+      ...baseEnv,
+      NODE_ENV: 'development',
+      NOTIFICATION_EMAIL_PROVIDER: 'smtp',
+    });
+    expect(missing.error).toBeDefined();
+
+    const complete = envValidationSchema.validate({
+      ...baseEnv,
+      NODE_ENV: 'development',
+      NOTIFICATION_EMAIL_PROVIDER: 'smtp',
+      SMTP_HOST: 'localhost',
+      MAIL_FROM: 'noreply@localhost',
+      PUBLIC_WEB_BASE_URL: 'http://localhost:8080',
+    });
+    expect(complete.error).toBeUndefined();
+  });
+
+  it('allows empty SMTP settings with the log-only provider outside production', () => {
+    const { error, value } = envValidationSchema.validate({
+      ...baseEnv,
+      NODE_ENV: 'development',
+      NOTIFICATION_EMAIL_PROVIDER: 'dev',
+      SMTP_HOST: '',
+      MAIL_FROM: '',
+      PUBLIC_WEB_BASE_URL: '',
+    });
+    expect(error).toBeUndefined();
+    expect(value.NOTIFICATION_EMAIL_PROVIDER).toBe('dev');
   });
 
   it('accepts empty CORS_ORIGINS', () => {

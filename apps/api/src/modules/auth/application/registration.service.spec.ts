@@ -35,6 +35,7 @@ describe('RegistrationService', () => {
     consumeActivation: vi.fn(),
     getPasswordHash: vi.fn(),
     setPasswordIfMissing: vi.fn(),
+    getProfile: vi.fn(),
   };
 
   const mockCredentialService = {
@@ -73,6 +74,9 @@ describe('RegistrationService', () => {
       identityId: 'identity-id',
     });
     mockIdentityAccountService.getPasswordHash.mockResolvedValue('hashed');
+    mockIdentityAccountService.getProfile.mockResolvedValue({
+      locale: 'en',
+    });
     mockUserTokenService.supersedeUnusedAndCreate.mockResolvedValue({
       id: 'token-id',
     });

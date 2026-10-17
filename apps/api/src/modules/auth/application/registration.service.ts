@@ -237,11 +237,13 @@ export class RegistrationService {
       tokenHash: hashOneTimeToken(rawToken),
       expiresAt: new Date(Date.now() + this.activationTtlSeconds * 1000),
     });
+    const profile = await this.identityAccountService.getProfile(userId);
     await this.notificationSender.send({
       channel: channelForIdentityType(type),
       to,
       template: 'activation',
       token: rawToken,
+      locale: profile?.locale ?? undefined,
     });
     return rawToken;
   }

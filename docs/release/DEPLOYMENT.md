@@ -39,11 +39,13 @@ The image runs `node dist/main.js` as a non-root user and expects configuration 
 | `AUTH_RATE_LIMIT_ENABLED` | no | Default on outside `test`. Set `false` to disable. |
 | `AUTH_RATE_LIMIT_TTL_SECONDS` | no | Default `60`. |
 | `AUTH_RATE_LIMIT_MAX` | no | Default `20` auth requests per TTL per client. |
-| `NOTIFICATION_EMAIL_PROVIDER` | no | `dev` (log only) or `smtp`. |
-| `SMTP_HOST` | **yes if provider is `smtp`** | |
-| `SMTP_FROM` | **yes if provider is `smtp`** | |
-| `SMTP_PORT` | no | Default `587`. |
-| `SMTP_USER` / `SMTP_PASSWORD` | no | Required by a real SMTP implementation when you add one. |
+| `PUBLIC_WEB_BASE_URL` | **yes in production** | Origin of the Flutter admin web app. Used to build `/activate?token=` and `/reset-password?token=` links. |
+| `NOTIFICATION_EMAIL_PROVIDER` | no | `dev` (log only) or `smtp`. Production defaults to and requires `smtp`. |
+| `SMTP_HOST` | **yes in production** (also when provider is `smtp`) | e.g. MailHog `localhost` in local `--profile dev`. |
+| `MAIL_FROM` | **yes in production** (also when provider is `smtp`) | Envelope/from address. |
+| `SMTP_PORT` | no | Default `587` (MailHog uses `1025`). |
+| `SMTP_SECURE` | no | Default `false`. Set `true` for TLS-on-connect (typically port 465). |
+| `SMTP_USER` / `SMTP_PASSWORD` | no | When the SMTP server requires auth. |
 | `NOTIFICATION_SMS_PROVIDER` | no | `dev` or `noop`. |
 | `NOTIFICATION_PUSH_PROVIDER` | no | `dev` or `noop`. |
 | `SMS_FROM` | no | |
@@ -71,29 +73,30 @@ Run migrations against the target database **before** serving production traffic
 1. Provision PostgreSQL 16 and Redis 7 (or compatible). Record connection URLs as secrets.
 2. Set production JWT secrets that are not the values in `.env.example`.
 3. Set Google and Apple client IDs, or delay social login until those apps exist.
-4. Choose CORS origins for the admin web origin(s).
-5. Run `migration:run`.
-6. Start the API container or `node dist/main.js`.
-7. Confirm `GET /api/v1/health` and `GET /api/v1/health/ready`.
-8. Create the first platform admin:
+4. Choose CORS origins for the admin web origin(s) and set `PUBLIC_WEB_BASE_URL` to that origin.
+5. Configure SMTP (`SMTP_HOST`, `MAIL_FROM`, and credentials as required by your provider).
+6. Run `migration:run`.
+7. Start the API container or `node dist/main.js`.
+8. Confirm `GET /api/v1/health` and `GET /api/v1/health/ready`.
+9. Create the first platform admin:
    - Generate a one-time setup key: `openssl rand -hex 32`.
    - Set `SETUP_KEY` to that value and restart the API.
    - Open the admin web app; when `GET /setup/status` reports `setupRequired: true`, complete **First admin setup**.
    - **Remove `SETUP_KEY` from the environment** (or set it empty) and restart so setup stays disabled.
    - Alternatives: promote an existing user with `users.is_platform_admin`, or `npm run seed:tzu-chi` (promotes an **existing** user; not a production password factory).
-9. Do **not** run `npm run seed:demo` in production.
+10. Do **not** run `npm run seed:demo` in production.
 
 ## Needs human decision
 
 These are not chosen in this repository:
 
 - **Hosting** — where the API, PostgreSQL, Redis, and Flutter web/mobile artifacts run; DNS; TLS certificates; backups.
-- **SMTP provider** — the `smtp` transport is an interface that currently logs rather than sending mail. Pick a vendor, credentials, and implement or replace `SmtpEmailTransport` before relying on email.
+- **SMTP provider** — pick a vendor and credentials. `SmtpEmailTransport` sends with `nodemailer` when `SMTP_HOST` is set. Local development can use MailHog (`docker compose --profile dev up`).
+- **Public admin web URL** — the value of `PUBLIC_WEB_BASE_URL` must match the deployed Flutter admin origin so email links open the `/activate` and `/reset-password` pages.
 - **SMS provider** — `dev` / `noop` only. Pick a vendor if SMS activation or reminders are required.
 - **Push provider** — `dev` / `noop` only.
 - **Impact factor values and sources** — versioned factors must be entered per tenant with a citation. The platform does not ship numeric defaults. Tzu Chi Malaysia must approve values and sources for 速素数数.
 - **Google and Apple client IDs** — create OAuth/OIDC apps and set `GOOGLE_CLIENT_ID` / `APPLE_CLIENT_ID`.
-- **Whether `NOTIFICATION_EMAIL_PROVIDER=dev` is acceptable** in a given environment (logs only; no real delivery).
 - **Who the first platform admin is**, and how Tzu Chi Malaysia tenant-admins are named.
 
 ## Demo data (non-production)

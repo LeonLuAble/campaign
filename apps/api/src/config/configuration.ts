@@ -51,11 +51,13 @@ export interface AppConfiguration {
     emailProvider: 'dev' | 'smtp';
     smsProvider: 'dev' | 'noop';
     pushProvider: 'dev' | 'noop';
+    publicWebBaseUrl?: string;
     smtpHost?: string;
     smtpPort: number;
+    smtpSecure: boolean;
     smtpUser?: string;
     smtpPassword?: string;
-    smtpFrom?: string;
+    mailFrom?: string;
     smsFrom?: string;
     reminderSchedulerEnabled: boolean;
     reminderSchedulerIntervalMs: number;
@@ -127,16 +129,22 @@ export default function configuration(): AppConfiguration {
     },
     notifications: {
       emailProvider:
-        process.env.NOTIFICATION_EMAIL_PROVIDER === 'smtp' ? 'smtp' : 'dev',
+        nodeEnv === 'production' ||
+        process.env.NOTIFICATION_EMAIL_PROVIDER === 'smtp' ||
+        Boolean(emptyToUndefined(process.env.SMTP_HOST))
+          ? 'smtp'
+          : 'dev',
       smsProvider:
         process.env.NOTIFICATION_SMS_PROVIDER === 'noop' ? 'noop' : 'dev',
       pushProvider:
         process.env.NOTIFICATION_PUSH_PROVIDER === 'noop' ? 'noop' : 'dev',
+      publicWebBaseUrl: emptyToUndefined(process.env.PUBLIC_WEB_BASE_URL),
       smtpHost: emptyToUndefined(process.env.SMTP_HOST),
       smtpPort: Number(process.env.SMTP_PORT ?? 587),
+      smtpSecure: process.env.SMTP_SECURE === 'true',
       smtpUser: emptyToUndefined(process.env.SMTP_USER),
       smtpPassword: emptyToUndefined(process.env.SMTP_PASSWORD),
-      smtpFrom: emptyToUndefined(process.env.SMTP_FROM),
+      mailFrom: emptyToUndefined(process.env.MAIL_FROM),
       smsFrom: emptyToUndefined(process.env.SMS_FROM),
       reminderSchedulerEnabled:
         process.env.NODE_ENV === 'test'

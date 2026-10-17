@@ -25,6 +25,7 @@ describe('PasswordResetService', () => {
   const mockIdentityAccountService = {
     findIdentity: vi.fn(),
     completePasswordReset: vi.fn(),
+    getProfile: vi.fn(),
   };
 
   const mockCredentialService = {
@@ -59,6 +60,7 @@ describe('PasswordResetService', () => {
     );
     mockCredentialService.setPassword.mockResolvedValue('new-hash');
     mockNotificationSender.send.mockResolvedValue(undefined);
+    mockIdentityAccountService.getProfile.mockResolvedValue({ locale: 'en' });
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [

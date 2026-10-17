@@ -16,7 +16,7 @@ Business rules stay in the backend. Flutter renders payloads, validates format, 
 - Cache and jobs: Redis
 - Object storage: S3-compatible, reserved (CSV import is stored in PostgreSQL)
 - API: REST and JSON under `/api/v1`
-- Local infrastructure: Docker Compose for PostgreSQL and Redis only
+- Local infrastructure: Docker Compose for PostgreSQL and Redis (optional MailHog for email)
 
 ## Repository structure
 
@@ -55,14 +55,14 @@ Working constraints and conventions are in `.cursor/rules/`.
 - macOS with Homebrew (or equivalent) is the supported local workstation
 - Node.js 22.23 or newer (see `.nvmrc`). The API build requires Node 22.23+ due to nest-cli; Node 22.12 and Node 20 produce module cycle errors.
 - npm
-- Docker Desktop with Docker Compose (PostgreSQL and Redis only)
+- Docker Desktop with Docker Compose (PostgreSQL, Redis; MailHog via `--profile dev`)
 - Flutter stable (this workspace was bootstrapped with Flutter 3.47 / Dart 3.13)
 - Xcode + iOS Simulator for the mobile app on iOS, and/or Android Studio + an emulator
 - Chrome for the admin web app
 
 ## Run locally on macOS
 
-The API runs on your machine, not in Docker, so reload and debugging stay fast. Docker is only for PostgreSQL and Redis.
+The API runs on your machine, not in Docker, so reload and debugging stay fast. Docker is for PostgreSQL, Redis, and (optionally) MailHog.
 
 ### 1. Clone and copy env
 
@@ -70,7 +70,7 @@ The API runs on your machine, not in Docker, so reload and debugging stay fast. 
 cp .env.example .env
 ```
 
-The database user, password, and database name in `.env.example` are local development placeholders.
+The database user, password, and database name in `.env.example` are local development placeholders. `PUBLIC_WEB_BASE_URL` should match the admin web origin (default `http://localhost:8080`) so activation and password-reset emails contain working links.
 
 ### 2. Start PostgreSQL and Redis
 
@@ -80,7 +80,15 @@ From the repository root:
 docker compose up -d --wait
 ```
 
-`infrastructure/scripts/dev-up.sh` does the same compose start. `infrastructure/scripts/dev-down.sh` stops it.
+To also catch outbound auth email locally with MailHog:
+
+```sh
+docker compose --profile dev up -d --wait
+```
+
+Then set `NOTIFICATION_EMAIL_PROVIDER=smtp`, `SMTP_HOST=localhost`, `SMTP_PORT=1025`, `SMTP_SECURE=false`, and `MAIL_FROM=noreply@localhost` in `.env`. Open the MailHog UI at [http://localhost:8025](http://localhost:8025).
+
+`infrastructure/scripts/dev-up.sh` starts the default compose services. `infrastructure/scripts/dev-down.sh` stops them.
 
 PostgreSQL listens on `localhost:5432` and Redis on `localhost:6379`.
 

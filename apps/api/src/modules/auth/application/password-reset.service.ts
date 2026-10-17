@@ -78,11 +78,15 @@ export class PasswordResetService {
       tokenHash: hashOneTimeToken(rawToken),
       expiresAt: new Date(Date.now() + this.resetTtlSeconds * 1000),
     });
+    const profile = await this.identityAccountService.getProfile(
+      identity!.userId,
+    );
     this.dispatchNotification({
       channel: channelForIdentityType(identity!.type),
       to: identity!.identifier,
       template: 'password_reset',
       token: rawToken,
+      locale: profile?.locale ?? undefined,
     });
   }
 

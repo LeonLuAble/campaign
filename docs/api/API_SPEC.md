@@ -2,7 +2,7 @@
 Base: `/api/v1`; REST/JSON; camelCase JSON; UUIDs; ISO timestamps; stable error codes.
 
 Auth:
-- POST /auth/register (identifier=email or mobile + password) → 201 `{ id, identifier, type }`
+- POST /auth/register (identifier=email or mobile + password) → 201 `{ id, identifier, type }`. Issues an activation token and sends bilingual email (`en` / `zh-Hans` from the user locale) when the channel is email. The message links to `${PUBLIC_WEB_BASE_URL}/activate?token=…`. SMTP delivery failures are logged without the token and do not fail the request; the token remains resendable.
 - POST /auth/login (identifier=email or mobile + password)
 - POST /auth/social `{ provider: 'google' | 'apple', idToken }` → 200 `{ accessToken, refreshToken }`
 - POST /auth/refresh
@@ -10,7 +10,7 @@ Auth:
 - GET /me (`isPlatformAdmin` is included so admin clients can show customer creation without guessing)
 - POST /auth/activate `{ token, password? }` → 204; idempotent if already verified. `password` is required when the account has no credential (imported users); ignored when a password already exists.
 - POST /auth/activate/resend `{ identifier }` → 202 `{ accepted: true }`
-- POST /auth/password-reset/request `{ identifier }` → 202 `{ accepted: true }` (no enumeration)
+- POST /auth/password-reset/request `{ identifier }` → 202 `{ accepted: true }` (no enumeration). Email links use `${PUBLIC_WEB_BASE_URL}/reset-password?token=…`.
 - POST /auth/password-reset/confirm `{ token, password }` → 204
 
 First-admin setup (public; disabled unless `SETUP_KEY` is set to at least 32 characters):
@@ -43,7 +43,7 @@ User import: `/user-imports` (tenant-scoped via `customerId` query; requires `us
 - POST /user-imports/:userImportId/confirm → create identities/memberships, assign the tenant system `member` role, and send activation invitations
 - GET /user-imports, GET /user-imports/:userImportId, GET /user-imports/:userImportId/rows → list/summary/result errors
 
-Imported users activate through POST /auth/activate with a password. Invitation delivery reuses the existing activation token + NotificationSender path (no `/invitations` resource in this phase).
+Imported users activate through POST /auth/activate with a password. Invitation delivery reuses the existing activation token + NotificationSender path (SMTP when configured; tokens never logged). No `/invitations` resource in this phase.
 
 Campaign (tenant-scoped via `customerId` query/body or resource id; generic configuration, no vegetarian schema in this module):
 - POST /campaign-templates `{ customerId, key?, name, description? }` → 201. Requires `campaign_templates.create`.
@@ -138,7 +138,7 @@ Dashboards (compose progress, measurements, outcomes, campaign-local day/week ti
 - GET `/campaigns/:campaignId/dashboard` → requires `dashboards.read`. Anonymous campaign totals.
 - GET `/campaigns/:campaignId/communities/:communityId/dashboard` → community/group subtree; TREE still reflects the campaign aggregate.
 
-Notifications (in-app inbox plus reminder scheduling; SMTP/SMS/push stay behind env-selected interfaces with `dev` implementations; auth activation/reset still use NotificationSender):
+Notifications (in-app inbox plus reminder scheduling; SMS/push stay behind env-selected `dev`/`noop` interfaces; email uses `SmtpEmailTransport` via `nodemailer` when `SMTP_HOST` is set, otherwise the log-only `dev` transport; auth activation/reset use NotificationSender → email transport with `PUBLIC_WEB_BASE_URL` links):
 - GET `/notifications?customerId=` → requires `notifications.read`. Own inbox only, newest first.
 - GET `/notifications/:notificationId?customerId=` → requires `notifications.read`
 - POST `/notifications/:notificationId/read?customerId=` → requires `notifications.update`. Own row only.

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { OutboundNotificationsModule } from '../../platform/notifications/outbound-notifications.module.js';
 import { IdentityModule } from '../identity/identity.module.js';
 import { AuthService } from './application/auth.service.js';
 import { JwtStrategy } from './application/jwt.strategy.js';
@@ -24,6 +25,7 @@ import { MeController } from './presentation/me.controller.js';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({}),
     IdentityModule,
+    OutboundNotificationsModule,
   ],
   controllers: [AuthController, MeController],
   providers: [

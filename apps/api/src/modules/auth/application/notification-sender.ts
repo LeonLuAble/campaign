@@ -17,6 +17,7 @@ export interface NotificationMessage {
   locale?: string;
   subject?: string;
   body?: string;
+  html?: string;
   payload?: Record<string, string>;
 }
 

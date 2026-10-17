@@ -57,21 +57,44 @@ export const envValidationSchema = Joi.object({
   OBJECT_STORAGE_BUCKET: Joi.string().allow('').optional(),
   OBJECT_STORAGE_ACCESS_KEY: Joi.string().allow('').optional(),
   OBJECT_STORAGE_SECRET_KEY: Joi.string().allow('').optional(),
-  NOTIFICATION_EMAIL_PROVIDER: Joi.string().valid('dev', 'smtp').default('dev'),
+  NOTIFICATION_EMAIL_PROVIDER: Joi.when('NODE_ENV', {
+    is: 'production',
+    then: Joi.string().valid('smtp').default('smtp'),
+    otherwise: Joi.string().valid('dev', 'smtp').default('dev'),
+  }),
   NOTIFICATION_SMS_PROVIDER: Joi.string().valid('dev', 'noop').default('dev'),
   NOTIFICATION_PUSH_PROVIDER: Joi.string().valid('dev', 'noop').default('dev'),
-  SMTP_HOST: Joi.when('NOTIFICATION_EMAIL_PROVIDER', {
-    is: 'smtp',
+  PUBLIC_WEB_BASE_URL: Joi.when('NODE_ENV', {
+    is: 'production',
+    then: Joi.string()
+      .uri({ scheme: ['http', 'https'] })
+      .required(),
+    otherwise: Joi.string()
+      .uri({ scheme: ['http', 'https'] })
+      .allow('')
+      .default(''),
+  }),
+  SMTP_HOST: Joi.when('NODE_ENV', {
+    is: 'production',
     then: Joi.string().min(1).required(),
-    otherwise: Joi.string().allow('').default(''),
+    otherwise: Joi.when('NOTIFICATION_EMAIL_PROVIDER', {
+      is: 'smtp',
+      then: Joi.string().min(1).required(),
+      otherwise: Joi.string().allow('').default(''),
+    }),
   }),
   SMTP_PORT: Joi.number().integer().min(1).max(65535).default(587),
+  SMTP_SECURE: Joi.boolean().truthy('true').falsy('false').default(false),
   SMTP_USER: Joi.string().allow('').default(''),
   SMTP_PASSWORD: Joi.string().allow('').default(''),
-  SMTP_FROM: Joi.when('NOTIFICATION_EMAIL_PROVIDER', {
-    is: 'smtp',
+  MAIL_FROM: Joi.when('NODE_ENV', {
+    is: 'production',
     then: Joi.string().min(1).required(),
-    otherwise: Joi.string().allow('').default(''),
+    otherwise: Joi.when('NOTIFICATION_EMAIL_PROVIDER', {
+      is: 'smtp',
+      then: Joi.string().min(1).required(),
+      otherwise: Joi.string().allow('').default(''),
+    }),
   }),
   SMS_FROM: Joi.string().allow('').default(''),
   REMINDER_SCHEDULER_ENABLED: Joi.boolean().default(true),

@@ -29,5 +29,14 @@ services:
       timeout: 5s
       retries: 10
 
+  # Local SMTP catcher for activation/reset mail. Start with:
+  #   docker compose --profile dev up -d --wait
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    profiles: ["dev"]
+    ports:
+      - "${MAILHOG_SMTP_PORT:-1025}:1025"
+      - "${MAILHOG_UI_PORT:-8025}:8025"
+
 volumes:
   postgres_data:

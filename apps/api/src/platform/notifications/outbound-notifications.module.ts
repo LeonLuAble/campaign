@@ -32,6 +32,10 @@ import {
         dev: DevEmailTransport,
         smtp: SmtpEmailTransport,
       ): EmailTransport => {
+        const host = config.get<string>('notifications.smtpHost');
+        if (host) {
+          return smtp;
+        }
         return config.get('notifications.emailProvider') === 'smtp'
           ? smtp
           : dev;
