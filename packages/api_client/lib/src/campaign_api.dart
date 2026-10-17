@@ -101,6 +101,21 @@ abstract class CampaignApiClient {
   Future<ResendMembershipActivationResult> resendMembershipActivation(
     String membershipId,
   );
+  Future<Membership> getMembership(String membershipId);
+  Future<Membership> updateMembership(
+    String membershipId, {
+    required bool isActive,
+  });
+  Future<List<RoleSummary>> assignMembershipRole(
+    String membershipId,
+    String roleId,
+  );
+  Future<List<RoleSummary>> unassignMembershipRole(
+    String membershipId,
+    String roleId,
+  );
+  Future<List<Role>> listRoles(String customerId);
+  Future<Role> getRole(String roleId);
 
   Future<UserImport> uploadUserImport({
     required String customerId,
@@ -655,6 +670,58 @@ class HttpCampaignApiClient implements CampaignApiClient {
   }
 
   @override
+  Future<Membership> getMembership(String membershipId) {
+    return _get('/memberships/$membershipId', parser: Membership.fromJson);
+  }
+
+  @override
+  Future<Membership> updateMembership(
+    String membershipId, {
+    required bool isActive,
+  }) {
+    return _patch(
+      '/memberships/$membershipId',
+      data: {'isActive': isActive},
+      parser: Membership.fromJson,
+    );
+  }
+
+  @override
+  Future<List<RoleSummary>> assignMembershipRole(
+    String membershipId,
+    String roleId,
+  ) {
+    return _postList(
+      '/memberships/$membershipId/roles',
+      data: {'roleId': roleId},
+      parser: RoleSummary.fromJson,
+    );
+  }
+
+  @override
+  Future<List<RoleSummary>> unassignMembershipRole(
+    String membershipId,
+    String roleId,
+  ) async {
+    await _request('DELETE', '/memberships/$membershipId/roles/$roleId');
+    return getMembership(membershipId).then((row) => row.roles);
+  }
+
+  @override
+  Future<List<Role>> listRoles(String customerId) {
+    return _getList(
+      '/roles',
+      query: {'customerId': customerId},
+      parser: Role.fromJson,
+    );
+  }
+
+  @override
+  Future<Role> getRole(String roleId) {
+    return _get('/roles/$roleId', parser: Role.fromJson);
+  }
+
+  @override
   Future<UserImport> uploadUserImport({
     required String customerId,
     required String filename,
@@ -1086,6 +1153,19 @@ class HttpCampaignApiClient implements CampaignApiClient {
       skipAuth: skipAuth,
     );
     return parser(_asMap(body));
+  }
+
+  Future<List<T>> _postList<T>(
+    String path, {
+    Object? data,
+    Map<String, dynamic>? query,
+    required T Function(Map<String, dynamic> json) parser,
+  }) async {
+    final body = await _request('POST', path, data: data, query: query);
+    if (body is List) {
+      return body.map((row) => parser(_asMap(row))).toList();
+    }
+    return const [];
   }
 
   Future<T> _patch<T>(

@@ -321,6 +321,48 @@ class RoleSummary {
   }
 }
 
+class Role {
+  const Role({
+    required this.id,
+    required this.customerId,
+    required this.key,
+    required this.name,
+    required this.isSystem,
+    required this.permissionKeys,
+    this.description,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  final String id;
+  final String customerId;
+  final String key;
+  final String name;
+  final String? description;
+  final bool isSystem;
+  final List<String> permissionKeys;
+  final String? createdAt;
+  final String? updatedAt;
+
+  factory Role.fromJson(Map<String, dynamic> json) {
+    return Role(
+      id: json['id'] as String,
+      customerId: json['customerId'] as String,
+      key: json['key'] as String,
+      name: json['name'] as String,
+      description: _string(json['description']),
+      isSystem: _bool(json['isSystem'], false),
+      permissionKeys: _list(json['permissionKeys'])
+          .map((row) => row.toString())
+          .toList(),
+      createdAt: _string(json['createdAt']),
+      updatedAt: _string(json['updatedAt']),
+    );
+  }
+
+  RoleSummary get summary => RoleSummary(id: id, key: key, name: name);
+}
+
 class MembershipUserSummary {
   const MembershipUserSummary({
     required this.id,

@@ -16,6 +16,14 @@ bool looksLikeEmail(String value) {
   return trimmed.contains('@') && trimmed.contains('.');
 }
 
+String localizeMembershipError(AppLocalizations l10n, Object error) {
+  if (error is ApiException &&
+      error.message.toLowerCase().contains('last tenant admin')) {
+    return l10n.errorLastTenantAdmin;
+  }
+  return localizeApiError(l10n, error);
+}
+
 String localizeApiError(AppLocalizations l10n, Object error) {
   if (error is! ApiException) {
     return l10n.errorUnexpected;

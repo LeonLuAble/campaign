@@ -86,11 +86,42 @@ class FakeCampaignApiClient implements CampaignApiClient {
     NotificationPreferences? preferences,
     CustomerAccess? customerAccess,
     List<Membership>? memberships,
+    List<Role>? roles,
     List<PlatformCustomerSummary>? platformCustomerSummaries,
     this.googleClientConfigured = false,
     this.appleClientConfigured = false,
+    this.lastTenantAdminGuard = false,
   }) : customerAccess = customerAccess ?? defaultTenantAccess,
        memberships = memberships ?? const [],
+       roles = roles ??
+           const [
+             Role(
+               id: 'role-member',
+               customerId: 'cust-1',
+               key: 'member',
+               name: 'Member',
+               isSystem: true,
+               permissionKeys: [
+                 'customers.read',
+                 'communities.read',
+                 'campaigns.read',
+               ],
+             ),
+             Role(
+               id: 'role-ta',
+               customerId: 'cust-1',
+               key: 'tenant_admin',
+               name: 'Tenant Admin',
+               isSystem: true,
+               permissionKeys: [
+                 'memberships.create',
+                 'memberships.read',
+                 'memberships.update',
+                 'roles.assign',
+                 'roles.read',
+               ],
+             ),
+           ],
        platformCustomerSummaries = platformCustomerSummaries ?? const [],
        profile =
            profile ??
@@ -383,6 +414,9 @@ class FakeCampaignApiClient implements CampaignApiClient {
   List<Community> communities;
   CustomerAccess customerAccess;
   List<Membership> memberships;
+  List<Role> roles;
+  /// When true, deactivate/unassign of the last tenant admin throws FORBIDDEN.
+  bool lastTenantAdminGuard;
   List<PlatformCustomerSummary> platformCustomerSummaries;
   /// Admins known to the fake platform console (create / invite).
   final Map<String, List<FakePlatformAdmin>> platformAdmins = {};
@@ -943,8 +977,46 @@ class FakeCampaignApiClient implements CampaignApiClient {
   }) async {
     var items =
         memberships.where((row) => row.customerId == customerId).toList();
+    if (!customerAccess.isTenantLevel) {
+      final visible = <String>{};
+      for (final root in customerAccess.communityIds) {
+        visible.addAll(communitySubtreeIds(communities, root));
+      }
+      items = items
+          .where(
+            (row) =>
+                row.communityId != null && visible.contains(row.communityId),
+          )
+          .map(
+            (row) => Membership(
+              id: row.id,
+              customerId: row.customerId,
+              userId: row.userId,
+              communityId: row.communityId,
+              isActive: row.isActive,
+              roles: row.roles,
+              community: row.community,
+              user: row.user == null
+                  ? null
+                  : MembershipUserSummary(
+                      id: row.user!.id,
+                      displayName: row.user!.displayName,
+                      activationStatus: row.user!.activationStatus,
+                    ),
+            ),
+          )
+          .toList();
+    }
     if (communityId != null) {
-      items = items.where((row) => row.communityId == communityId).toList();
+      final allowed = includeDescendants == true
+          ? communitySubtreeIds(communities, communityId)
+          : {communityId};
+      items = items
+          .where(
+            (row) =>
+                row.communityId != null && allowed.contains(row.communityId),
+          )
+          .toList();
     }
     if (status == 'pending') {
       items = items
@@ -973,7 +1045,157 @@ class FakeCampaignApiClient implements CampaignApiClient {
       }).toList();
     }
     final take = limit ?? 50;
-    return MembershipListPage(items: items.take(take).toList());
+    final start = cursor == null ? 0 : (int.tryParse(cursor) ?? 0);
+    final slice = items.skip(start).take(take).toList();
+    final next = start + slice.length;
+    return MembershipListPage(
+      items: slice,
+      nextCursor: next < items.length ? '$next' : null,
+    );
+  }
+
+  Set<String> communitySubtreeIds(List<Community> flat, String nodeId) {
+    final childrenOf = <String?, List<String>>{};
+    for (final community in flat) {
+      final list = childrenOf.putIfAbsent(community.parentId, () => <String>[]);
+      list.add(community.id);
+    }
+    final result = <String>{nodeId};
+    final queue = <String>[nodeId];
+    while (queue.isNotEmpty) {
+      final current = queue.removeLast();
+      for (final child in childrenOf[current] ?? const <String>[]) {
+        if (result.add(child)) {
+          queue.add(child);
+        }
+      }
+    }
+    return result;
+  }
+
+  @override
+  Future<Membership> getMembership(String membershipId) async {
+    final match = memberships.where((row) => row.id == membershipId);
+    if (match.isEmpty) {
+      _throw('NOT_FOUND', status: 404);
+    }
+    return match.first;
+  }
+
+  @override
+  Future<Membership> updateMembership(
+    String membershipId, {
+    required bool isActive,
+  }) async {
+    final current = await getMembership(membershipId);
+    if (!isActive && lastTenantAdminGuard) {
+      final isAdmin = current.roles.any((role) => role.key == 'tenant_admin');
+      if (isAdmin && current.communityId == null && current.isActive) {
+        _throw(
+          'FORBIDDEN',
+          status: 403,
+          message: 'Cannot remove the last tenant admin',
+        );
+      }
+    }
+    final updated = Membership(
+      id: current.id,
+      customerId: current.customerId,
+      userId: current.userId,
+      communityId: current.communityId,
+      isActive: isActive,
+      roles: current.roles,
+      user: current.user,
+      community: current.community,
+    );
+    memberships = [
+      for (final row in memberships)
+        if (row.id == membershipId) updated else row,
+    ];
+    return updated;
+  }
+
+  @override
+  Future<List<RoleSummary>> assignMembershipRole(
+    String membershipId,
+    String roleId,
+  ) async {
+    final current = await getMembership(membershipId);
+    final roleMatch = roles.where((row) => row.id == roleId);
+    if (roleMatch.isEmpty) {
+      _throw('NOT_FOUND', status: 404, message: 'Role not found');
+    }
+    final role = roleMatch.first.summary;
+    if (current.roles.any((row) => row.id == roleId)) {
+      return current.roles;
+    }
+    final updated = Membership(
+      id: current.id,
+      customerId: current.customerId,
+      userId: current.userId,
+      communityId: current.communityId,
+      isActive: current.isActive,
+      roles: [...current.roles, role],
+      user: current.user,
+      community: current.community,
+    );
+    memberships = [
+      for (final row in memberships)
+        if (row.id == membershipId) updated else row,
+    ];
+    return updated.roles;
+  }
+
+  @override
+  Future<List<RoleSummary>> unassignMembershipRole(
+    String membershipId,
+    String roleId,
+  ) async {
+    final current = await getMembership(membershipId);
+    final removing = current.roles.where((row) => row.id == roleId);
+    if (removing.isNotEmpty &&
+        removing.first.key == 'tenant_admin' &&
+        lastTenantAdminGuard &&
+        current.communityId == null &&
+        current.isActive) {
+      _throw(
+        'FORBIDDEN',
+        status: 403,
+        message: 'Cannot remove the last tenant admin',
+      );
+    }
+    final updated = Membership(
+      id: current.id,
+      customerId: current.customerId,
+      userId: current.userId,
+      communityId: current.communityId,
+      isActive: current.isActive,
+      roles: [
+        for (final role in current.roles)
+          if (role.id != roleId) role,
+      ],
+      user: current.user,
+      community: current.community,
+    );
+    memberships = [
+      for (final row in memberships)
+        if (row.id == membershipId) updated else row,
+    ];
+    return updated.roles;
+  }
+
+  @override
+  Future<List<Role>> listRoles(String customerId) async {
+    return roles.where((row) => row.customerId == customerId).toList();
+  }
+
+  @override
+  Future<Role> getRole(String roleId) async {
+    final match = roles.where((row) => row.id == roleId);
+    if (match.isEmpty) {
+      _throw('NOT_FOUND', status: 404);
+    }
+    return match.first;
   }
 
   @override

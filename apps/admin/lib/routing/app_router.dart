@@ -14,6 +14,7 @@ import '../dashboards/aggregate_dashboard_page.dart';
 import '../imports/csv_import_page.dart';
 import '../overview/overview_page.dart';
 import '../people/people_page.dart';
+import '../people/roles_page.dart';
 import '../platform/create_customer_wizard_page.dart';
 import '../platform/platform_customer_detail_page.dart';
 import '../platform/platform_customers_page.dart';
@@ -183,6 +184,16 @@ GoRouter createRouter({required SessionController session}) {
                         builder: (context, state) => PeoplePage(
                           customerId: state.pathParameters['customerId']!,
                         ),
+                        routes: [
+                          GoRoute(
+                            path: 'roles',
+                            name: 'roles',
+                            builder: (context, state) => RolesPage(
+                              customerId:
+                                  state.pathParameters['customerId']!,
+                            ),
+                          ),
+                        ],
                       ),
                       GoRoute(
                         path: 'communities',

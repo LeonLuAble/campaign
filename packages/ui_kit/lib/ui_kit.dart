@@ -5,6 +5,7 @@
 library;
 
 export 'src/authz/permission_gate.dart';
+export 'src/components/app_data_table.dart';
 export 'src/components/empty_state.dart';
 export 'src/components/error_state.dart';
 export 'src/components/loading_skeleton.dart';

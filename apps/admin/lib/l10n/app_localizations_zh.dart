@@ -440,6 +440,208 @@ class AppLocalizationsZh extends AppLocalizations {
   String get peopleComingSoon => '成员名录即将推出。';
 
   @override
+  String get peopleSubtitle => '搜索、筛选、邀请并管理成员。';
+
+  @override
+  String get navRoles => '角色';
+
+  @override
+  String get rolesSubtitle => '系统与自定义角色及其权限键（只读）。';
+
+  @override
+  String get backToPeople => '返回成员';
+
+  @override
+  String get noRoles => '暂无角色。';
+
+  @override
+  String get systemRoleBadge => '系统';
+
+  @override
+  String get rolePermissionsHeading => '权限';
+
+  @override
+  String get peopleSearchLabel => '搜索姓名、邮箱或手机';
+
+  @override
+  String get peopleFilterCommunity => '社区';
+
+  @override
+  String get peopleFilterRole => '角色';
+
+  @override
+  String get peopleFilterStatus => '状态';
+
+  @override
+  String get includeSubCommunities => '包含子社区';
+
+  @override
+  String get pendingOnlyFilter => '仅待激活';
+
+  @override
+  String get anyCommunity => '全部社区';
+
+  @override
+  String get anyRole => '全部角色';
+
+  @override
+  String get anyStatus => '全部状态';
+
+  @override
+  String get clearFilter => '清除';
+
+  @override
+  String get pickCommunityTitle => '选择社区';
+
+  @override
+  String get pickCommunityRequired => '请选择社区';
+
+  @override
+  String get peopleColumnName => '姓名';
+
+  @override
+  String get peopleColumnContact => '邮箱 / 手机';
+
+  @override
+  String get peopleColumnCommunity => '社区';
+
+  @override
+  String get peopleColumnRoles => '角色';
+
+  @override
+  String get peopleColumnStatus => '状态';
+
+  @override
+  String get noMembers => '没有符合条件的成员。';
+
+  @override
+  String get loadMore => '加载更多';
+
+  @override
+  String get rowActions => '操作';
+
+  @override
+  String get viewMember => '查看';
+
+  @override
+  String get inviteMember => '邀请成员';
+
+  @override
+  String get inviteMemberTitle => '邀请成员';
+
+  @override
+  String get inviteMemberConfirm => '发送邀请';
+
+  @override
+  String get inviteEmailLabel => '邮箱';
+
+  @override
+  String get inviteMobileLabel => '手机';
+
+  @override
+  String get inviteDisplayNameLabel => '显示名称';
+
+  @override
+  String get inviteRoleLabel => '角色';
+
+  @override
+  String get inviteIdentifierRequired => '请输入邮箱或手机号。';
+
+  @override
+  String get inviteEmailInvalid => '请输入有效的邮箱地址。';
+
+  @override
+  String get inviteMobileInvalid => '请输入有效的手机号。';
+
+  @override
+  String get inviteEmailSentTitle => '邀请已发送';
+
+  @override
+  String inviteEmailSentBody(String email) {
+    return '已向 $email 发送激活邮件。';
+  }
+
+  @override
+  String get inviteMobileLinkTitle => '一次性激活链接';
+
+  @override
+  String get inviteMobileLinkBody => '未发送短信。请复制此链接并仅分享一次给该成员。';
+
+  @override
+  String get activationLinkShownOnceNote => '此链接仅显示一次，24 小时后过期。';
+
+  @override
+  String get membershipStatusInactive => '已停用';
+
+  @override
+  String get tenantLevelMembership => '组织级';
+
+  @override
+  String memberCommunityLabel(String name) {
+    return '社区：$name';
+  }
+
+  @override
+  String get memberRolesHeading => '角色';
+
+  @override
+  String get assignRoleAction => '添加角色';
+
+  @override
+  String get assignRoleTitle => '分配角色';
+
+  @override
+  String get noRolesToAssign => '可用角色均已分配。';
+
+  @override
+  String get removeRoleTitle => '移除角色';
+
+  @override
+  String removeRoleBody(String name) {
+    return '从该成员移除 $name 角色？';
+  }
+
+  @override
+  String get removeRoleConfirm => '移除';
+
+  @override
+  String get deactivateMember => '停用';
+
+  @override
+  String get reactivateMember => '重新启用';
+
+  @override
+  String get deactivateMemberTitle => '停用成员资格';
+
+  @override
+  String get reactivateMemberTitle => '重新启用成员资格';
+
+  @override
+  String deactivateMemberBody(String name) {
+    return '停用 $name？停用后将无法访问，直至重新启用。';
+  }
+
+  @override
+  String reactivateMemberBody(String name) {
+    return '重新启用 $name？';
+  }
+
+  @override
+  String get deactivateMemberConfirm => '停用';
+
+  @override
+  String get reactivateMemberConfirm => '重新启用';
+
+  @override
+  String get memberDeactivatedSnackbar => '成员资格已停用。';
+
+  @override
+  String get memberReactivatedSnackbar => '成员资格已重新启用。';
+
+  @override
+  String get errorLastTenantAdmin => '不能移除或停用组织中的最后一位管理员。';
+
+  @override
   String get retry => '重试';
 
   @override
@@ -1194,6 +1396,208 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get peopleComingSoon => '成员名录即将推出。';
+
+  @override
+  String get peopleSubtitle => '搜索、筛选、邀请并管理成员。';
+
+  @override
+  String get navRoles => '角色';
+
+  @override
+  String get rolesSubtitle => '系统与自定义角色及其权限键（只读）。';
+
+  @override
+  String get backToPeople => '返回成员';
+
+  @override
+  String get noRoles => '暂无角色。';
+
+  @override
+  String get systemRoleBadge => '系统';
+
+  @override
+  String get rolePermissionsHeading => '权限';
+
+  @override
+  String get peopleSearchLabel => '搜索姓名、邮箱或手机';
+
+  @override
+  String get peopleFilterCommunity => '社区';
+
+  @override
+  String get peopleFilterRole => '角色';
+
+  @override
+  String get peopleFilterStatus => '状态';
+
+  @override
+  String get includeSubCommunities => '包含子社区';
+
+  @override
+  String get pendingOnlyFilter => '仅待激活';
+
+  @override
+  String get anyCommunity => '全部社区';
+
+  @override
+  String get anyRole => '全部角色';
+
+  @override
+  String get anyStatus => '全部状态';
+
+  @override
+  String get clearFilter => '清除';
+
+  @override
+  String get pickCommunityTitle => '选择社区';
+
+  @override
+  String get pickCommunityRequired => '请选择社区';
+
+  @override
+  String get peopleColumnName => '姓名';
+
+  @override
+  String get peopleColumnContact => '邮箱 / 手机';
+
+  @override
+  String get peopleColumnCommunity => '社区';
+
+  @override
+  String get peopleColumnRoles => '角色';
+
+  @override
+  String get peopleColumnStatus => '状态';
+
+  @override
+  String get noMembers => '没有符合条件的成员。';
+
+  @override
+  String get loadMore => '加载更多';
+
+  @override
+  String get rowActions => '操作';
+
+  @override
+  String get viewMember => '查看';
+
+  @override
+  String get inviteMember => '邀请成员';
+
+  @override
+  String get inviteMemberTitle => '邀请成员';
+
+  @override
+  String get inviteMemberConfirm => '发送邀请';
+
+  @override
+  String get inviteEmailLabel => '邮箱';
+
+  @override
+  String get inviteMobileLabel => '手机';
+
+  @override
+  String get inviteDisplayNameLabel => '显示名称';
+
+  @override
+  String get inviteRoleLabel => '角色';
+
+  @override
+  String get inviteIdentifierRequired => '请输入邮箱或手机号。';
+
+  @override
+  String get inviteEmailInvalid => '请输入有效的邮箱地址。';
+
+  @override
+  String get inviteMobileInvalid => '请输入有效的手机号。';
+
+  @override
+  String get inviteEmailSentTitle => '邀请已发送';
+
+  @override
+  String inviteEmailSentBody(String email) {
+    return '已向 $email 发送激活邮件。';
+  }
+
+  @override
+  String get inviteMobileLinkTitle => '一次性激活链接';
+
+  @override
+  String get inviteMobileLinkBody => '未发送短信。请复制此链接并仅分享一次给该成员。';
+
+  @override
+  String get activationLinkShownOnceNote => '此链接仅显示一次，24 小时后过期。';
+
+  @override
+  String get membershipStatusInactive => '已停用';
+
+  @override
+  String get tenantLevelMembership => '组织级';
+
+  @override
+  String memberCommunityLabel(String name) {
+    return '社区：$name';
+  }
+
+  @override
+  String get memberRolesHeading => '角色';
+
+  @override
+  String get assignRoleAction => '添加角色';
+
+  @override
+  String get assignRoleTitle => '分配角色';
+
+  @override
+  String get noRolesToAssign => '可用角色均已分配。';
+
+  @override
+  String get removeRoleTitle => '移除角色';
+
+  @override
+  String removeRoleBody(String name) {
+    return '从该成员移除 $name 角色？';
+  }
+
+  @override
+  String get removeRoleConfirm => '移除';
+
+  @override
+  String get deactivateMember => '停用';
+
+  @override
+  String get reactivateMember => '重新启用';
+
+  @override
+  String get deactivateMemberTitle => '停用成员资格';
+
+  @override
+  String get reactivateMemberTitle => '重新启用成员资格';
+
+  @override
+  String deactivateMemberBody(String name) {
+    return '停用 $name？停用后将无法访问，直至重新启用。';
+  }
+
+  @override
+  String reactivateMemberBody(String name) {
+    return '重新启用 $name？';
+  }
+
+  @override
+  String get deactivateMemberConfirm => '停用';
+
+  @override
+  String get reactivateMemberConfirm => '重新启用';
+
+  @override
+  String get memberDeactivatedSnackbar => '成员资格已停用。';
+
+  @override
+  String get memberReactivatedSnackbar => '成员资格已重新启用。';
+
+  @override
+  String get errorLastTenantAdmin => '不能移除或停用组织中的最后一位管理员。';
 
   @override
   String get retry => '重试';

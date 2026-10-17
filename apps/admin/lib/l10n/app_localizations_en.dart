@@ -451,6 +451,213 @@ class AppLocalizationsEn extends AppLocalizations {
   String get peopleComingSoon => 'The member directory is coming soon.';
 
   @override
+  String get peopleSubtitle =>
+      'Search, filter, invite, and manage memberships.';
+
+  @override
+  String get navRoles => 'Roles';
+
+  @override
+  String get rolesSubtitle =>
+      'System and custom roles with their permission keys (read-only).';
+
+  @override
+  String get backToPeople => 'Back to people';
+
+  @override
+  String get noRoles => 'No roles yet.';
+
+  @override
+  String get systemRoleBadge => 'System';
+
+  @override
+  String get rolePermissionsHeading => 'Permissions';
+
+  @override
+  String get peopleSearchLabel => 'Search name, email, or mobile';
+
+  @override
+  String get peopleFilterCommunity => 'Community';
+
+  @override
+  String get peopleFilterRole => 'Role';
+
+  @override
+  String get peopleFilterStatus => 'Status';
+
+  @override
+  String get includeSubCommunities => 'Include sub-communities';
+
+  @override
+  String get pendingOnlyFilter => 'Pending only';
+
+  @override
+  String get anyCommunity => 'Any community';
+
+  @override
+  String get anyRole => 'Any role';
+
+  @override
+  String get anyStatus => 'Any status';
+
+  @override
+  String get clearFilter => 'Clear';
+
+  @override
+  String get pickCommunityTitle => 'Choose community';
+
+  @override
+  String get pickCommunityRequired => 'Choose a community';
+
+  @override
+  String get peopleColumnName => 'Name';
+
+  @override
+  String get peopleColumnContact => 'Email / mobile';
+
+  @override
+  String get peopleColumnCommunity => 'Community';
+
+  @override
+  String get peopleColumnRoles => 'Roles';
+
+  @override
+  String get peopleColumnStatus => 'Status';
+
+  @override
+  String get noMembers => 'No members match these filters.';
+
+  @override
+  String get loadMore => 'Load more';
+
+  @override
+  String get rowActions => 'Actions';
+
+  @override
+  String get viewMember => 'View';
+
+  @override
+  String get inviteMember => 'Invite member';
+
+  @override
+  String get inviteMemberTitle => 'Invite member';
+
+  @override
+  String get inviteMemberConfirm => 'Send invite';
+
+  @override
+  String get inviteEmailLabel => 'Email';
+
+  @override
+  String get inviteMobileLabel => 'Mobile';
+
+  @override
+  String get inviteDisplayNameLabel => 'Display name';
+
+  @override
+  String get inviteRoleLabel => 'Role';
+
+  @override
+  String get inviteIdentifierRequired => 'Enter an email or mobile number.';
+
+  @override
+  String get inviteEmailInvalid => 'Enter a valid email address.';
+
+  @override
+  String get inviteMobileInvalid => 'Enter a valid mobile number.';
+
+  @override
+  String get inviteEmailSentTitle => 'Invitation sent';
+
+  @override
+  String inviteEmailSentBody(String email) {
+    return 'An activation email was sent to $email.';
+  }
+
+  @override
+  String get inviteMobileLinkTitle => 'One-time activation link';
+
+  @override
+  String get inviteMobileLinkBody =>
+      'No email was sent. Copy this link and share it once with the member.';
+
+  @override
+  String get activationLinkShownOnceNote =>
+      'This link is shown once. It expires in 24 hours.';
+
+  @override
+  String get membershipStatusInactive => 'Deactivated';
+
+  @override
+  String get tenantLevelMembership => 'Organisation-wide';
+
+  @override
+  String memberCommunityLabel(String name) {
+    return 'Community: $name';
+  }
+
+  @override
+  String get memberRolesHeading => 'Roles';
+
+  @override
+  String get assignRoleAction => 'Add role';
+
+  @override
+  String get assignRoleTitle => 'Assign role';
+
+  @override
+  String get noRolesToAssign => 'All available roles are already assigned.';
+
+  @override
+  String get removeRoleTitle => 'Remove role';
+
+  @override
+  String removeRoleBody(String name) {
+    return 'Remove the $name role from this member?';
+  }
+
+  @override
+  String get removeRoleConfirm => 'Remove';
+
+  @override
+  String get deactivateMember => 'Deactivate';
+
+  @override
+  String get reactivateMember => 'Reactivate';
+
+  @override
+  String get deactivateMemberTitle => 'Deactivate membership';
+
+  @override
+  String get reactivateMemberTitle => 'Reactivate membership';
+
+  @override
+  String deactivateMemberBody(String name) {
+    return 'Deactivate $name? They will lose access until reactivated.';
+  }
+
+  @override
+  String reactivateMemberBody(String name) {
+    return 'Reactivate $name?';
+  }
+
+  @override
+  String get deactivateMemberConfirm => 'Deactivate';
+
+  @override
+  String get reactivateMemberConfirm => 'Reactivate';
+
+  @override
+  String get memberDeactivatedSnackbar => 'Membership deactivated.';
+
+  @override
+  String get memberReactivatedSnackbar => 'Membership reactivated.';
+
+  @override
+  String get errorLastTenantAdmin =>
+      'You cannot remove or deactivate the last organisation admin.';
+
+  @override
   String get retry => 'Retry';
 
   @override

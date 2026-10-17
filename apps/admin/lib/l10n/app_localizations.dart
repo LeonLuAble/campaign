@@ -927,6 +927,390 @@ abstract class AppLocalizations {
   /// **'The member directory is coming soon.'**
   String get peopleComingSoon;
 
+  /// No description provided for @peopleSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Search, filter, invite, and manage memberships.'**
+  String get peopleSubtitle;
+
+  /// No description provided for @navRoles.
+  ///
+  /// In en, this message translates to:
+  /// **'Roles'**
+  String get navRoles;
+
+  /// No description provided for @rolesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'System and custom roles with their permission keys (read-only).'**
+  String get rolesSubtitle;
+
+  /// No description provided for @backToPeople.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to people'**
+  String get backToPeople;
+
+  /// No description provided for @noRoles.
+  ///
+  /// In en, this message translates to:
+  /// **'No roles yet.'**
+  String get noRoles;
+
+  /// No description provided for @systemRoleBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get systemRoleBadge;
+
+  /// No description provided for @rolePermissionsHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Permissions'**
+  String get rolePermissionsHeading;
+
+  /// No description provided for @peopleSearchLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Search name, email, or mobile'**
+  String get peopleSearchLabel;
+
+  /// No description provided for @peopleFilterCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get peopleFilterCommunity;
+
+  /// No description provided for @peopleFilterRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Role'**
+  String get peopleFilterRole;
+
+  /// No description provided for @peopleFilterStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get peopleFilterStatus;
+
+  /// No description provided for @includeSubCommunities.
+  ///
+  /// In en, this message translates to:
+  /// **'Include sub-communities'**
+  String get includeSubCommunities;
+
+  /// No description provided for @pendingOnlyFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending only'**
+  String get pendingOnlyFilter;
+
+  /// No description provided for @anyCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Any community'**
+  String get anyCommunity;
+
+  /// No description provided for @anyRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Any role'**
+  String get anyRole;
+
+  /// No description provided for @anyStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Any status'**
+  String get anyStatus;
+
+  /// No description provided for @clearFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clearFilter;
+
+  /// No description provided for @pickCommunityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose community'**
+  String get pickCommunityTitle;
+
+  /// No description provided for @pickCommunityRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a community'**
+  String get pickCommunityRequired;
+
+  /// No description provided for @peopleColumnName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get peopleColumnName;
+
+  /// No description provided for @peopleColumnContact.
+  ///
+  /// In en, this message translates to:
+  /// **'Email / mobile'**
+  String get peopleColumnContact;
+
+  /// No description provided for @peopleColumnCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get peopleColumnCommunity;
+
+  /// No description provided for @peopleColumnRoles.
+  ///
+  /// In en, this message translates to:
+  /// **'Roles'**
+  String get peopleColumnRoles;
+
+  /// No description provided for @peopleColumnStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get peopleColumnStatus;
+
+  /// No description provided for @noMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'No members match these filters.'**
+  String get noMembers;
+
+  /// No description provided for @loadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more'**
+  String get loadMore;
+
+  /// No description provided for @rowActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Actions'**
+  String get rowActions;
+
+  /// No description provided for @viewMember.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get viewMember;
+
+  /// No description provided for @inviteMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite member'**
+  String get inviteMember;
+
+  /// No description provided for @inviteMemberTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite member'**
+  String get inviteMemberTitle;
+
+  /// No description provided for @inviteMemberConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Send invite'**
+  String get inviteMemberConfirm;
+
+  /// No description provided for @inviteEmailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get inviteEmailLabel;
+
+  /// No description provided for @inviteMobileLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile'**
+  String get inviteMobileLabel;
+
+  /// No description provided for @inviteDisplayNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Display name'**
+  String get inviteDisplayNameLabel;
+
+  /// No description provided for @inviteRoleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Role'**
+  String get inviteRoleLabel;
+
+  /// No description provided for @inviteIdentifierRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an email or mobile number.'**
+  String get inviteIdentifierRequired;
+
+  /// No description provided for @inviteEmailInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email address.'**
+  String get inviteEmailInvalid;
+
+  /// No description provided for @inviteMobileInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid mobile number.'**
+  String get inviteMobileInvalid;
+
+  /// No description provided for @inviteEmailSentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Invitation sent'**
+  String get inviteEmailSentTitle;
+
+  /// No description provided for @inviteEmailSentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'An activation email was sent to {email}.'**
+  String inviteEmailSentBody(String email);
+
+  /// No description provided for @inviteMobileLinkTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'One-time activation link'**
+  String get inviteMobileLinkTitle;
+
+  /// No description provided for @inviteMobileLinkBody.
+  ///
+  /// In en, this message translates to:
+  /// **'No email was sent. Copy this link and share it once with the member.'**
+  String get inviteMobileLinkBody;
+
+  /// No description provided for @activationLinkShownOnceNote.
+  ///
+  /// In en, this message translates to:
+  /// **'This link is shown once. It expires in 24 hours.'**
+  String get activationLinkShownOnceNote;
+
+  /// No description provided for @membershipStatusInactive.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivated'**
+  String get membershipStatusInactive;
+
+  /// No description provided for @tenantLevelMembership.
+  ///
+  /// In en, this message translates to:
+  /// **'Organisation-wide'**
+  String get tenantLevelMembership;
+
+  /// No description provided for @memberCommunityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Community: {name}'**
+  String memberCommunityLabel(String name);
+
+  /// No description provided for @memberRolesHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Roles'**
+  String get memberRolesHeading;
+
+  /// No description provided for @assignRoleAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add role'**
+  String get assignRoleAction;
+
+  /// No description provided for @assignRoleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Assign role'**
+  String get assignRoleTitle;
+
+  /// No description provided for @noRolesToAssign.
+  ///
+  /// In en, this message translates to:
+  /// **'All available roles are already assigned.'**
+  String get noRolesToAssign;
+
+  /// No description provided for @removeRoleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove role'**
+  String get removeRoleTitle;
+
+  /// No description provided for @removeRoleBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove the {name} role from this member?'**
+  String removeRoleBody(String name);
+
+  /// No description provided for @removeRoleConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get removeRoleConfirm;
+
+  /// No description provided for @deactivateMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate'**
+  String get deactivateMember;
+
+  /// No description provided for @reactivateMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Reactivate'**
+  String get reactivateMember;
+
+  /// No description provided for @deactivateMemberTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate membership'**
+  String get deactivateMemberTitle;
+
+  /// No description provided for @reactivateMemberTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reactivate membership'**
+  String get reactivateMemberTitle;
+
+  /// No description provided for @deactivateMemberBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate {name}? They will lose access until reactivated.'**
+  String deactivateMemberBody(String name);
+
+  /// No description provided for @reactivateMemberBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Reactivate {name}?'**
+  String reactivateMemberBody(String name);
+
+  /// No description provided for @deactivateMemberConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate'**
+  String get deactivateMemberConfirm;
+
+  /// No description provided for @reactivateMemberConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Reactivate'**
+  String get reactivateMemberConfirm;
+
+  /// No description provided for @memberDeactivatedSnackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'Membership deactivated.'**
+  String get memberDeactivatedSnackbar;
+
+  /// No description provided for @memberReactivatedSnackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'Membership reactivated.'**
+  String get memberReactivatedSnackbar;
+
+  /// No description provided for @errorLastTenantAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'You cannot remove or deactivate the last organisation admin.'**
+  String get errorLastTenantAdmin;
+
   /// No description provided for @retry.
   ///
   /// In en, this message translates to:
