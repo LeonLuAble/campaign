@@ -89,7 +89,9 @@ void main() {
     await pumpApp(tester, api: api);
     await signIn(tester);
 
-    await tester.tap(find.widgetWithText(ListTile, 'Tzu Chi Malaysia'));
+    await tester.tap(find.byType(DropdownButton<String>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tzu Chi Malaysia').last);
     await tester.pumpAndSettle();
 
     expect(find.text('Campaigns'), findsWidgets);
@@ -104,7 +106,9 @@ void main() {
     final api = adminApi();
     await pumpApp(tester, api: api, size: const Size(1440, 1000));
     await signIn(tester);
-    await tester.tap(find.widgetWithText(ListTile, 'Tzu Chi Malaysia'));
+    await tester.tap(find.byType(DropdownButton<String>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tzu Chi Malaysia').last);
     await tester.pumpAndSettle();
 
     for (final width in [1440.0, 1024.0, 768.0]) {
@@ -124,7 +128,9 @@ void main() {
     await pumpApp(tester, api: api);
     await signIn(tester);
 
-    await tester.tap(find.widgetWithText(ListTile, 'Tzu Chi Malaysia'));
+    await tester.tap(find.byType(DropdownButton<String>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tzu Chi Malaysia').last);
     await tester.pumpAndSettle();
     expect(find.textContaining('Tzu Chi Malaysia'), findsWidgets);
 

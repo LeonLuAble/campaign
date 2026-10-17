@@ -169,5 +169,64 @@
   "acceptedMessage": "如果账户存在，我们已发送说明。",
   "activateSuccess": "账户已激活，可以登录。",
   "resetSuccess": "密码已更新，可以登录。",
-  "goToLogin": "前往登录"
+  "goToLogin": "前往登录",
+
+  "platformCustomersTitle": "客户",
+  "platformCustomersSubtitle": "入驻组织。仅平台元数据，不含租户业务数据。",
+  "searchCustomers": "按名称或 slug 搜索",
+  "noPlatformCustomers": "暂无客户。请创建第一个组织。",
+  "noSearchResults": "没有匹配的客户。",
+  "customerSlugLabel": "Slug",
+  "customerStatusLabel": "状态",
+  "customerCreatedLabel": "创建时间",
+  "adminCountLabel": "管理员",
+  "pendingInvitesLabel": "待激活邀请",
+  "statusActive": "启用",
+  "statusInactive": "停用",
+  "customerDetailTitle": "客户",
+  "wizardStepOrganisation": "组织",
+  "wizardStepAdmin": "首位管理员",
+  "wizardStepReview": "确认",
+  "wizardNext": "下一步",
+  "wizardBack": "上一步",
+  "cancel": "取消",
+  "adminNameRequired": "请输入管理员显示名称。",
+  "adminLocaleLabel": "管理员语言",
+  "createCustomerSuccessTitle": "客户已创建",
+  "createCustomerSuccessMessage": "激活邮件已发送至 {email}。",
+  "@createCustomerSuccessMessage": {
+    "placeholders": { "email": { "type": "String" } }
+  },
+  "createCustomerSuccessDetail": "{name} 已就绪。管理员可激活并登录。",
+  "@createCustomerSuccessDetail": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "createCustomerFailureHint": "可重试创建，或打开客户详情重新发送激活邮件。",
+  "viewCustomer": "查看客户",
+  "backToCustomers": "返回客户列表",
+  "resendActivation": "重发激活邮件",
+  "activationResentSnackbar": "已再次发送激活邮件。",
+  "adminsSectionTitle": "管理员",
+  "noAdminsYet": "尚未记录管理员。请邀请一位以开始。",
+  "inviteAnotherAdmin": "邀请另一位管理员",
+  "inviteAdminTitle": "邀请管理员",
+  "inviteAdminConfirm": "发送邀请",
+  "inviteAdminConfirmBody": "向 {email} 发送激活邀请？",
+  "@inviteAdminConfirmBody": {
+    "placeholders": { "email": { "type": "String" } }
+  },
+  "inviteAdminSuccessSnackbar": "邀请已发送。",
+  "resendActivationConfirmBody": "向 {email} 重新发送激活邮件？",
+  "@resendActivationConfirmBody": {
+    "placeholders": { "email": { "type": "String" } }
+  },
+  "activationStatusPending": "待激活",
+  "activationStatusActive": "已激活",
+  "adminCountSummary": "{admins} 位管理员 · {pending} 个待激活邀请",
+  "@adminCountSummary": {
+    "placeholders": {
+      "admins": { "type": "int" },
+      "pending": { "type": "int" }
+    }
+  }
 }

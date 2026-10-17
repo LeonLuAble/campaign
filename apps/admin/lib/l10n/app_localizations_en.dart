@@ -538,4 +538,138 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get goToLogin => 'Go to sign in';
+
+  @override
+  String get platformCustomersTitle => 'Customers';
+
+  @override
+  String get platformCustomersSubtitle =>
+      'Onboard organisations. Platform metadata only — no tenant data.';
+
+  @override
+  String get searchCustomers => 'Search by name or slug';
+
+  @override
+  String get noPlatformCustomers =>
+      'No customers yet. Create the first organisation.';
+
+  @override
+  String get noSearchResults => 'No customers match your search.';
+
+  @override
+  String get customerSlugLabel => 'Slug';
+
+  @override
+  String get customerStatusLabel => 'Status';
+
+  @override
+  String get customerCreatedLabel => 'Created';
+
+  @override
+  String get adminCountLabel => 'Admins';
+
+  @override
+  String get pendingInvitesLabel => 'Pending invites';
+
+  @override
+  String get statusActive => 'Active';
+
+  @override
+  String get statusInactive => 'Inactive';
+
+  @override
+  String get customerDetailTitle => 'Customer';
+
+  @override
+  String get wizardStepOrganisation => 'Organisation';
+
+  @override
+  String get wizardStepAdmin => 'First admin';
+
+  @override
+  String get wizardStepReview => 'Review';
+
+  @override
+  String get wizardNext => 'Next';
+
+  @override
+  String get wizardBack => 'Back';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get adminNameRequired => 'Enter the admin display name.';
+
+  @override
+  String get adminLocaleLabel => 'Admin language';
+
+  @override
+  String get createCustomerSuccessTitle => 'Customer created';
+
+  @override
+  String createCustomerSuccessMessage(String email) {
+    return 'An activation email was sent to $email.';
+  }
+
+  @override
+  String createCustomerSuccessDetail(String name) {
+    return '$name is ready. The admin can activate and sign in.';
+  }
+
+  @override
+  String get createCustomerFailureHint =>
+      'You can retry create, or open the customer and resend the activation email.';
+
+  @override
+  String get viewCustomer => 'View customer';
+
+  @override
+  String get backToCustomers => 'Back to customers';
+
+  @override
+  String get resendActivation => 'Resend activation';
+
+  @override
+  String get activationResentSnackbar => 'Activation email sent again.';
+
+  @override
+  String get adminsSectionTitle => 'Admins';
+
+  @override
+  String get noAdminsYet =>
+      'No admins recorded yet. Invite one to get started.';
+
+  @override
+  String get inviteAnotherAdmin => 'Invite another admin';
+
+  @override
+  String get inviteAdminTitle => 'Invite admin';
+
+  @override
+  String get inviteAdminConfirm => 'Send invite';
+
+  @override
+  String inviteAdminConfirmBody(String email) {
+    return 'Send an activation invite to $email?';
+  }
+
+  @override
+  String get inviteAdminSuccessSnackbar => 'Invitation sent.';
+
+  @override
+  String resendActivationConfirmBody(String email) {
+    return 'Resend the activation email to $email?';
+  }
+
+  @override
+  String get activationStatusPending => 'Pending';
+
+  @override
+  String get activationStatusActive => 'Active';
+
+  @override
+  String adminCountSummary(int admins, int pending) {
+    return '$admins admins · $pending pending invites';
+  }
 }

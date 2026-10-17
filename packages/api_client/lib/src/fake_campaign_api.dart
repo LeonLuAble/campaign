@@ -3,6 +3,23 @@ import 'campaign_api.dart';
 import 'models.dart';
 import 'token_store.dart';
 
+/// Platform-admin row tracked by [FakeCampaignApiClient] for console UI tests.
+class FakePlatformAdmin {
+  const FakePlatformAdmin({
+    required this.userId,
+    required this.email,
+    required this.displayName,
+    required this.activationStatus,
+    this.locale = 'en',
+  });
+
+  final String userId;
+  final String email;
+  final String displayName;
+  final String activationStatus;
+  final String locale;
+}
+
 class FakeCampaignApiClient implements CampaignApiClient {
   /// Default tenant-admin style access used when [customerAccess] is omitted.
   static const CustomerAccess defaultTenantAccess = CustomerAccess(
@@ -367,6 +384,11 @@ class FakeCampaignApiClient implements CampaignApiClient {
   CustomerAccess customerAccess;
   List<Membership> memberships;
   List<PlatformCustomerSummary> platformCustomerSummaries;
+  /// Admins known to the fake platform console (create / invite).
+  final Map<String, List<FakePlatformAdmin>> platformAdmins = {};
+  ApiException? createCustomerError;
+  ApiException? listPlatformCustomersError;
+  final List<({String customerId, String userId})> resendActivationCalls = [];
   List<Campaign> campaigns;
   List<CampaignTemplate> templates;
   List<CampaignScope> scopes;
@@ -629,8 +651,27 @@ class FakeCampaignApiClient implements CampaignApiClient {
     if (!profile.isPlatformAdmin) {
       _throw('FORBIDDEN', status: 403);
     }
+    if (createCustomerError != null) {
+      final error = createCustomerError!;
+      createCustomerError = null;
+      throw error;
+    }
     if (initialAdminUserId != null && initialAdmin != null) {
       _throw('VALIDATION_FAILED', status: 400);
+    }
+    if (platformCustomerSummaries.isEmpty) {
+      platformCustomerSummaries = [
+        for (final customer in customers)
+          PlatformCustomerSummary(
+            id: customer.id,
+            name: customer.name,
+            slug: customer.slug,
+            isActive: customer.isActive,
+            createdAt: DateTime.now().toUtc().toIso8601String(),
+            adminCount: 1,
+            pendingAdminInvites: 0,
+          ),
+      ];
     }
     final created = Customer(
       id: 'cust-${customers.length + 1}',
@@ -654,6 +695,18 @@ class FakeCampaignApiClient implements CampaignApiClient {
         pendingAdminInvites: initialAdmin == null ? 0 : 1,
       ),
     ];
+    if (initialAdmin != null) {
+      final adminId = 'admin-${created.id}';
+      platformAdmins[created.id] = [
+        FakePlatformAdmin(
+          userId: adminId,
+          email: initialAdmin.email,
+          displayName: initialAdmin.displayName ?? initialAdmin.email,
+          activationStatus: 'pending',
+          locale: initialAdmin.locale ?? 'en',
+        ),
+      ];
+    }
     return created;
   }
 
@@ -697,6 +750,11 @@ class FakeCampaignApiClient implements CampaignApiClient {
     if (!profile.isPlatformAdmin) {
       _throw('FORBIDDEN', status: 403);
     }
+    if (listPlatformCustomersError != null) {
+      final error = listPlatformCustomersError!;
+      listPlatformCustomersError = null;
+      throw error;
+    }
     if (platformCustomerSummaries.isNotEmpty) {
       return platformCustomerSummaries;
     }
@@ -714,6 +772,9 @@ class FakeCampaignApiClient implements CampaignApiClient {
     ];
   }
 
+  List<FakePlatformAdmin> platformAdminsFor(String customerId) =>
+      List.unmodifiable(platformAdmins[customerId] ?? const []);
+
   @override
   Future<PlatformAdminInviteResult> invitePlatformAdmin(
     String customerId, {
@@ -725,11 +786,43 @@ class FakeCampaignApiClient implements CampaignApiClient {
       _throw('FORBIDDEN', status: 403);
     }
     await getCustomer(customerId);
+    final existing = platformAdmins[customerId] ?? [];
+    final matchIndex = existing.indexWhere(
+      (row) => row.email.toLowerCase() == email.toLowerCase(),
+    );
+    late final FakePlatformAdmin admin;
+    if (matchIndex >= 0) {
+      admin = existing[matchIndex];
+    } else {
+      admin = FakePlatformAdmin(
+        userId: 'invited-${existing.length + 1}-$customerId',
+        email: email,
+        displayName: displayName ?? email,
+        activationStatus: 'pending',
+        locale: locale ?? 'en',
+      );
+      platformAdmins[customerId] = [...existing, admin];
+      platformCustomerSummaries = [
+        for (final row in platformCustomerSummaries)
+          if (row.id == customerId)
+            PlatformCustomerSummary(
+              id: row.id,
+              name: row.name,
+              slug: row.slug,
+              isActive: row.isActive,
+              createdAt: row.createdAt,
+              adminCount: row.adminCount + 1,
+              pendingAdminInvites: row.pendingAdminInvites + 1,
+            )
+          else
+            row,
+      ];
+    }
     return PlatformAdminInviteResult(
       customerId: customerId,
-      userId: 'invited-${platformCustomerSummaries.length + 1}',
-      email: email,
-      activationStatus: 'pending',
+      userId: admin.userId,
+      email: admin.email,
+      activationStatus: admin.activationStatus,
       activationToken: 'fake-invite-token',
     );
   }
@@ -743,6 +836,11 @@ class FakeCampaignApiClient implements CampaignApiClient {
       _throw('FORBIDDEN', status: 403);
     }
     await getCustomer(customerId);
+    final admins = platformAdmins[customerId] ?? const [];
+    if (!admins.any((row) => row.userId == userId)) {
+      _throw('NOT_FOUND', status: 404);
+    }
+    resendActivationCalls.add((customerId: customerId, userId: userId));
   }
 
   @override

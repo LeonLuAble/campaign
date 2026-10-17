@@ -522,6 +522,136 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get goToLogin => '前往登录';
+
+  @override
+  String get platformCustomersTitle => '客户';
+
+  @override
+  String get platformCustomersSubtitle => '入驻组织。仅平台元数据，不含租户业务数据。';
+
+  @override
+  String get searchCustomers => '按名称或 slug 搜索';
+
+  @override
+  String get noPlatformCustomers => '暂无客户。请创建第一个组织。';
+
+  @override
+  String get noSearchResults => '没有匹配的客户。';
+
+  @override
+  String get customerSlugLabel => 'Slug';
+
+  @override
+  String get customerStatusLabel => '状态';
+
+  @override
+  String get customerCreatedLabel => '创建时间';
+
+  @override
+  String get adminCountLabel => '管理员';
+
+  @override
+  String get pendingInvitesLabel => '待激活邀请';
+
+  @override
+  String get statusActive => '启用';
+
+  @override
+  String get statusInactive => '停用';
+
+  @override
+  String get customerDetailTitle => '客户';
+
+  @override
+  String get wizardStepOrganisation => '组织';
+
+  @override
+  String get wizardStepAdmin => '首位管理员';
+
+  @override
+  String get wizardStepReview => '确认';
+
+  @override
+  String get wizardNext => '下一步';
+
+  @override
+  String get wizardBack => '上一步';
+
+  @override
+  String get cancel => '取消';
+
+  @override
+  String get adminNameRequired => '请输入管理员显示名称。';
+
+  @override
+  String get adminLocaleLabel => '管理员语言';
+
+  @override
+  String get createCustomerSuccessTitle => '客户已创建';
+
+  @override
+  String createCustomerSuccessMessage(String email) {
+    return '激活邮件已发送至 $email。';
+  }
+
+  @override
+  String createCustomerSuccessDetail(String name) {
+    return '$name 已就绪。管理员可激活并登录。';
+  }
+
+  @override
+  String get createCustomerFailureHint => '可重试创建，或打开客户详情重新发送激活邮件。';
+
+  @override
+  String get viewCustomer => '查看客户';
+
+  @override
+  String get backToCustomers => '返回客户列表';
+
+  @override
+  String get resendActivation => '重发激活邮件';
+
+  @override
+  String get activationResentSnackbar => '已再次发送激活邮件。';
+
+  @override
+  String get adminsSectionTitle => '管理员';
+
+  @override
+  String get noAdminsYet => '尚未记录管理员。请邀请一位以开始。';
+
+  @override
+  String get inviteAnotherAdmin => '邀请另一位管理员';
+
+  @override
+  String get inviteAdminTitle => '邀请管理员';
+
+  @override
+  String get inviteAdminConfirm => '发送邀请';
+
+  @override
+  String inviteAdminConfirmBody(String email) {
+    return '向 $email 发送激活邀请？';
+  }
+
+  @override
+  String get inviteAdminSuccessSnackbar => '邀请已发送。';
+
+  @override
+  String resendActivationConfirmBody(String email) {
+    return '向 $email 重新发送激活邮件？';
+  }
+
+  @override
+  String get activationStatusPending => '待激活';
+
+  @override
+  String get activationStatusActive => '已激活';
+
+  @override
+  String adminCountSummary(int admins, int pending) {
+    return '$admins 位管理员 · $pending 个待激活邀请';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -1041,4 +1171,134 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get goToLogin => '前往登录';
+
+  @override
+  String get platformCustomersTitle => '客户';
+
+  @override
+  String get platformCustomersSubtitle => '入驻组织。仅平台元数据，不含租户业务数据。';
+
+  @override
+  String get searchCustomers => '按名称或 slug 搜索';
+
+  @override
+  String get noPlatformCustomers => '暂无客户。请创建第一个组织。';
+
+  @override
+  String get noSearchResults => '没有匹配的客户。';
+
+  @override
+  String get customerSlugLabel => 'Slug';
+
+  @override
+  String get customerStatusLabel => '状态';
+
+  @override
+  String get customerCreatedLabel => '创建时间';
+
+  @override
+  String get adminCountLabel => '管理员';
+
+  @override
+  String get pendingInvitesLabel => '待激活邀请';
+
+  @override
+  String get statusActive => '启用';
+
+  @override
+  String get statusInactive => '停用';
+
+  @override
+  String get customerDetailTitle => '客户';
+
+  @override
+  String get wizardStepOrganisation => '组织';
+
+  @override
+  String get wizardStepAdmin => '首位管理员';
+
+  @override
+  String get wizardStepReview => '确认';
+
+  @override
+  String get wizardNext => '下一步';
+
+  @override
+  String get wizardBack => '上一步';
+
+  @override
+  String get cancel => '取消';
+
+  @override
+  String get adminNameRequired => '请输入管理员显示名称。';
+
+  @override
+  String get adminLocaleLabel => '管理员语言';
+
+  @override
+  String get createCustomerSuccessTitle => '客户已创建';
+
+  @override
+  String createCustomerSuccessMessage(String email) {
+    return '激活邮件已发送至 $email。';
+  }
+
+  @override
+  String createCustomerSuccessDetail(String name) {
+    return '$name 已就绪。管理员可激活并登录。';
+  }
+
+  @override
+  String get createCustomerFailureHint => '可重试创建，或打开客户详情重新发送激活邮件。';
+
+  @override
+  String get viewCustomer => '查看客户';
+
+  @override
+  String get backToCustomers => '返回客户列表';
+
+  @override
+  String get resendActivation => '重发激活邮件';
+
+  @override
+  String get activationResentSnackbar => '已再次发送激活邮件。';
+
+  @override
+  String get adminsSectionTitle => '管理员';
+
+  @override
+  String get noAdminsYet => '尚未记录管理员。请邀请一位以开始。';
+
+  @override
+  String get inviteAnotherAdmin => '邀请另一位管理员';
+
+  @override
+  String get inviteAdminTitle => '邀请管理员';
+
+  @override
+  String get inviteAdminConfirm => '发送邀请';
+
+  @override
+  String inviteAdminConfirmBody(String email) {
+    return '向 $email 发送激活邀请？';
+  }
+
+  @override
+  String get inviteAdminSuccessSnackbar => '邀请已发送。';
+
+  @override
+  String resendActivationConfirmBody(String email) {
+    return '向 $email 重新发送激活邮件？';
+  }
+
+  @override
+  String get activationStatusPending => '待激活';
+
+  @override
+  String get activationStatusActive => '已激活';
+
+  @override
+  String adminCountSummary(int admins, int pending) {
+    return '$admins 位管理员 · $pending 个待激活邀请';
+  }
 }

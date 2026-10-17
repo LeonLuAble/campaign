@@ -65,10 +65,14 @@ void main() {
     expect(find.text('Tzu Chi Malaysia'), findsWidgets);
     expect(find.text('Create customer'), findsWidgets);
 
+    await tester.tap(find.widgetWithText(FilledButton, 'Create customer'));
+    await tester.pumpAndSettle();
     await tester.enterText(
       find.widgetWithText(TextField, 'Customer name'),
       'New Tenant',
     );
+    await tester.tap(find.widgetWithText(FilledButton, 'Next'));
+    await tester.pumpAndSettle();
     await tester.enterText(
       find.widgetWithText(TextField, 'Admin display name'),
       'Tenant Admin',
@@ -77,16 +81,18 @@ void main() {
       find.widgetWithText(TextField, 'Admin email'),
       'tenant.admin@example.com',
     );
+    await tester.tap(find.widgetWithText(FilledButton, 'Next'));
+    await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Create customer'));
     await tester.pumpAndSettle();
-    // Activation dialog when initialAdmin is new (fake returns a token).
-    if (find.text('Share activation link').evaluate().isNotEmpty) {
-      await tester.tap(find.widgetWithText(FilledButton, 'Close'));
-      await tester.pumpAndSettle();
-    }
+    expect(find.text('Customer created'), findsOneWidget);
+    await tester.tap(find.widgetWithText(TextButton, 'Back to customers'));
+    await tester.pumpAndSettle();
     expect(find.text('New Tenant'), findsWidgets);
 
-    await tester.tap(find.widgetWithText(ListTile, 'Tzu Chi Malaysia'));
+    await tester.tap(find.byType(DropdownButton<String>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tzu Chi Malaysia').last);
     await tester.pumpAndSettle();
     Finder navIcon(IconData icon) => find.descendant(
           of: find.byType(NavigationRail),

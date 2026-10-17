@@ -203,5 +203,64 @@
   "acceptedMessage": "If the account exists, we sent instructions.",
   "activateSuccess": "Your account is activated. You can sign in.",
   "resetSuccess": "Your password was updated. You can sign in.",
-  "goToLogin": "Go to sign in"
+  "goToLogin": "Go to sign in",
+
+  "platformCustomersTitle": "Customers",
+  "platformCustomersSubtitle": "Onboard organisations. Platform metadata only — no tenant data.",
+  "searchCustomers": "Search by name or slug",
+  "noPlatformCustomers": "No customers yet. Create the first organisation.",
+  "noSearchResults": "No customers match your search.",
+  "customerSlugLabel": "Slug",
+  "customerStatusLabel": "Status",
+  "customerCreatedLabel": "Created",
+  "adminCountLabel": "Admins",
+  "pendingInvitesLabel": "Pending invites",
+  "statusActive": "Active",
+  "statusInactive": "Inactive",
+  "customerDetailTitle": "Customer",
+  "wizardStepOrganisation": "Organisation",
+  "wizardStepAdmin": "First admin",
+  "wizardStepReview": "Review",
+  "wizardNext": "Next",
+  "wizardBack": "Back",
+  "cancel": "Cancel",
+  "adminNameRequired": "Enter the admin display name.",
+  "adminLocaleLabel": "Admin language",
+  "createCustomerSuccessTitle": "Customer created",
+  "createCustomerSuccessMessage": "An activation email was sent to {email}.",
+  "@createCustomerSuccessMessage": {
+    "placeholders": { "email": { "type": "String" } }
+  },
+  "createCustomerSuccessDetail": "{name} is ready. The admin can activate and sign in.",
+  "@createCustomerSuccessDetail": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "createCustomerFailureHint": "You can retry create, or open the customer and resend the activation email.",
+  "viewCustomer": "View customer",
+  "backToCustomers": "Back to customers",
+  "resendActivation": "Resend activation",
+  "activationResentSnackbar": "Activation email sent again.",
+  "adminsSectionTitle": "Admins",
+  "noAdminsYet": "No admins recorded yet. Invite one to get started.",
+  "inviteAnotherAdmin": "Invite another admin",
+  "inviteAdminTitle": "Invite admin",
+  "inviteAdminConfirm": "Send invite",
+  "inviteAdminConfirmBody": "Send an activation invite to {email}?",
+  "@inviteAdminConfirmBody": {
+    "placeholders": { "email": { "type": "String" } }
+  },
+  "inviteAdminSuccessSnackbar": "Invitation sent.",
+  "resendActivationConfirmBody": "Resend the activation email to {email}?",
+  "@resendActivationConfirmBody": {
+    "placeholders": { "email": { "type": "String" } }
+  },
+  "activationStatusPending": "Pending",
+  "activationStatusActive": "Active",
+  "adminCountSummary": "{admins} admins · {pending} pending invites",
+  "@adminCountSummary": {
+    "placeholders": {
+      "admins": { "type": "int" },
+      "pending": { "type": "int" }
+    }
+  }
 }

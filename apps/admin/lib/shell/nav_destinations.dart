@@ -50,7 +50,7 @@ List<AdminNavItem> buildAdminNavItems(
         id: AdminNavId.platform,
         label: l10n.navCustomers,
         icon: Icons.apartment_outlined,
-        locationBuilder: (_) => '/',
+        locationBuilder: (_) => '/platform/customers',
         platformAdminOnly: true,
       ),
     );
@@ -137,7 +137,9 @@ List<AdminNavItem> buildAdminNavItems(
 
 int selectedNavIndex(String location, List<AdminNavItem> items) {
   String? id;
-  if (location == '/' || location == '/customers') {
+  if (location == '/' ||
+      location == '/customers' ||
+      location.startsWith('/platform/')) {
     id = AdminNavId.platform;
   } else if (location.contains('/people')) {
     id = AdminNavId.people;

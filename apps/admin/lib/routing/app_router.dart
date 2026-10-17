@@ -10,11 +10,13 @@ import '../campaigns/impact_factors_page.dart';
 import '../campaigns/participants_page.dart';
 import '../campaigns/submissions_page.dart';
 import '../communities/community_list_page.dart';
-import '../customers/customer_list_page.dart';
 import '../dashboards/aggregate_dashboard_page.dart';
 import '../imports/csv_import_page.dart';
 import '../overview/overview_page.dart';
 import '../people/people_page.dart';
+import '../platform/create_customer_wizard_page.dart';
+import '../platform/platform_customer_detail_page.dart';
+import '../platform/platform_customers_page.dart';
 import '../reports/campaign_report_page.dart';
 import '../reports/reports_list_page.dart';
 import '../session/session_controller.dart';
@@ -37,20 +39,27 @@ GoRouter createRouter({required SessionController session}) {
       }
       if (loggedIn && location == '/login') {
         if (session.isPlatformAdmin) {
-          return '/';
+          return '/platform/customers';
         }
         final customerId = session.customer?.id ??
             (session.customers.isNotEmpty ? session.customers.first.id : null);
         if (customerId != null) {
           return '/customers/$customerId';
         }
-        return '/';
+        return '/platform/customers';
       }
       if (loggedIn &&
-          location == '/' &&
-          !session.isPlatformAdmin &&
-          session.customers.isNotEmpty) {
-        return '/customers/${session.customer?.id ?? session.customers.first.id}';
+          (location == '/' || location.startsWith('/platform/')) &&
+          !session.isPlatformAdmin) {
+        final customerId = session.customer?.id ??
+            (session.customers.isNotEmpty ? session.customers.first.id : null);
+        if (customerId != null) {
+          return '/customers/$customerId';
+        }
+        return '/login';
+      }
+      if (loggedIn && location == '/' && session.isPlatformAdmin) {
+        return '/platform/customers';
       }
       return null;
     },
@@ -85,7 +94,64 @@ GoRouter createRouter({required SessionController session}) {
               GoRoute(
                 path: '/',
                 name: 'home',
-                builder: (context, state) => const CustomerListPage(),
+                redirect: (context, state) {
+                  if (session.isPlatformAdmin) {
+                    return '/platform/customers';
+                  }
+                  final id = session.customer?.id ??
+                      (session.customers.isNotEmpty
+                          ? session.customers.first.id
+                          : null);
+                  return id == null ? '/login' : '/customers/$id';
+                },
+              ),
+              GoRoute(
+                path: '/platform/customers',
+                name: 'platformCustomers',
+                redirect: (context, state) {
+                  if (!session.isPlatformAdmin) {
+                    final id = session.customer?.id ??
+                        (session.customers.isNotEmpty
+                            ? session.customers.first.id
+                            : null);
+                    return id == null ? '/login' : '/customers/$id';
+                  }
+                  return null;
+                },
+                builder: (context, state) => const PlatformCustomersPage(),
+              ),
+              GoRoute(
+                path: '/platform/customers/new',
+                name: 'platformCustomerNew',
+                redirect: (context, state) {
+                  if (!session.isPlatformAdmin) {
+                    final id = session.customer?.id ??
+                        (session.customers.isNotEmpty
+                            ? session.customers.first.id
+                            : null);
+                    return id == null ? '/login' : '/customers/$id';
+                  }
+                  return null;
+                },
+                builder: (context, state) =>
+                    const CreateCustomerWizardPage(),
+              ),
+              GoRoute(
+                path: '/platform/customers/:customerId',
+                name: 'platformCustomerDetail',
+                redirect: (context, state) {
+                  if (!session.isPlatformAdmin) {
+                    final id = session.customer?.id ??
+                        (session.customers.isNotEmpty
+                            ? session.customers.first.id
+                            : null);
+                    return id == null ? '/login' : '/customers/$id';
+                  }
+                  return null;
+                },
+                builder: (context, state) => PlatformCustomerDetailPage(
+                  customerId: state.pathParameters['customerId']!,
+                ),
               ),
             ],
           ),

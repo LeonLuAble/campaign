@@ -9,6 +9,7 @@ export 'src/components/empty_state.dart';
 export 'src/components/error_state.dart';
 export 'src/components/loading_skeleton.dart';
 export 'src/components/status_chip.dart';
+export 'src/components/wizard_stepper.dart';
 export 'src/layout/app_shell.dart';
 export 'src/layout/page_scaffold.dart';
 export 'src/theme/app_theme.dart';

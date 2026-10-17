@@ -216,6 +216,40 @@ void main() {
               'tooltip="${data.tooltip}"',
         );
       });
+
+      testWidgets('WizardStepper shows steps and footer actions', (tester) async {
+        await tester.binding.setSurfaceSize(const Size(640, 480));
+        final step1 = isZh(c.locale) ? '组织' : 'Organisation';
+        final step2 = isZh(c.locale) ? '管理员' : 'Admin';
+        final next = isZh(c.locale) ? '下一步' : 'Next';
+        final back = isZh(c.locale) ? '上一步' : 'Back';
+        var advanced = false;
+        await tester.pumpWidget(
+          harness(
+            locale: c.locale,
+            textScale: c.scale,
+            child: SizedBox(
+              height: 400,
+              child: WizardStepper(
+                steps: [step1, step2],
+                currentStep: 0,
+                nextLabel: next,
+                backLabel: back,
+                onBack: () {},
+                onNext: () => advanced = true,
+                body: Text(isZh(c.locale) ? '内容' : 'Body'),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        expect(find.text(step1), findsOneWidget);
+        expect(find.text(step2), findsOneWidget);
+        expect(find.text(isZh(c.locale) ? '内容' : 'Body'), findsOneWidget);
+        await tester.tap(find.text(next));
+        expect(advanced, isTrue);
+      });
     });
   }
 }

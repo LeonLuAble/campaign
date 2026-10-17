@@ -98,8 +98,16 @@ class _Breadcrumbs extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final crumbs = <String>[];
-    if (location == '/' || location == '/customers') {
+    if (location == '/' ||
+        location == '/customers' ||
+        location.startsWith('/platform/')) {
       crumbs.add(l10n.navCustomers);
+      if (location.endsWith('/new')) {
+        crumbs.add(l10n.createCustomer);
+      } else if (RegExp(r'^/platform/customers/[^/]+').hasMatch(location) &&
+          !location.endsWith('/new')) {
+        crumbs.add(l10n.customerDetailTitle);
+      }
     } else {
       final customerName = session.customer?.name ?? l10n.customersTitle;
       crumbs.add(customerName);
@@ -174,7 +182,9 @@ class _CustomerSwitcher extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final customers = session.customers;
     final selected = session.customer;
-    final onPlatform = location == '/' || location == '/customers';
+    final onPlatform = location == '/' ||
+        location == '/customers' ||
+        location.startsWith('/platform/');
     final showSwitcher = customers.length > 1 ||
         (session.isPlatformAdmin && customers.isNotEmpty);
 
@@ -215,7 +225,7 @@ class _CustomerSwitcher extends StatelessWidget {
               return;
             }
             if (id == '__platform__') {
-              context.go('/');
+              context.go('/platform/customers');
               return;
             }
             final match = customers.where((row) => row.id == id).firstOrNull;

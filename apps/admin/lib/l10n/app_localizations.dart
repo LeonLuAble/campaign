@@ -1094,6 +1094,246 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Go to sign in'**
   String get goToLogin;
+
+  /// No description provided for @platformCustomersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Customers'**
+  String get platformCustomersTitle;
+
+  /// No description provided for @platformCustomersSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Onboard organisations. Platform metadata only — no tenant data.'**
+  String get platformCustomersSubtitle;
+
+  /// No description provided for @searchCustomers.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by name or slug'**
+  String get searchCustomers;
+
+  /// No description provided for @noPlatformCustomers.
+  ///
+  /// In en, this message translates to:
+  /// **'No customers yet. Create the first organisation.'**
+  String get noPlatformCustomers;
+
+  /// No description provided for @noSearchResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No customers match your search.'**
+  String get noSearchResults;
+
+  /// No description provided for @customerSlugLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Slug'**
+  String get customerSlugLabel;
+
+  /// No description provided for @customerStatusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get customerStatusLabel;
+
+  /// No description provided for @customerCreatedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Created'**
+  String get customerCreatedLabel;
+
+  /// No description provided for @adminCountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Admins'**
+  String get adminCountLabel;
+
+  /// No description provided for @pendingInvitesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending invites'**
+  String get pendingInvitesLabel;
+
+  /// No description provided for @statusActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get statusActive;
+
+  /// No description provided for @statusInactive.
+  ///
+  /// In en, this message translates to:
+  /// **'Inactive'**
+  String get statusInactive;
+
+  /// No description provided for @customerDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer'**
+  String get customerDetailTitle;
+
+  /// No description provided for @wizardStepOrganisation.
+  ///
+  /// In en, this message translates to:
+  /// **'Organisation'**
+  String get wizardStepOrganisation;
+
+  /// No description provided for @wizardStepAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'First admin'**
+  String get wizardStepAdmin;
+
+  /// No description provided for @wizardStepReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get wizardStepReview;
+
+  /// No description provided for @wizardNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get wizardNext;
+
+  /// No description provided for @wizardBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get wizardBack;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @adminNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the admin display name.'**
+  String get adminNameRequired;
+
+  /// No description provided for @adminLocaleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin language'**
+  String get adminLocaleLabel;
+
+  /// No description provided for @createCustomerSuccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer created'**
+  String get createCustomerSuccessTitle;
+
+  /// No description provided for @createCustomerSuccessMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'An activation email was sent to {email}.'**
+  String createCustomerSuccessMessage(String email);
+
+  /// No description provided for @createCustomerSuccessDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is ready. The admin can activate and sign in.'**
+  String createCustomerSuccessDetail(String name);
+
+  /// No description provided for @createCustomerFailureHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You can retry create, or open the customer and resend the activation email.'**
+  String get createCustomerFailureHint;
+
+  /// No description provided for @viewCustomer.
+  ///
+  /// In en, this message translates to:
+  /// **'View customer'**
+  String get viewCustomer;
+
+  /// No description provided for @backToCustomers.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to customers'**
+  String get backToCustomers;
+
+  /// No description provided for @resendActivation.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend activation'**
+  String get resendActivation;
+
+  /// No description provided for @activationResentSnackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'Activation email sent again.'**
+  String get activationResentSnackbar;
+
+  /// No description provided for @adminsSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Admins'**
+  String get adminsSectionTitle;
+
+  /// No description provided for @noAdminsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No admins recorded yet. Invite one to get started.'**
+  String get noAdminsYet;
+
+  /// No description provided for @inviteAnotherAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite another admin'**
+  String get inviteAnotherAdmin;
+
+  /// No description provided for @inviteAdminTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite admin'**
+  String get inviteAdminTitle;
+
+  /// No description provided for @inviteAdminConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Send invite'**
+  String get inviteAdminConfirm;
+
+  /// No description provided for @inviteAdminConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Send an activation invite to {email}?'**
+  String inviteAdminConfirmBody(String email);
+
+  /// No description provided for @inviteAdminSuccessSnackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'Invitation sent.'**
+  String get inviteAdminSuccessSnackbar;
+
+  /// No description provided for @resendActivationConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend the activation email to {email}?'**
+  String resendActivationConfirmBody(String email);
+
+  /// No description provided for @activationStatusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get activationStatusPending;
+
+  /// No description provided for @activationStatusActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get activationStatusActive;
+
+  /// No description provided for @adminCountSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{admins} admins · {pending} pending invites'**
+  String adminCountSummary(int admins, int pending);
 }
 
 class _AppLocalizationsDelegate
