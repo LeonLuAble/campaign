@@ -23,8 +23,23 @@ import { hasTenantLevelMembership } from '../../authorization/application/member
 import type { TenantContext } from '../../authorization/application/tenant-context.js';
 import { SYSTEM_ROLE_TENANT_ADMIN } from '../../authorization/domain/permission-keys.js';
 import type { CommunityService } from '../../communities/application/community.service.js';
-import { IdentityAccountService } from '../../identity/application/identity-account.service.js';
+import {
+  IdentityAccountService,
+  type PublicUserProfile,
+} from '../../identity/application/identity-account.service.js';
 import { Membership } from '../domain/membership.entity.js';
+import {
+  buildMembershipUserSummary,
+  decodeMembershipCursor,
+  encodeMembershipCursor,
+  escapeIlikePattern,
+  type MembershipUserSummary,
+} from './membership-directory.js';
+
+export interface MembershipCommunitySummary {
+  id: string;
+  name: string;
+}
 
 export interface MembershipResponse {
   id: string;
@@ -33,8 +48,25 @@ export interface MembershipResponse {
   communityId: string | null;
   isActive: boolean;
   roles: RoleSummary[];
+  user?: MembershipUserSummary;
+  community?: MembershipCommunitySummary | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ListMembershipsQuery {
+  q?: string;
+  communityId?: string;
+  includeDescendants?: boolean;
+  roleKey?: string;
+  status?: 'pending' | 'active';
+  limit?: number;
+  cursor?: string;
+}
+
+export interface MembershipListPage {
+  items: MembershipResponse[];
+  nextCursor: string | null;
 }
 
 @Injectable()
@@ -129,22 +161,156 @@ export class MembershipService {
     }
   }
 
-  async list(tenant: TenantContext): Promise<MembershipResponse[]> {
-    const memberships = await this.membershipRepository.find({
-      where: { tenant_id: tenant.tenantId },
-      order: { created_at: 'ASC' },
-    });
+  async list(
+    tenant: TenantContext,
+    query: ListMembershipsQuery = {},
+  ): Promise<MembershipListPage> {
+    const isTenantLevel = hasTenantLevelMembership(tenant.memberships);
     const visible = await this.visibleCommunityIdSet(tenant);
-    const filtered = memberships.filter((membership) => {
-      if (hasTenantLevelMembership(tenant.memberships)) {
-        return true;
+    const limit = Math.min(Math.max(query.limit ?? 50, 1), 100);
+
+    let communityFilterIds: string[] | null = null;
+    if (query.communityId) {
+      await this.communities.get(tenant, query.communityId);
+      communityFilterIds = [query.communityId];
+      if (query.includeDescendants) {
+        const descendants = await this.communities.listDescendantIds(
+          query.communityId,
+        );
+        communityFilterIds = [query.communityId, ...descendants];
       }
-      if (!membership.community_id) {
-        return false;
+      if (!isTenantLevel) {
+        communityFilterIds = communityFilterIds.filter((id) =>
+          visible.has(id),
+        );
       }
-      return visible.has(membership.community_id);
+      if (communityFilterIds.length === 0) {
+        return { items: [], nextCursor: null };
+      }
+    }
+
+    const qb = this.membershipRepository
+      .createQueryBuilder('m')
+      .where('m.tenant_id = :tenantId', { tenantId: tenant.tenantId });
+
+    if (!isTenantLevel) {
+      if (visible.size === 0) {
+        return { items: [], nextCursor: null };
+      }
+      qb.andWhere('m.community_id IN (:...visibleCommunityIds)', {
+        visibleCommunityIds: [...visible],
+      });
+    }
+
+    if (communityFilterIds) {
+      qb.andWhere('m.community_id IN (:...communityFilterIds)', {
+        communityFilterIds,
+      });
+    }
+
+    if (query.roleKey?.trim()) {
+      qb.innerJoin(
+        'membership_roles',
+        'mr_filter',
+        'mr_filter.membership_id = m.id',
+      ).innerJoin(
+        'roles',
+        'role_filter',
+        'role_filter.id = mr_filter.role_id AND role_filter.tenant_id = m.tenant_id',
+      );
+      qb.andWhere('role_filter.key = :roleKey', {
+        roleKey: query.roleKey.trim(),
+      });
+    }
+
+    const search = query.q?.trim();
+    if (search) {
+      const pattern = `%${escapeIlikePattern(search)}%`;
+      qb.leftJoin('users', 'u_search', 'u_search.id = m.user_id').leftJoin(
+        'user_identities',
+        'ui_search',
+        'ui_search.user_id = m.user_id',
+      );
+      qb.andWhere(
+        `(u_search.display_name ILIKE :pattern ESCAPE '\\'
+          OR u_search.first_name ILIKE :pattern ESCAPE '\\'
+          OR u_search.last_name ILIKE :pattern ESCAPE '\\'
+          OR ui_search.identifier ILIKE :pattern ESCAPE '\\'
+          OR ui_search.normalized_identifier ILIKE :pattern ESCAPE '\\')`,
+        { pattern },
+      );
+    }
+
+    if (query.status === 'pending') {
+      qb.andWhere(
+        `NOT EXISTS (
+          SELECT 1 FROM user_identities ui_status
+          WHERE ui_status.user_id = m.user_id AND ui_status.is_verified = true
+        )`,
+      );
+    } else if (query.status === 'active') {
+      qb.andWhere(
+        `EXISTS (
+          SELECT 1 FROM user_identities ui_status
+          WHERE ui_status.user_id = m.user_id AND ui_status.is_verified = true
+        )`,
+      );
+    }
+
+    if (query.cursor) {
+      try {
+        const decoded = decodeMembershipCursor(query.cursor);
+        qb.andWhere(
+          `(m.created_at > :cursorCreatedAt
+            OR (m.created_at = :cursorCreatedAt AND m.id > :cursorId))`,
+          {
+            cursorCreatedAt: decoded.createdAt.toISOString(),
+            cursorId: decoded.id,
+          },
+        );
+      } catch {
+        throw new InvalidRequestException('cursor is invalid');
+      }
+    }
+
+    qb.select('m.id', 'id')
+      .addSelect('m.created_at', 'created_at')
+      .distinct(true)
+      .orderBy('m.created_at', 'ASC')
+      .addOrderBy('m.id', 'ASC')
+      .take(limit + 1);
+
+    const rows = await qb.getRawMany<{ id: string; created_at: Date | string }>();
+    const pageRows = rows.slice(0, limit);
+    const membershipIds = pageRows.map((row) => row.id);
+    if (membershipIds.length === 0) {
+      return { items: [], nextCursor: null };
+    }
+
+    const memberships = await this.membershipRepository.find({
+      where: { id: In(membershipIds) },
     });
-    return this.toResponses(filtered);
+    const byId = new Map(
+      memberships.map((membership) => [membership.id, membership]),
+    );
+    const ordered = membershipIds
+      .map((id) => byId.get(id))
+      .filter((membership): membership is Membership => Boolean(membership));
+
+    const items = await this.toResponses(ordered, {
+      includeUser: true,
+      includeContacts: isTenantLevel,
+      includeCommunity: true,
+      tenant,
+    });
+
+    const last = ordered.at(-1);
+    const nextCursor =
+      rows.length > limit && last
+        ? encodeMembershipCursor(last.created_at, last.id)
+        : null;
+
+    return { items, nextCursor };
   }
 
   async get(
@@ -338,20 +504,67 @@ export class MembershipService {
 
   private async toResponses(
     memberships: Membership[],
+    options: {
+      includeUser?: boolean;
+      includeContacts?: boolean;
+      includeCommunity?: boolean;
+      tenant?: TenantContext;
+    } = {},
   ): Promise<MembershipResponse[]> {
     const roles = await this.authorization.listRolesByMembershipIds(
       memberships.map((membership) => membership.id),
     );
-    return memberships.map((membership) => ({
-      id: membership.id,
-      customerId: membership.tenant_id,
-      userId: membership.user_id,
-      communityId: membership.community_id,
-      isActive: membership.is_active,
-      roles: roles.get(membership.id) ?? [],
-      createdAt: membership.created_at.toISOString(),
-      updatedAt: membership.updated_at.toISOString(),
-    }));
+
+    const profiles: Map<string, PublicUserProfile> = options.includeUser
+      ? await this.identities.listProfilesByIds(
+          memberships.map((membership) => membership.user_id),
+        )
+      : new Map();
+
+    const communityById = new Map<string, MembershipCommunitySummary>();
+    if (options.includeCommunity && options.tenant) {
+      const communities = await this.communities.list(options.tenant);
+      for (const community of communities) {
+        communityById.set(community.id, {
+          id: community.id,
+          name: community.name,
+        });
+      }
+    }
+
+    return memberships.map((membership) => {
+      const response: MembershipResponse = {
+        id: membership.id,
+        customerId: membership.tenant_id,
+        userId: membership.user_id,
+        communityId: membership.community_id,
+        isActive: membership.is_active,
+        roles: roles.get(membership.id) ?? [],
+        createdAt: membership.created_at.toISOString(),
+        updatedAt: membership.updated_at.toISOString(),
+      };
+      if (options.includeUser) {
+        const profile = profiles.get(membership.user_id);
+        response.user = buildMembershipUserSummary({
+          id: membership.user_id,
+          displayName: profile?.displayName ?? null,
+          firstName: profile?.firstName ?? null,
+          lastName: profile?.lastName ?? null,
+          identities: (profile?.identities ?? []).map((identity) => ({
+            type: identity.type,
+            identifier: identity.identifier,
+            isVerified: identity.isVerified,
+          })),
+          includeContacts: options.includeContacts === true,
+        });
+      }
+      if (options.includeCommunity) {
+        response.community = membership.community_id
+          ? (communityById.get(membership.community_id) ?? null)
+          : null;
+      }
+      return response;
+    });
   }
 
   private toRecord(membership: Membership): MembershipRecord {

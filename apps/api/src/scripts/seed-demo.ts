@@ -136,7 +136,7 @@ async function ensureMemberMembership(
   communityId: string,
 ): Promise<void> {
   const listed = await memberships.list(tenant);
-  const existing = listed.find(
+  const existing = listed.items.find(
     (row) => row.userId === userId && row.communityId === communityId,
   );
   if (existing) {

@@ -160,7 +160,7 @@ describe('User imports (e2e)', () => {
       .get('/api/v1/memberships')
       .query({ customerId })
       .set(auth(admin.accessToken));
-    const importedMembership = memberships.body.find(
+    const importedMembership = memberships.body.items.find(
       (membership: {
         userId: string;
         communityId: string | null;

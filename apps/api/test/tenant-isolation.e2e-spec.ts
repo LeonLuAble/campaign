@@ -84,12 +84,12 @@ describe('Tenant isolation (e2e)', () => {
     tenantA = {
       id: createdA.body.id,
       communityId: communityA.body.id,
-      membershipId: membershipsA.body[0].id,
+      membershipId: membershipsA.body.items[0].id,
     };
     tenantB = {
       id: createdB.body.id,
       communityId: communityB.body.id,
-      membershipId: membershipsB.body[0].id,
+      membershipId: membershipsB.body.items[0].id,
     };
   });
 
@@ -166,6 +166,14 @@ describe('Tenant isolation (e2e)', () => {
       .delete(`/api/v1/memberships/${tenantB.membershipId}`)
       .set(auth(userA.accessToken));
     expect(deactivate.status).toBe(404);
+  });
+
+  it('returns 404 for another customer access summary', async () => {
+    const response = await request(app.getHttpServer())
+      .get(`/api/v1/customers/${tenantB.id}/access`)
+      .set(auth(userA.accessToken));
+    expect(response.status).toBe(404);
+    expect(response.body.code).toBe('NOT_FOUND');
   });
 
   it('rejects attaching a community from another tenant as a parent', async () => {

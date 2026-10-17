@@ -65,7 +65,17 @@ abstract class CampaignApiClient {
     bool? isActive,
   });
 
-  Future<List<Membership>> listMemberships(String customerId);
+  Future<MembershipListPage> listMemberships(
+    String customerId, {
+    String? q,
+    String? communityId,
+    bool? includeDescendants,
+    String? roleKey,
+    String? status,
+    int? limit,
+    String? cursor,
+  });
+  Future<CustomerAccess> getCustomerAccess(String customerId);
 
   Future<UserImport> uploadUserImport({
     required String customerId,
@@ -511,11 +521,38 @@ class HttpCampaignApiClient implements CampaignApiClient {
   }
 
   @override
-  Future<List<Membership>> listMemberships(String customerId) {
-    return _getList(
+  Future<MembershipListPage> listMemberships(
+    String customerId, {
+    String? q,
+    String? communityId,
+    bool? includeDescendants,
+    String? roleKey,
+    String? status,
+    int? limit,
+    String? cursor,
+  }) {
+    return _get(
       '/memberships',
-      query: {'customerId': customerId},
-      parser: Membership.fromJson,
+      query: {
+        'customerId': customerId,
+        if (q != null) 'q': q,
+        if (communityId != null) 'communityId': communityId,
+        if (includeDescendants != null)
+          'includeDescendants': includeDescendants,
+        if (roleKey != null) 'roleKey': roleKey,
+        if (status != null) 'status': status,
+        if (limit != null) 'limit': limit,
+        if (cursor != null) 'cursor': cursor,
+      },
+      parser: MembershipListPage.fromJson,
+    );
+  }
+
+  @override
+  Future<CustomerAccess> getCustomerAccess(String customerId) {
+    return _get(
+      '/customers/$customerId/access',
+      parser: CustomerAccess.fromJson,
     );
   }
 

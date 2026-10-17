@@ -26,12 +26,16 @@ Customer: `/customers`
 - `initialAdmin` (optional) finds the user by email or creates a pending-activation account, then assigns `tenant_admin` in the same transaction. When the admin is new or still unverified, the 201 body includes `activationToken` (one-time; share out of band — email delivery is not required for this path). Active verified users get membership only and no token.
 - GET /customers → tenants the caller has an active membership in (no `customers.read` required)
 - GET /customers/:customerId → requires `customers.read` in that tenant; missing membership is 404
+- GET /customers/:customerId/access → `{ roles: [{id,key,name}], permissionKeys: string[], isTenantLevel: boolean, communityIds: string[] }` for the calling user in that customer. Any active membership is enough (no extra permission key). Non-members and platform admins who are not members get 404. `communityIds` lists the caller's community-scoped membership roots (not descendants).
 - PATCH /customers/:customerId `{ name?, isActive? }` → requires `customers.update` and a tenant-level membership
 
 Bootstrap (idempotent, no hardcoded credentials): from `apps/api`, `npm run seed:tzu-chi -- --email existing-user@example.com` (or `SEED_ADMIN_EMAIL`) promotes that existing user to platform admin and creates `Tzu Chi Malaysia` if it does not already exist.
 
 Communities: `/communities`
 Membership/roles/permissions: `/memberships`, `/roles`, `/permissions`
+
+Membership directory (B1 / B-API-4):
+- GET /memberships?customerId&q&communityId&includeDescendants&roleKey&status&limit&cursor → `{ items, nextCursor }` with `memberships.read`. Default `limit` 50 (max 100). Cursor is opaque. Each item includes `user: { id, displayName, email?, mobile?, activationStatus: 'pending'|'active' }`, `community: { id, name } | null`, and `roles`. `activationStatus` is `active` when the user has at least one verified identity, otherwise `pending`. Community-scoped callers see only memberships in their visible subtree; tenant-level callers see the whole tenant. `email` / `mobile` are included only for tenant-level callers (omitted for community-scoped callers). Members without `memberships.read` get 403 (after F1).
 
 System `member` role (F1 / F-SEC-1): seeded with an explicit allow-list — `customers.read`, `communities.read`, `campaigns.read`, `campaign_templates.read`, `campaign_scopes.read`, `action_definitions.read`, `participations.read`, `actions.read`, `submissions.read`, `commitments.read`, `progress.read`, `achievements.read`, `milestones.read`, `measurement_definitions.read`, `measurements.read`, `impact_factors.read`, `outcomes.read`, `visualizations.read`, `dashboards.read`, `notifications.read`, `reports.read`, plus self-create `commitments.create`, `actions.create`, and `notifications.update`. It does **not** receive `memberships.read`, `roles.read`, or `user_imports.read` (import rows contain email, mobile, and raw CSV). Member-visible list endpoints that return `userId` remain self-scoped; campaign/community aggregates and reports omit contact PII. `tenant_admin` retains the full permission catalog.
 

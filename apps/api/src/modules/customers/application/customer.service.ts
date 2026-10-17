@@ -17,7 +17,9 @@ import {
   type TenantRecord,
 } from '../../authorization/application/access-readers.js';
 import { AuthorizationService } from '../../authorization/application/authorization.service.js';
+import type { RoleSummary } from '../../authorization/application/authorization.service.js';
 import { hasTenantLevelMembership } from '../../authorization/application/membership-scope.js';
+import type { TenantContext } from '../../authorization/application/tenant-context.js';
 import { SYSTEM_ROLE_TENANT_ADMIN } from '../../authorization/domain/permission-keys.js';
 import { CredentialService } from '../../identity/application/credential.service.js';
 import {
@@ -41,6 +43,13 @@ export interface CreateCustomerInput {
   name: string;
   initialAdminUserId?: string;
   initialAdmin?: CreateCustomerInitialAdmin;
+}
+
+export interface CustomerAccessResponse {
+  roles: RoleSummary[];
+  permissionKeys: string[];
+  isTenantLevel: boolean;
+  communityIds: string[];
 }
 
 @Injectable()
@@ -98,6 +107,36 @@ export class CustomerService {
       throw new ResourceNotFoundException('Customer not found');
     }
     return toCustomerResponse(tenant);
+  }
+
+  async getAccess(tenant: TenantContext): Promise<CustomerAccessResponse> {
+    const rolesByMembership =
+      await this.authorization.listRolesByMembershipIds(
+        tenant.memberships.map((membership) => membership.id),
+      );
+    const rolesById = new Map<string, RoleSummary>();
+    for (const roles of rolesByMembership.values()) {
+      for (const role of roles) {
+        rolesById.set(role.id, role);
+      }
+    }
+    return {
+      roles: [...rolesById.values()].sort((left, right) =>
+        left.key.localeCompare(right.key),
+      ),
+      permissionKeys: [...tenant.permissions].sort(),
+      isTenantLevel: hasTenantLevelMembership(tenant.memberships),
+      communityIds: [
+        ...new Set(
+          tenant.memberships
+            .filter(
+              (membership) =>
+                membership.isActive && membership.communityId != null,
+            )
+            .map((membership) => membership.communityId as string),
+        ),
+      ].sort(),
+    };
   }
 
   async findBySlug(slug: string): Promise<CustomerResponse | null> {

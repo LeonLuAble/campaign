@@ -9,6 +9,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/presentation/jwt-auth.guard.js';
@@ -21,6 +22,7 @@ import { TenantScopeGuard } from '../../authorization/presentation/tenant-scope.
 import { MembershipService } from '../application/membership.service.js';
 import { AssignRoleDto } from '../dto/assign-role.dto.js';
 import { CreateMembershipDto } from '../dto/create-membership.dto.js';
+import { ListMembershipsDto } from '../dto/list-memberships.dto.js';
 import { UpdateMembershipDto } from '../dto/update-membership.dto.js';
 
 @Controller('memberships')
@@ -43,8 +45,19 @@ export class MembershipsController {
 
   @Get()
   @RequirePermission(PERMISSIONS.MEMBERSHIPS_READ)
-  list(@CurrentTenant() tenant: TenantContext) {
-    return this.memberships.list(tenant);
+  list(
+    @CurrentTenant() tenant: TenantContext,
+    @Query() query: ListMembershipsDto,
+  ) {
+    return this.memberships.list(tenant, {
+      q: query.q,
+      communityId: query.communityId,
+      includeDescendants: query.includeDescendants,
+      roleKey: query.roleKey,
+      status: query.status,
+      limit: query.limit,
+      cursor: query.cursor,
+    });
   }
 
   @Get(':membershipId')

@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import {
   DataSource,
   type EntityManager,
+  In,
   IsNull,
   QueryFailedError,
   Repository,
@@ -310,6 +311,27 @@ export class IdentityAccountService {
       return null;
     }
 
+    return this.toPublicProfile(user);
+  }
+
+  async listProfilesByIds(
+    userIds: string[],
+  ): Promise<Map<string, PublicUserProfile>> {
+    const result = new Map<string, PublicUserProfile>();
+    if (userIds.length === 0) {
+      return result;
+    }
+    const users = await this.userRepository.find({
+      where: { id: In(userIds) },
+      relations: ['identities'],
+    });
+    for (const user of users) {
+      result.set(user.id, this.toPublicProfile(user));
+    }
+    return result;
+  }
+
+  private toPublicProfile(user: User): PublicUserProfile {
     return {
       id: user.id,
       firstName: user.first_name,

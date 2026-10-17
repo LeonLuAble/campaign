@@ -241,6 +241,46 @@ class RoleSummary {
   }
 }
 
+class MembershipUserSummary {
+  const MembershipUserSummary({
+    required this.id,
+    required this.activationStatus,
+    this.displayName,
+    this.email,
+    this.mobile,
+  });
+
+  final String id;
+  final String? displayName;
+  final String? email;
+  final String? mobile;
+  final String activationStatus;
+
+  factory MembershipUserSummary.fromJson(Map<String, dynamic> json) {
+    return MembershipUserSummary(
+      id: json['id'] as String,
+      displayName: _string(json['displayName']),
+      email: _string(json['email']),
+      mobile: _string(json['mobile']),
+      activationStatus: json['activationStatus'] as String? ?? 'pending',
+    );
+  }
+}
+
+class MembershipCommunitySummary {
+  const MembershipCommunitySummary({required this.id, required this.name});
+
+  final String id;
+  final String name;
+
+  factory MembershipCommunitySummary.fromJson(Map<String, dynamic> json) {
+    return MembershipCommunitySummary(
+      id: json['id'] as String,
+      name: json['name'] as String,
+    );
+  }
+}
+
 class Membership {
   const Membership({
     required this.id,
@@ -249,6 +289,8 @@ class Membership {
     required this.isActive,
     required this.roles,
     this.communityId,
+    this.user,
+    this.community,
   });
 
   final String id;
@@ -257,6 +299,8 @@ class Membership {
   final String? communityId;
   final bool isActive;
   final List<RoleSummary> roles;
+  final MembershipUserSummary? user;
+  final MembershipCommunitySummary? community;
 
   factory Membership.fromJson(Map<String, dynamic> json) {
     return Membership(
@@ -267,6 +311,55 @@ class Membership {
       isActive: _bool(json['isActive'], true),
       roles: _list(json['roles'])
           .map((row) => RoleSummary.fromJson(_map(row)))
+          .toList(),
+      user: json['user'] is Map
+          ? MembershipUserSummary.fromJson(_map(json['user']))
+          : null,
+      community: json['community'] is Map
+          ? MembershipCommunitySummary.fromJson(_map(json['community']))
+          : null,
+    );
+  }
+}
+
+class MembershipListPage {
+  const MembershipListPage({required this.items, this.nextCursor});
+
+  final List<Membership> items;
+  final String? nextCursor;
+
+  factory MembershipListPage.fromJson(Map<String, dynamic> json) {
+    return MembershipListPage(
+      items: _list(json['items']).map((row) => Membership.fromJson(_map(row))).toList(),
+      nextCursor: _string(json['nextCursor']),
+    );
+  }
+}
+
+class CustomerAccess {
+  const CustomerAccess({
+    required this.roles,
+    required this.permissionKeys,
+    required this.isTenantLevel,
+    required this.communityIds,
+  });
+
+  final List<RoleSummary> roles;
+  final List<String> permissionKeys;
+  final bool isTenantLevel;
+  final List<String> communityIds;
+
+  factory CustomerAccess.fromJson(Map<String, dynamic> json) {
+    return CustomerAccess(
+      roles: _list(json['roles'])
+          .map((row) => RoleSummary.fromJson(_map(row)))
+          .toList(),
+      permissionKeys: _list(json['permissionKeys'])
+          .map((row) => row.toString())
+          .toList(),
+      isTenantLevel: _bool(json['isTenantLevel'], false),
+      communityIds: _list(json['communityIds'])
+          .map((row) => row.toString())
           .toList(),
     );
   }

@@ -661,7 +661,26 @@ class FakeCampaignApiClient implements CampaignApiClient {
   }
 
   @override
-  Future<List<Membership>> listMemberships(String customerId) async => const [];
+  Future<MembershipListPage> listMemberships(
+    String customerId, {
+    String? q,
+    String? communityId,
+    bool? includeDescendants,
+    String? roleKey,
+    String? status,
+    int? limit,
+    String? cursor,
+  }) async =>
+      const MembershipListPage(items: []);
+
+  @override
+  Future<CustomerAccess> getCustomerAccess(String customerId) async =>
+      const CustomerAccess(
+        roles: [],
+        permissionKeys: [],
+        isTenantLevel: true,
+        communityIds: [],
+      );
 
   @override
   Future<UserImport> uploadUserImport({

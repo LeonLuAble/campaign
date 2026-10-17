@@ -55,6 +55,12 @@ export class CustomersController {
     return this.customers.listForUser(user.userId);
   }
 
+  @Get(':customerId/access')
+  @UseGuards(TenantScopeGuard)
+  getAccess(@CurrentTenant() tenant: TenantContext) {
+    return this.customers.getAccess(tenant);
+  }
+
   @Get(':customerId')
   @UseGuards(TenantScopeGuard, PermissionsGuard)
   @RequirePermission(PERMISSIONS.CUSTOMERS_READ)

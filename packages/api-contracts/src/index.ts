@@ -202,6 +202,21 @@ export interface UpdateRoleRequest {
   permissionKeys?: string[];
 }
 
+export type MembershipActivationStatus = 'pending' | 'active';
+
+export interface MembershipUserSummary {
+  id: string;
+  displayName: string | null;
+  email?: string;
+  mobile?: string;
+  activationStatus: MembershipActivationStatus;
+}
+
+export interface MembershipCommunitySummary {
+  id: string;
+  name: string;
+}
+
 export interface MembershipResponse {
   id: string;
   customerId: string;
@@ -209,8 +224,33 @@ export interface MembershipResponse {
   communityId: string | null;
   isActive: boolean;
   roles: RoleSummary[];
+  user?: MembershipUserSummary;
+  community?: MembershipCommunitySummary | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface MembershipListResponse {
+  items: MembershipResponse[];
+  nextCursor: string | null;
+}
+
+export interface ListMembershipsQuery {
+  customerId: string;
+  q?: string;
+  communityId?: string;
+  includeDescendants?: boolean;
+  roleKey?: string;
+  status?: MembershipActivationStatus;
+  limit?: number;
+  cursor?: string;
+}
+
+export interface CustomerAccessResponse {
+  roles: RoleSummary[];
+  permissionKeys: string[];
+  isTenantLevel: boolean;
+  communityIds: string[];
 }
 
 export interface CreateMembershipRequest {
