@@ -369,6 +369,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get navCustomers => '客户';
 
   @override
+  String get navOverview => '概览';
+
+  @override
+  String get navPeople => '成员';
+
+  @override
   String get navCommunities => '社区';
 
   @override
@@ -382,6 +388,59 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get selectCustomer => '选择客户';
+
+  @override
+  String get platformConsole => '平台控制台';
+
+  @override
+  String get skipToContent => '跳到主要内容';
+
+  @override
+  String get userProfile => '个人资料';
+
+  @override
+  String get profileComingSoon => '个人资料设置即将推出。';
+
+  @override
+  String get overviewSubtitle => '此客户的概览状态。';
+
+  @override
+  String get metricMembers => '成员';
+
+  @override
+  String get metricCommunities => '社区';
+
+  @override
+  String get metricCampaigns => '活动';
+
+  @override
+  String metricCampaignsByStatus(String status) {
+    return '活动 · $status';
+  }
+
+  @override
+  String get nextStepsTitle => '下一步';
+
+  @override
+  String get nextStepCommunities => '创建社区';
+
+  @override
+  String get nextStepPeople => '导入或邀请成员';
+
+  @override
+  String get nextStepCampaign => '创建活动';
+
+  @override
+  String get nextStepsComplete => '已完成基础设置，继续推进活动。';
+
+  @override
+  String get overviewEmptyPermissions => '当前角色没有可用的概览指标。';
+
+  @override
+  String get peopleComingSoon => '成员名录即将推出。';
+
+  @override
+  String get retry => '重试';
 
   @override
   String get adminNameLabel => '管理员显示名称';
@@ -829,6 +888,12 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get navCustomers => '客户';
 
   @override
+  String get navOverview => '概览';
+
+  @override
+  String get navPeople => '成员';
+
+  @override
   String get navCommunities => '社区';
 
   @override
@@ -842,6 +907,59 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get selectCustomer => '选择客户';
+
+  @override
+  String get platformConsole => '平台控制台';
+
+  @override
+  String get skipToContent => '跳到主要内容';
+
+  @override
+  String get userProfile => '个人资料';
+
+  @override
+  String get profileComingSoon => '个人资料设置即将推出。';
+
+  @override
+  String get overviewSubtitle => '此客户的概览状态。';
+
+  @override
+  String get metricMembers => '成员';
+
+  @override
+  String get metricCommunities => '社区';
+
+  @override
+  String get metricCampaigns => '活动';
+
+  @override
+  String metricCampaignsByStatus(String status) {
+    return '活动 · $status';
+  }
+
+  @override
+  String get nextStepsTitle => '下一步';
+
+  @override
+  String get nextStepCommunities => '创建社区';
+
+  @override
+  String get nextStepPeople => '导入或邀请成员';
+
+  @override
+  String get nextStepCampaign => '创建活动';
+
+  @override
+  String get nextStepsComplete => '已完成基础设置，继续推进活动。';
+
+  @override
+  String get overviewEmptyPermissions => '当前角色没有可用的概览指标。';
+
+  @override
+  String get peopleComingSoon => '成员名录即将推出。';
+
+  @override
+  String get retry => '重试';
 
   @override
   String get adminNameLabel => '管理员显示名称';

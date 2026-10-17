@@ -88,14 +88,19 @@ void main() {
 
     await tester.tap(find.widgetWithText(ListTile, 'Tzu Chi Malaysia'));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Communities'));
+    Finder navIcon(IconData icon) => find.descendant(
+          of: find.byType(NavigationRail),
+          matching: find.byIcon(icon),
+        );
+    await tester.tap(navIcon(Icons.account_tree_outlined));
     await tester.pumpAndSettle();
+
     await tester.enterText(find.byType(TextField).first, 'KL Chapter');
     await tester.tap(find.widgetWithText(FilledButton, 'Create community'));
     await tester.pumpAndSettle();
     expect(find.text('KL Chapter'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.upload_file_outlined));
+    await tester.tap(navIcon(Icons.upload_file_outlined));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Upload CSV'));
     await tester.pumpAndSettle();
@@ -110,7 +115,7 @@ void main() {
     expect(find.text('Import result'), findsOneWidget);
     expect(find.text('created'), findsWidgets);
 
-    await tester.tap(find.byIcon(Icons.flag_outlined));
+    await tester.tap(navIcon(Icons.flag_outlined));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Create campaign'));
     await tester.pumpAndSettle();

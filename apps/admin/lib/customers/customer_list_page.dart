@@ -125,7 +125,7 @@ class _CustomerListPageState extends State<CustomerListPage> {
       if (customer != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (context.mounted) {
-            context.go('/customers/${customer.id}/campaigns');
+            context.go('/customers/${customer.id}');
           }
         });
       }
@@ -147,9 +147,11 @@ class _CustomerListPageState extends State<CustomerListPage> {
                 (customer) => Card(
                   child: ListTile(
                     title: Text(customer.name),
-                    onTap: () {
-                      session.selectCustomer(customer);
-                      context.push('/customers/${customer.id}');
+                    onTap: () async {
+                      await session.selectCustomer(customer);
+                      if (context.mounted) {
+                        context.go('/customers/${customer.id}');
+                      }
                     },
                   ),
                 ),

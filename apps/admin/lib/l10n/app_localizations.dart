@@ -789,6 +789,18 @@ abstract class AppLocalizations {
   /// **'Customers'**
   String get navCustomers;
 
+  /// No description provided for @navOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Overview'**
+  String get navOverview;
+
+  /// No description provided for @navPeople.
+  ///
+  /// In en, this message translates to:
+  /// **'People'**
+  String get navPeople;
+
   /// No description provided for @navCommunities.
   ///
   /// In en, this message translates to:
@@ -818,6 +830,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select customer'**
   String get selectCustomer;
+
+  /// No description provided for @platformConsole.
+  ///
+  /// In en, this message translates to:
+  /// **'Platform console'**
+  String get platformConsole;
+
+  /// No description provided for @skipToContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip to content'**
+  String get skipToContent;
+
+  /// No description provided for @userProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get userProfile;
+
+  /// No description provided for @profileComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile settings are coming soon.'**
+  String get profileComingSoon;
+
+  /// No description provided for @overviewSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'At-a-glance status for this customer.'**
+  String get overviewSubtitle;
+
+  /// No description provided for @metricMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Members'**
+  String get metricMembers;
+
+  /// No description provided for @metricCommunities.
+  ///
+  /// In en, this message translates to:
+  /// **'Communities'**
+  String get metricCommunities;
+
+  /// No description provided for @metricCampaigns.
+  ///
+  /// In en, this message translates to:
+  /// **'Campaigns'**
+  String get metricCampaigns;
+
+  /// No description provided for @metricCampaignsByStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Campaigns · {status}'**
+  String metricCampaignsByStatus(String status);
+
+  /// No description provided for @nextStepsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Next steps'**
+  String get nextStepsTitle;
+
+  /// No description provided for @nextStepCommunities.
+  ///
+  /// In en, this message translates to:
+  /// **'Create communities'**
+  String get nextStepCommunities;
+
+  /// No description provided for @nextStepPeople.
+  ///
+  /// In en, this message translates to:
+  /// **'Import or invite people'**
+  String get nextStepPeople;
+
+  /// No description provided for @nextStepCampaign.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a campaign'**
+  String get nextStepCampaign;
+
+  /// No description provided for @nextStepsComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'You are set up. Keep campaigns moving.'**
+  String get nextStepsComplete;
+
+  /// No description provided for @overviewEmptyPermissions.
+  ///
+  /// In en, this message translates to:
+  /// **'No overview metrics are available for your role.'**
+  String get overviewEmptyPermissions;
+
+  /// No description provided for @peopleComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'The member directory is coming soon.'**
+  String get peopleComingSoon;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
 
   /// No description provided for @adminNameLabel.
   ///

@@ -52,7 +52,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Customers'), findsOneWidget);
+    expect(find.text('Customers'), findsWidgets);
     expect(store.accessToken, 'access');
 
     final secondApi = FakeCampaignApiClient(
@@ -72,7 +72,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Customers'), findsOneWidget);
+    expect(find.text('Customers'), findsWidgets);
     expect(store.accessToken, 'access');
   });
 
@@ -100,7 +100,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Customers'), findsOneWidget);
+    expect(find.text('Customers'), findsWidgets);
 
     api.tokenReused = true;
     await session.restore();
@@ -134,7 +134,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Customers'), findsOneWidget);
+    expect(find.text('Customers'), findsWidgets);
 
     await session.logout();
     await tester.pumpAndSettle();

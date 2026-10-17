@@ -4,10 +4,12 @@
 /// `api_client` or embed an l10n delegate here.
 library;
 
+export 'src/authz/permission_gate.dart';
 export 'src/components/empty_state.dart';
 export 'src/components/error_state.dart';
 export 'src/components/loading_skeleton.dart';
 export 'src/components/status_chip.dart';
+export 'src/layout/app_shell.dart';
 export 'src/layout/page_scaffold.dart';
 export 'src/theme/app_theme.dart';
 export 'src/theme/app_tokens.dart';

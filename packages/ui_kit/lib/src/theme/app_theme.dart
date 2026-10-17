@@ -31,6 +31,8 @@ abstract final class AppTheme {
       textTheme: applyAppTypography(base.textTheme),
       primaryTextTheme: applyAppTypography(base.primaryTextTheme),
       extensions: <ThemeExtension<dynamic>>[tokens],
+      focusColor: scheme.primary.withValues(alpha: 0.18),
+      hoverColor: scheme.primary.withValues(alpha: 0.06),
       appBarTheme: AppBarTheme(
         backgroundColor: scheme.surface,
         foregroundColor: scheme.onSurface,
@@ -47,6 +49,10 @@ abstract final class AppTheme {
           fontFamilyFallback: appFontFamilyFallback,
           height: appCjkBodyHeight,
         ),
+      ),
+      navigationDrawerTheme: NavigationDrawerThemeData(
+        backgroundColor: scheme.surfaceContainerLowest,
+        indicatorColor: scheme.secondaryContainer,
       ),
       cardTheme: CardThemeData(
         elevation: tokens.elevationFlat,

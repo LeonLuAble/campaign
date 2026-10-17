@@ -70,6 +70,6 @@ void main() {
 
     expect(api.setupRequired, isFalse);
     expect(api.signedIn, isTrue);
-    expect(find.text('Customers'), findsOneWidget);
+    expect(find.text('Customers'), findsWidgets);
   });
 }

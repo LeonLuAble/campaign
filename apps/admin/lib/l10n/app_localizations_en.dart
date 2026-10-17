@@ -379,6 +379,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navCustomers => 'Customers';
 
   @override
+  String get navOverview => 'Overview';
+
+  @override
+  String get navPeople => 'People';
+
+  @override
   String get navCommunities => 'Communities';
 
   @override
@@ -392,6 +398,60 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectCustomer => 'Select customer';
+
+  @override
+  String get platformConsole => 'Platform console';
+
+  @override
+  String get skipToContent => 'Skip to content';
+
+  @override
+  String get userProfile => 'Profile';
+
+  @override
+  String get profileComingSoon => 'Profile settings are coming soon.';
+
+  @override
+  String get overviewSubtitle => 'At-a-glance status for this customer.';
+
+  @override
+  String get metricMembers => 'Members';
+
+  @override
+  String get metricCommunities => 'Communities';
+
+  @override
+  String get metricCampaigns => 'Campaigns';
+
+  @override
+  String metricCampaignsByStatus(String status) {
+    return 'Campaigns · $status';
+  }
+
+  @override
+  String get nextStepsTitle => 'Next steps';
+
+  @override
+  String get nextStepCommunities => 'Create communities';
+
+  @override
+  String get nextStepPeople => 'Import or invite people';
+
+  @override
+  String get nextStepCampaign => 'Create a campaign';
+
+  @override
+  String get nextStepsComplete => 'You are set up. Keep campaigns moving.';
+
+  @override
+  String get overviewEmptyPermissions =>
+      'No overview metrics are available for your role.';
+
+  @override
+  String get peopleComingSoon => 'The member directory is coming soon.';
+
+  @override
+  String get retry => 'Retry';
 
   @override
   String get adminNameLabel => 'Admin display name';

@@ -4,6 +4,46 @@ import 'models.dart';
 import 'token_store.dart';
 
 class FakeCampaignApiClient implements CampaignApiClient {
+  /// Default tenant-admin style access used when [customerAccess] is omitted.
+  static const CustomerAccess defaultTenantAccess = CustomerAccess(
+    roles: [
+      RoleSummary(id: 'role-ta', key: 'tenant_admin', name: 'Tenant Admin'),
+    ],
+    permissionKeys: [
+      'customers.read',
+      'customers.update',
+      'communities.create',
+      'communities.read',
+      'communities.update',
+      'memberships.create',
+      'memberships.read',
+      'memberships.update',
+      'memberships.delete',
+      'roles.read',
+      'roles.assign',
+      'user_imports.create',
+      'user_imports.read',
+      'campaigns.create',
+      'campaigns.read',
+      'campaigns.update',
+      'campaign_templates.read',
+      'campaign_scopes.read',
+      'participations.create',
+      'participations.read',
+      'participations.update',
+      'submissions.read',
+      'submissions.update',
+      'impact_factors.create',
+      'impact_factors.read',
+      'impact_factors.update',
+      'dashboards.read',
+      'reports.read',
+      'reports.export',
+    ],
+    isTenantLevel: true,
+    communityIds: [],
+  );
+
   FakeCampaignApiClient({
     this.tokenStore,
     this.onSessionExpired,
@@ -27,9 +67,13 @@ class FakeCampaignApiClient implements CampaignApiClient {
     String campaignCsv = 'scope,campaignId\ncampaign,c1\n',
     List<ImpactFactor>? impactFactors,
     NotificationPreferences? preferences,
+    CustomerAccess? customerAccess,
+    List<Membership>? memberships,
     this.googleClientConfigured = false,
     this.appleClientConfigured = false,
-  }) : profile =
+  }) : customerAccess = customerAccess ?? defaultTenantAccess,
+       memberships = memberships ?? const [],
+       profile =
            profile ??
            const UserProfile(
              id: 'user-1',
@@ -318,6 +362,8 @@ class FakeCampaignApiClient implements CampaignApiClient {
   UserProfile profile;
   List<Customer> customers;
   List<Community> communities;
+  CustomerAccess customerAccess;
+  List<Membership> memberships;
   List<Campaign> campaigns;
   List<CampaignTemplate> templates;
   List<CampaignScope> scopes;
@@ -670,17 +716,49 @@ class FakeCampaignApiClient implements CampaignApiClient {
     String? status,
     int? limit,
     String? cursor,
-  }) async =>
-      const MembershipListPage(items: []);
+  }) async {
+    var items =
+        memberships.where((row) => row.customerId == customerId).toList();
+    if (communityId != null) {
+      items = items.where((row) => row.communityId == communityId).toList();
+    }
+    if (status == 'pending') {
+      items = items
+          .where((row) => row.user?.activationStatus == 'pending')
+          .toList();
+    } else if (status == 'active') {
+      items = items
+          .where((row) => row.user?.activationStatus == 'active')
+          .toList();
+    }
+    if (roleKey != null) {
+      items = items
+          .where((row) => row.roles.any((role) => role.key == roleKey))
+          .toList();
+    }
+    if (q != null && q.trim().isNotEmpty) {
+      final needle = q.trim().toLowerCase();
+      items = items.where((row) {
+        final user = row.user;
+        final haystack = [
+          user?.displayName,
+          user?.email,
+          user?.mobile,
+        ].whereType<String>().join(' ').toLowerCase();
+        return haystack.contains(needle);
+      }).toList();
+    }
+    final take = limit ?? 50;
+    return MembershipListPage(items: items.take(take).toList());
+  }
 
   @override
-  Future<CustomerAccess> getCustomerAccess(String customerId) async =>
-      const CustomerAccess(
-        roles: [],
-        permissionKeys: [],
-        isTenantLevel: true,
-        communityIds: [],
-      );
+  Future<CustomerAccess> getCustomerAccess(String customerId) async {
+    if (customers.every((row) => row.id != customerId)) {
+      _throw('NOT_FOUND', status: 404);
+    }
+    return customerAccess;
+  }
 
   @override
   Future<UserImport> uploadUserImport({
