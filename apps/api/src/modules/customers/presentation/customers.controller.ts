@@ -45,6 +45,7 @@ export class CustomersController {
         ? {
             displayName: dto.initialAdmin.displayName,
             email: dto.initialAdmin.email,
+            locale: dto.initialAdmin.locale,
           }
         : undefined,
     });

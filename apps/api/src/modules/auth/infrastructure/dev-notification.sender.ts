@@ -5,6 +5,7 @@ import {
   type EmailTransport,
 } from '../../../platform/notifications/outbound-transports.js';
 import { renderAuthEmail } from '../../../platform/notifications/auth-email-templates.js';
+import { renderCustomerAddedEmail } from '../../../platform/notifications/customer-added-email.js';
 import type {
   NotificationMessage,
   NotificationSender,
@@ -44,6 +45,11 @@ export class DevNotificationSender implements NotificationSender {
         ...message,
         template: message.template,
       });
+      return;
+    }
+
+    if (message.channel === 'email' && message.template === 'customer_added') {
+      await this.deliverCustomerAddedEmail(message);
     }
   }
 
@@ -105,6 +111,46 @@ export class DevNotificationSender implements NotificationSender {
     } catch (error) {
       this.logger.error({
         msg: 'auth_email_delivery_failed',
+        template: message.template,
+        channel: message.channel,
+        to: message.to,
+        error: error instanceof Error ? error.message : 'unknown',
+      });
+    }
+  }
+
+  private async deliverCustomerAddedEmail(
+    message: NotificationMessage,
+  ): Promise<void> {
+    if (!this.emailTransport) {
+      return;
+    }
+    const customerName = message.payload?.customerName?.trim();
+    if (!customerName) {
+      this.logger.error({
+        msg: 'customer_added_email_missing_customer_name',
+        template: message.template,
+      });
+      return;
+    }
+
+    try {
+      const rendered = renderCustomerAddedEmail({
+        customerName,
+        locale: message.locale,
+      });
+      await this.emailTransport.send({
+        channel: 'email',
+        to: message.to,
+        template: message.template,
+        locale: rendered.locale,
+        subject: rendered.subject,
+        body: rendered.text,
+        html: rendered.html,
+      });
+    } catch (error) {
+      this.logger.error({
+        msg: 'customer_added_email_delivery_failed',
         template: message.template,
         channel: message.channel,
         to: message.to,

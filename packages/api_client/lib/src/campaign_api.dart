@@ -52,6 +52,17 @@ abstract class CampaignApiClient {
     String? name,
     bool? isActive,
   });
+  Future<List<PlatformCustomerSummary>> listPlatformCustomers();
+  Future<PlatformAdminInviteResult> invitePlatformAdmin(
+    String customerId, {
+    required String email,
+    String? displayName,
+    String? locale,
+  });
+  Future<void> resendPlatformAdminActivation(
+    String customerId,
+    String userId,
+  );
 
   Future<List<Community>> listCommunities(String customerId);
   Future<Community> createCommunity({
@@ -475,6 +486,43 @@ class HttpCampaignApiClient implements CampaignApiClient {
         if (isActive != null) 'isActive': isActive,
       },
       parser: Customer.fromJson,
+    );
+  }
+
+  @override
+  Future<List<PlatformCustomerSummary>> listPlatformCustomers() {
+    return _getList(
+      '/platform/customers',
+      parser: PlatformCustomerSummary.fromJson,
+    );
+  }
+
+  @override
+  Future<PlatformAdminInviteResult> invitePlatformAdmin(
+    String customerId, {
+    required String email,
+    String? displayName,
+    String? locale,
+  }) {
+    return _post(
+      '/platform/customers/$customerId/admins',
+      data: InvitePlatformAdminRequest(
+        email: email,
+        displayName: displayName,
+        locale: locale,
+      ).toJson(),
+      parser: PlatformAdminInviteResult.fromJson,
+    );
+  }
+
+  @override
+  Future<void> resendPlatformAdminActivation(
+    String customerId,
+    String userId,
+  ) {
+    return _request(
+      'POST',
+      '/platform/customers/$customerId/admins/$userId/resend',
     );
   }
 

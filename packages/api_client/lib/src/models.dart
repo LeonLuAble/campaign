@@ -180,16 +180,96 @@ class CreateCustomerInitialAdmin {
   const CreateCustomerInitialAdmin({
     required this.email,
     this.displayName,
+    this.locale,
   });
 
   final String email;
   final String? displayName;
+  final String? locale;
 
   Map<String, dynamic> toJson() => {
         'email': email,
         if (displayName != null && displayName!.trim().isNotEmpty)
           'displayName': displayName!.trim(),
+        if (locale != null && locale!.trim().isNotEmpty) 'locale': locale!.trim(),
       };
+}
+
+class PlatformCustomerSummary {
+  const PlatformCustomerSummary({
+    required this.id,
+    required this.name,
+    required this.slug,
+    required this.isActive,
+    required this.createdAt,
+    required this.adminCount,
+    required this.pendingAdminInvites,
+  });
+
+  final String id;
+  final String name;
+  final String slug;
+  final bool isActive;
+  final String createdAt;
+  final int adminCount;
+  final int pendingAdminInvites;
+
+  factory PlatformCustomerSummary.fromJson(Map<String, dynamic> json) {
+    return PlatformCustomerSummary(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      slug: json['slug'] as String,
+      isActive: _bool(json['isActive'], true),
+      createdAt: json['createdAt'] as String? ?? '',
+      adminCount: (json['adminCount'] as num?)?.toInt() ?? 0,
+      pendingAdminInvites: (json['pendingAdminInvites'] as num?)?.toInt() ?? 0,
+    );
+  }
+}
+
+class InvitePlatformAdminRequest {
+  const InvitePlatformAdminRequest({
+    required this.email,
+    this.displayName,
+    this.locale,
+  });
+
+  final String email;
+  final String? displayName;
+  final String? locale;
+
+  Map<String, dynamic> toJson() => {
+        'email': email,
+        if (displayName != null && displayName!.trim().isNotEmpty)
+          'displayName': displayName!.trim(),
+        if (locale != null && locale!.trim().isNotEmpty) 'locale': locale!.trim(),
+      };
+}
+
+class PlatformAdminInviteResult {
+  const PlatformAdminInviteResult({
+    required this.customerId,
+    required this.userId,
+    required this.email,
+    required this.activationStatus,
+    this.activationToken,
+  });
+
+  final String customerId;
+  final String userId;
+  final String email;
+  final String activationStatus;
+  final String? activationToken;
+
+  factory PlatformAdminInviteResult.fromJson(Map<String, dynamic> json) {
+    return PlatformAdminInviteResult(
+      customerId: json['customerId'] as String,
+      userId: json['userId'] as String,
+      email: json['email'] as String,
+      activationStatus: json['activationStatus'] as String? ?? 'pending',
+      activationToken: _string(json['activationToken']),
+    );
+  }
 }
 
 class Community {

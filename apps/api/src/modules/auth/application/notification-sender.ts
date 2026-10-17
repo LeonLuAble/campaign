@@ -5,6 +5,7 @@ export type NotificationChannel = 'email' | 'sms' | 'push';
 export type NotificationTemplate =
   | 'activation'
   | 'password_reset'
+  | 'customer_added'
   | 'campaign_started'
   | 'action_reminder'
   | 'milestone_achieved';

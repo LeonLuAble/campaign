@@ -21,13 +21,18 @@ Auth error codes include `INVALID_CREDENTIALS`, `SOCIAL_TOKEN_INVALID`, `TOKEN_I
 Password policy: minimum 8 characters (configurable via `PASSWORD_MIN_LENGTH`).
 
 Customer: `/customers`
-- POST /customers `{ name, initialAdminUserId?, initialAdmin?: { displayName?, email } }` → 201. Platform-admin only (`users.is_platform_admin`); other authenticated users get 403 `FORBIDDEN`. Platform admin is a platform-level user flag, not a tenant role, and grants no implicit access to customer data beyond create. Provide either `initialAdminUserId` or `initialAdmin`, not both.
+- POST /customers `{ name, initialAdminUserId?, initialAdmin?: { email, displayName?, locale? } }` → 201. Platform-admin only (`users.is_platform_admin`); other authenticated users get 403 `FORBIDDEN`. Platform admin is a platform-level user flag, not a tenant role, and grants no implicit access to customer data beyond create. Provide either `initialAdminUserId` or `initialAdmin`, not both (400 if both).
 - `initialAdminUserId` (optional UUID) is an existing active user who receives the seeded `tenant_admin` membership. If both admin fields are omitted, the creating platform admin becomes `tenant_admin`. The creator is not added as a member when a different admin is supplied.
-- `initialAdmin` (optional) finds the user by email or creates a pending-activation account, then assigns `tenant_admin` in the same transaction. When the admin is new or still unverified, the 201 body includes `activationToken` (one-time; share out of band — email delivery is not required for this path). Active verified users get membership only and no token.
+- `initialAdmin` (optional) finds or creates the user by email in the same transaction as the tenant, roles, and `tenant_admin` membership. After commit: new or unverified users receive an activation email (F4 SMTP + `${PUBLIC_WEB_BASE_URL}/activate?token=…`); the 201 body may still include `activationToken` for out-of-band sharing. Active verified users receive a `customer_added` notice (no token). Email/send failures are logged without tokens and do not roll back the customer (activation remains resendable).
 - GET /customers → tenants the caller has an active membership in (no `customers.read` required)
 - GET /customers/:customerId → requires `customers.read` in that tenant; missing membership is 404
 - GET /customers/:customerId/access → `{ roles: [{id,key,name}], permissionKeys: string[], isTenantLevel: boolean, communityIds: string[] }` for the calling user in that customer. Any active membership is enough (no extra permission key). Non-members and platform admins who are not members get 404. `communityIds` lists the caller's community-scoped membership roots (not descendants).
 - PATCH /customers/:customerId `{ name?, isActive? }` → requires `customers.update` and a tenant-level membership
+
+Platform console (platform-admin only; metadata only — no tenant data without membership):
+- GET /platform/customers → `[{ id, name, slug, isActive, createdAt, adminCount, pendingAdminInvites }]`. Lists all customers. `adminCount` / `pendingAdminInvites` count active memberships with the system `tenant_admin` role (`pending` = no verified identity).
+- POST /platform/customers/:customerId/admins `{ email, displayName?, locale? }` → 201 `{ customerId, userId, email, activationStatus, activationToken? }`. Invites another `tenant_admin` (find-or-create by email). Same post-commit activation / `customer_added` notice rules as `initialAdmin`.
+- POST /platform/customers/:customerId/admins/:userId/resend → 202 `{ accepted: true }`. Resends activation for that customer admin (no-op safe if already verified).
 
 Bootstrap (idempotent, no hardcoded credentials): from `apps/api`, `npm run seed:tzu-chi -- --email existing-user@example.com` (or `SEED_ADMIN_EMAIL`) promotes that existing user to platform admin and creates `Tzu Chi Malaysia` if it does not already exist.
 

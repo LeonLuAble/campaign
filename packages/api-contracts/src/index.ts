@@ -128,12 +128,38 @@ export interface CustomerResponse {
 export interface CreateCustomerInitialAdmin {
   displayName?: string;
   email: string;
+  locale?: string;
 }
 
 export interface CreateCustomerRequest {
   name: string;
   initialAdminUserId?: string;
   initialAdmin?: CreateCustomerInitialAdmin;
+}
+
+/** Platform-console customer metadata (B-API-2). No tenant data beyond counts. */
+export interface PlatformCustomerSummary {
+  id: string;
+  name: string;
+  slug: string;
+  isActive: boolean;
+  createdAt: string;
+  adminCount: number;
+  pendingAdminInvites: number;
+}
+
+export interface InvitePlatformAdminRequest {
+  email: string;
+  displayName?: string;
+  locale?: string;
+}
+
+export interface PlatformAdminInviteResponse {
+  customerId: string;
+  userId: string;
+  email: string;
+  activationStatus: 'pending' | 'active';
+  activationToken?: string;
 }
 
 export interface UpdateCustomerRequest {

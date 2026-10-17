@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsEmail,
+  IsIn,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -19,6 +20,26 @@ export class InitialAdminDto {
   @IsNotEmpty()
   @MaxLength(320)
   email: string;
+
+  @IsOptional()
+  @IsIn(['en', 'zh-Hans'])
+  locale?: string;
+}
+
+export class InvitePlatformAdminDto {
+  @IsEmail()
+  @IsNotEmpty()
+  @MaxLength(320)
+  email: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  displayName?: string;
+
+  @IsOptional()
+  @IsIn(['en', 'zh-Hans'])
+  locale?: string;
 }
 
 export class CreateCustomerDto {

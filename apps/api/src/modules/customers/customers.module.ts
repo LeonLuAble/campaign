@@ -12,6 +12,7 @@ import { CustomerService } from './application/customer.service.js';
 import { Tenant } from './domain/tenant.entity.js';
 import { CustomersController } from './presentation/customers.controller.js';
 import { PlatformAdminGuard } from './presentation/platform-admin.guard.js';
+import { PlatformCustomersController } from './presentation/platform-customers.controller.js';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { PlatformAdminGuard } from './presentation/platform-admin.guard.js';
     forwardRef(() => AuthorizationModule),
     forwardRef(() => MembershipsModule),
   ],
-  controllers: [CustomersController],
+  controllers: [CustomersController, PlatformCustomersController],
   providers: [
     CustomerService,
     PlatformAdminGuard,

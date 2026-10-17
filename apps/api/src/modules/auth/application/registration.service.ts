@@ -208,6 +208,23 @@ export class RegistrationService {
     );
   }
 
+  /** Notice for an already-active user who was added to a customer. */
+  async sendCustomerAddedNotice(input: {
+    userId: string;
+    email: string;
+    customerName: string;
+    locale?: string | null;
+  }): Promise<void> {
+    const profile = await this.identityAccountService.getProfile(input.userId);
+    await this.notificationSender.send({
+      channel: 'email',
+      to: input.email,
+      template: 'customer_added',
+      locale: input.locale ?? profile?.locale ?? undefined,
+      payload: { customerName: input.customerName },
+    });
+  }
+
   async resendActivation(identifier: string): Promise<void> {
     const identity = await this.findIdentityQuietly(identifier);
     if (!identity || identity.isVerified || !identity.isActive) {

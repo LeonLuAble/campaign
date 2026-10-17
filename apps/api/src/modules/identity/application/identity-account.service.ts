@@ -101,6 +101,7 @@ export interface CreateImportedAccountInput {
   firstName: string | null;
   lastName: string | null;
   displayName: string | null;
+  locale?: string | null;
   identities: ImportedIdentityInput[];
 }
 
@@ -411,6 +412,7 @@ export class IdentityAccountService {
           first_name: input.firstName,
           last_name: input.lastName,
           display_name: input.displayName,
+          locale: input.locale ? assertStoredLocale(input.locale) : null,
           is_active: true,
         }),
       );

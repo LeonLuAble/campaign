@@ -69,10 +69,12 @@ class FakeCampaignApiClient implements CampaignApiClient {
     NotificationPreferences? preferences,
     CustomerAccess? customerAccess,
     List<Membership>? memberships,
+    List<PlatformCustomerSummary>? platformCustomerSummaries,
     this.googleClientConfigured = false,
     this.appleClientConfigured = false,
   }) : customerAccess = customerAccess ?? defaultTenantAccess,
        memberships = memberships ?? const [],
+       platformCustomerSummaries = platformCustomerSummaries ?? const [],
        profile =
            profile ??
            const UserProfile(
@@ -364,6 +366,7 @@ class FakeCampaignApiClient implements CampaignApiClient {
   List<Community> communities;
   CustomerAccess customerAccess;
   List<Membership> memberships;
+  List<PlatformCustomerSummary> platformCustomerSummaries;
   List<Campaign> campaigns;
   List<CampaignTemplate> templates;
   List<CampaignScope> scopes;
@@ -639,6 +642,18 @@ class FakeCampaignApiClient implements CampaignApiClient {
           : 'fake-activation-${customers.length + 1}',
     );
     customers = [...customers, created];
+    platformCustomerSummaries = [
+      ...platformCustomerSummaries,
+      PlatformCustomerSummary(
+        id: created.id,
+        name: created.name,
+        slug: created.slug,
+        isActive: created.isActive,
+        createdAt: DateTime.now().toUtc().toIso8601String(),
+        adminCount: 1,
+        pendingAdminInvites: initialAdmin == null ? 0 : 1,
+      ),
+    ];
     return created;
   }
 
@@ -659,7 +674,75 @@ class FakeCampaignApiClient implements CampaignApiClient {
       for (final row in customers)
         if (row.id == customerId) updated else row,
     ];
+    platformCustomerSummaries = [
+      for (final row in platformCustomerSummaries)
+        if (row.id == customerId)
+          PlatformCustomerSummary(
+            id: row.id,
+            name: updated.name,
+            slug: row.slug,
+            isActive: updated.isActive,
+            createdAt: row.createdAt,
+            adminCount: row.adminCount,
+            pendingAdminInvites: row.pendingAdminInvites,
+          )
+        else
+          row,
+    ];
     return updated;
+  }
+
+  @override
+  Future<List<PlatformCustomerSummary>> listPlatformCustomers() async {
+    if (!profile.isPlatformAdmin) {
+      _throw('FORBIDDEN', status: 403);
+    }
+    if (platformCustomerSummaries.isNotEmpty) {
+      return platformCustomerSummaries;
+    }
+    return [
+      for (final customer in customers)
+        PlatformCustomerSummary(
+          id: customer.id,
+          name: customer.name,
+          slug: customer.slug,
+          isActive: customer.isActive,
+          createdAt: DateTime.now().toUtc().toIso8601String(),
+          adminCount: 1,
+          pendingAdminInvites: 0,
+        ),
+    ];
+  }
+
+  @override
+  Future<PlatformAdminInviteResult> invitePlatformAdmin(
+    String customerId, {
+    required String email,
+    String? displayName,
+    String? locale,
+  }) async {
+    if (!profile.isPlatformAdmin) {
+      _throw('FORBIDDEN', status: 403);
+    }
+    await getCustomer(customerId);
+    return PlatformAdminInviteResult(
+      customerId: customerId,
+      userId: 'invited-${platformCustomerSummaries.length + 1}',
+      email: email,
+      activationStatus: 'pending',
+      activationToken: 'fake-invite-token',
+    );
+  }
+
+  @override
+  Future<void> resendPlatformAdminActivation(
+    String customerId,
+    String userId,
+  ) async {
+    if (!profile.isPlatformAdmin) {
+      _throw('FORBIDDEN', status: 403);
+    }
+    await getCustomer(customerId);
   }
 
   @override

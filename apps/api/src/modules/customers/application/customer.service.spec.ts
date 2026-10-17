@@ -49,6 +49,8 @@ describe('CustomerService', () => {
   };
   const registration = {
     issueActivationTokenForIdentity: vi.fn(),
+    sendCustomerAddedNotice: vi.fn(),
+    sendActivationInvitation: vi.fn(),
   };
   const dataSource = { transaction: vi.fn() };
 
@@ -231,6 +233,57 @@ describe('CustomerService', () => {
       expect.objectContaining({ userId: 'existing' }),
     );
     expect(registration.issueActivationTokenForIdentity).not.toHaveBeenCalled();
+    expect(registration.sendCustomerAddedNotice).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 'existing',
+        email: 'existing@example.com',
+        customerName: 'Acme',
+      }),
+    );
+  });
+
+  it('keeps the customer when activation send fails after commit', async () => {
+    identities.isPlatformAdmin.mockResolvedValue(true);
+    identities.findIdentity.mockResolvedValue(null);
+    registration.issueActivationTokenForIdentity.mockRejectedValue(
+      new Error('smtp down'),
+    );
+    dataSource.transaction.mockImplementation(async (fn) => {
+      const manager = {
+        getRepository: () => ({
+          create: (row: unknown) => row,
+          save: vi.fn(async (row: { name: string; slug: string }) => ({
+            id: 'tenant-send-fail',
+            name: row.name,
+            slug: row.slug,
+            is_active: true,
+            created_at: new Date('2026-01-01T00:00:00.000Z'),
+            updated_at: new Date('2026-01-01T00:00:00.000Z'),
+          })),
+        }),
+      };
+      identities.createImportedAccountInTransaction.mockResolvedValue({
+        userId: 'new-admin',
+        identities: [
+          {
+            id: 'id-1',
+            type: IdentityType.EMAIL,
+            identifier: 'admin@example.com',
+          },
+        ],
+      });
+      authorization.findSystemRole.mockResolvedValue({ id: 'role-admin' });
+      memberships.createInTransaction.mockResolvedValue({ id: 'mem-1' });
+      return fn(manager);
+    });
+
+    const result = await service.create('creator-1', {
+      name: 'Acme',
+      initialAdmin: { email: 'admin@example.com' },
+    });
+
+    expect(result.id).toBe('tenant-send-fail');
+    expect(result.activationToken).toBeUndefined();
   });
 
   it('maps duplicate identity errors to a conflict', async () => {
