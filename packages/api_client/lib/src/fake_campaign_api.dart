@@ -43,8 +43,12 @@ class FakeCampaignApiClient implements CampaignApiClient {
       'campaigns.create',
       'campaigns.read',
       'campaigns.update',
+      'campaign_templates.create',
       'campaign_templates.read',
+      'campaign_scopes.create',
       'campaign_scopes.read',
+      'action_definitions.create',
+      'action_definitions.read',
       'participations.create',
       'participations.read',
       'participations.update',
@@ -1548,7 +1552,26 @@ class FakeCampaignApiClient implements CampaignApiClient {
 
   @override
   Future<List<CampaignTemplate>> listTemplates(String customerId) async =>
-      templates;
+      templates.where((row) => row.customerId == customerId).toList();
+
+  @override
+  Future<CampaignTemplate> createTemplate({
+    required String customerId,
+    required String name,
+    String? key,
+    String? description,
+  }) async {
+    final created = CampaignTemplate(
+      id: 'tmpl-${templates.length + 1}',
+      customerId: customerId,
+      key: key ?? 'template_${templates.length + 1}',
+      name: name,
+      description: description,
+      isActive: true,
+    );
+    templates = [...templates, created];
+    return created;
+  }
 
   @override
   Future<List<CampaignScope>> listScopes(
@@ -1556,8 +1579,33 @@ class FakeCampaignApiClient implements CampaignApiClient {
     String? templateId,
   }) async {
     return scopes
-        .where((row) => templateId == null || row.templateId == templateId)
+        .where(
+          (row) =>
+              row.customerId == customerId &&
+              (templateId == null || row.templateId == templateId),
+        )
         .toList();
+  }
+
+  @override
+  Future<CampaignScope> createScope({
+    required String customerId,
+    required String templateId,
+    required String name,
+    String? key,
+    String? description,
+  }) async {
+    final created = CampaignScope(
+      id: 'scope-${scopes.length + 1}',
+      customerId: customerId,
+      templateId: templateId,
+      key: key ?? 'scope_${scopes.length + 1}',
+      name: name,
+      description: description,
+      isActive: true,
+    );
+    scopes = [...scopes, created];
+    return created;
   }
 
   @override
@@ -1808,7 +1856,27 @@ class FakeCampaignApiClient implements CampaignApiClient {
 
   @override
   Future<List<ActionDefinition>> listActionDefinitions(String campaignId) async =>
-      actionDefinitions;
+      actionDefinitions.where((row) => row.campaignId == campaignId).toList();
+
+  @override
+  Future<ActionDefinition> createActionDefinition({
+    required String campaignId,
+    required String name,
+    required String unit,
+    String? key,
+    String? description,
+  }) async {
+    final created = ActionDefinition(
+      id: 'adef-${actionDefinitions.length + 1}',
+      campaignId: campaignId,
+      key: key ?? 'action_${actionDefinitions.length + 1}',
+      name: name,
+      unit: unit,
+      isActive: true,
+    );
+    actionDefinitions = [...actionDefinitions, created];
+    return created;
+  }
 
   @override
   Future<List<RecordedAction>> listCampaignActions(String campaignId) async =>

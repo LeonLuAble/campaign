@@ -1129,6 +1129,240 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get createAction => '创建';
+
+  @override
+  String get newCampaign => '新建活动';
+
+  @override
+  String get campaignSearchHint => '搜索活动';
+
+  @override
+  String get campaignFilterStatus => '状态';
+
+  @override
+  String get campaignFilterAll => '全部状态';
+
+  @override
+  String get campaignStatusDraft => '草稿';
+
+  @override
+  String get campaignStatusPublished => '已发布';
+
+  @override
+  String get campaignStatusStarted => '已开始';
+
+  @override
+  String get campaignStatusCompleted => '已完成';
+
+  @override
+  String get campaignColumnName => '名称';
+
+  @override
+  String get campaignColumnStatus => '状态';
+
+  @override
+  String get campaignColumnDates => '日期';
+
+  @override
+  String get campaignColumnParticipants => '参加者';
+
+  @override
+  String get campaignDatesUnset => '未设置日期';
+
+  @override
+  String campaignParticipantCount(int count) {
+    return '$count';
+  }
+
+  @override
+  String get campaignWizardTitle => '创建活动';
+
+  @override
+  String get campaignStepBasics => '基本信息';
+
+  @override
+  String get campaignStepSchedule => '日程';
+
+  @override
+  String get campaignStepRules => '规则';
+
+  @override
+  String get campaignStepAudience => '受众';
+
+  @override
+  String get campaignStepActions => '行动';
+
+  @override
+  String get campaignStepReview => '确认';
+
+  @override
+  String get campaignNameZhLabel => '名称（简体中文）';
+
+  @override
+  String get campaignDescriptionZhLabel => '描述（简体中文）';
+
+  @override
+  String get campaignNameEnLabel => '名称（英文，可选）';
+
+  @override
+  String get campaignDescriptionEnLabel => '描述（英文，可选）';
+
+  @override
+  String get campaignPickStartDate => '选择开始日期';
+
+  @override
+  String get campaignPickEndDate => '选择结束日期';
+
+  @override
+  String get campaignTimezoneSearch => '搜索时区';
+
+  @override
+  String get campaignRulesStrategyHint => '请从列表选择规则策略。承诺规则由服务器提供，请勿手写策略键。';
+
+  @override
+  String get campaignAudienceCustomerWide => '整个组织';
+
+  @override
+  String get campaignAudienceSelected => '选定社区';
+
+  @override
+  String get campaignAudiencePickCommunities => '选择社区';
+
+  @override
+  String get campaignAudienceRequired => '请至少选择一个社区，或选择整个组织。';
+
+  @override
+  String get campaignReviewModeLabel => '提交审核方式';
+
+  @override
+  String get campaignReviewModeAuto => '自动';
+
+  @override
+  String get campaignReviewModeManual => '人工';
+
+  @override
+  String get campaignReviewModeAutoHelp => '记录自动通过。负责人仍可抽查并驳回错误记录。';
+
+  @override
+  String get campaignReviewModeManualHelp => '每条记录进入审核队列，由负责人批准或驳回。';
+
+  @override
+  String get campaignActionDefinitionsTitle => '行动定义';
+
+  @override
+  String get campaignActionNameLabel => '行动名称';
+
+  @override
+  String get campaignActionKeyLabel => '键';
+
+  @override
+  String get campaignActionUnitLabel => '单位';
+
+  @override
+  String get campaignAddActionDefinition => '添加行动';
+
+  @override
+  String get campaignRemoveActionDefinition => '移除';
+
+  @override
+  String get campaignApplyRecommendedActions => '应用推荐定义';
+
+  @override
+  String get campaignCreateAsDraft => '创建为草稿';
+
+  @override
+  String get campaignReviewSummary => '请确认活动信息，然后创建为草稿。';
+
+  @override
+  String get campaignWorkspaceOverview => '概览';
+
+  @override
+  String get campaignWorkspaceSettings => '设置';
+
+  @override
+  String get campaignWorkspaceParticipants => '参加者';
+
+  @override
+  String get campaignWorkspaceSubmissions => '提交';
+
+  @override
+  String get campaignWorkspaceMilestonesImpact => '里程碑与影响';
+
+  @override
+  String get campaignWorkspaceDashboardReports => '看板与报表';
+
+  @override
+  String get campaignPublishChecklistTitle => '发布检查清单';
+
+  @override
+  String get campaignChecklistDates => '开始与结束日期';
+
+  @override
+  String get campaignChecklistActions => '至少一个行动定义';
+
+  @override
+  String get campaignChecklistAudience => '受众（全组织或社区）';
+
+  @override
+  String get campaignChecklistMissing => '缺失';
+
+  @override
+  String get campaignChecklistReady => '就绪';
+
+  @override
+  String get publishCampaignConfirmTitle => '发布活动？';
+
+  @override
+  String get publishCampaignConfirmBody =>
+      '成员将可以看到并加入。发布后设置字段会锁定；仅描述与延长结束日期仍可编辑。';
+
+  @override
+  String get startCampaignConfirmTitle => '开始活动？';
+
+  @override
+  String get startCampaignConfirmBody => '已报名参加者将收到活动开始通知，并可开始记录。';
+
+  @override
+  String get completeCampaign => '完成';
+
+  @override
+  String get completeCampaignConfirmTitle => '完成活动？';
+
+  @override
+  String get completeCampaignConfirmBody => '记录将关闭；行动定义锁定；历史保留。此操作不可撤销。';
+
+  @override
+  String get confirmAction => '确认';
+
+  @override
+  String get campaignFieldLocked => '发布后已锁定';
+
+  @override
+  String get campaignSaveSettings => '保存更改';
+
+  @override
+  String get campaignSettingsSaved => '活动已更新。';
+
+  @override
+  String get campaignMilestonesComingSoon => '里程碑管理将在后续阶段提供。下方可管理影响系数。';
+
+  @override
+  String get campaignDescriptionLabel => '描述';
+
+  @override
+  String get errorCampaignFieldLocked => '发布后仅可修改描述，以及延长结束日期。';
+
+  @override
+  String get errorCampaignEndDateLocked => '发布后结束日期只能延长，不能提前。';
+
+  @override
+  String get campaignDatesRequired => '请选择开始与结束日期。';
+
+  @override
+  String get campaignStrategyRequired => '请选择规则策略。';
+
+  @override
+  String get campaignActionsRequired => '请至少添加一个行动定义。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -2255,4 +2489,238 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get createAction => '创建';
+
+  @override
+  String get newCampaign => '新建活动';
+
+  @override
+  String get campaignSearchHint => '搜索活动';
+
+  @override
+  String get campaignFilterStatus => '状态';
+
+  @override
+  String get campaignFilterAll => '全部状态';
+
+  @override
+  String get campaignStatusDraft => '草稿';
+
+  @override
+  String get campaignStatusPublished => '已发布';
+
+  @override
+  String get campaignStatusStarted => '已开始';
+
+  @override
+  String get campaignStatusCompleted => '已完成';
+
+  @override
+  String get campaignColumnName => '名称';
+
+  @override
+  String get campaignColumnStatus => '状态';
+
+  @override
+  String get campaignColumnDates => '日期';
+
+  @override
+  String get campaignColumnParticipants => '参加者';
+
+  @override
+  String get campaignDatesUnset => '未设置日期';
+
+  @override
+  String campaignParticipantCount(int count) {
+    return '$count';
+  }
+
+  @override
+  String get campaignWizardTitle => '创建活动';
+
+  @override
+  String get campaignStepBasics => '基本信息';
+
+  @override
+  String get campaignStepSchedule => '日程';
+
+  @override
+  String get campaignStepRules => '规则';
+
+  @override
+  String get campaignStepAudience => '受众';
+
+  @override
+  String get campaignStepActions => '行动';
+
+  @override
+  String get campaignStepReview => '确认';
+
+  @override
+  String get campaignNameZhLabel => '名称（简体中文）';
+
+  @override
+  String get campaignDescriptionZhLabel => '描述（简体中文）';
+
+  @override
+  String get campaignNameEnLabel => '名称（英文，可选）';
+
+  @override
+  String get campaignDescriptionEnLabel => '描述（英文，可选）';
+
+  @override
+  String get campaignPickStartDate => '选择开始日期';
+
+  @override
+  String get campaignPickEndDate => '选择结束日期';
+
+  @override
+  String get campaignTimezoneSearch => '搜索时区';
+
+  @override
+  String get campaignRulesStrategyHint => '请从列表选择规则策略。承诺规则由服务器提供，请勿手写策略键。';
+
+  @override
+  String get campaignAudienceCustomerWide => '整个组织';
+
+  @override
+  String get campaignAudienceSelected => '选定社区';
+
+  @override
+  String get campaignAudiencePickCommunities => '选择社区';
+
+  @override
+  String get campaignAudienceRequired => '请至少选择一个社区，或选择整个组织。';
+
+  @override
+  String get campaignReviewModeLabel => '提交审核方式';
+
+  @override
+  String get campaignReviewModeAuto => '自动';
+
+  @override
+  String get campaignReviewModeManual => '人工';
+
+  @override
+  String get campaignReviewModeAutoHelp => '记录自动通过。负责人仍可抽查并驳回错误记录。';
+
+  @override
+  String get campaignReviewModeManualHelp => '每条记录进入审核队列，由负责人批准或驳回。';
+
+  @override
+  String get campaignActionDefinitionsTitle => '行动定义';
+
+  @override
+  String get campaignActionNameLabel => '行动名称';
+
+  @override
+  String get campaignActionKeyLabel => '键';
+
+  @override
+  String get campaignActionUnitLabel => '单位';
+
+  @override
+  String get campaignAddActionDefinition => '添加行动';
+
+  @override
+  String get campaignRemoveActionDefinition => '移除';
+
+  @override
+  String get campaignApplyRecommendedActions => '应用推荐定义';
+
+  @override
+  String get campaignCreateAsDraft => '创建为草稿';
+
+  @override
+  String get campaignReviewSummary => '请确认活动信息，然后创建为草稿。';
+
+  @override
+  String get campaignWorkspaceOverview => '概览';
+
+  @override
+  String get campaignWorkspaceSettings => '设置';
+
+  @override
+  String get campaignWorkspaceParticipants => '参加者';
+
+  @override
+  String get campaignWorkspaceSubmissions => '提交';
+
+  @override
+  String get campaignWorkspaceMilestonesImpact => '里程碑与影响';
+
+  @override
+  String get campaignWorkspaceDashboardReports => '看板与报表';
+
+  @override
+  String get campaignPublishChecklistTitle => '发布检查清单';
+
+  @override
+  String get campaignChecklistDates => '开始与结束日期';
+
+  @override
+  String get campaignChecklistActions => '至少一个行动定义';
+
+  @override
+  String get campaignChecklistAudience => '受众（全组织或社区）';
+
+  @override
+  String get campaignChecklistMissing => '缺失';
+
+  @override
+  String get campaignChecklistReady => '就绪';
+
+  @override
+  String get publishCampaignConfirmTitle => '发布活动？';
+
+  @override
+  String get publishCampaignConfirmBody =>
+      '成员将可以看到并加入。发布后设置字段会锁定；仅描述与延长结束日期仍可编辑。';
+
+  @override
+  String get startCampaignConfirmTitle => '开始活动？';
+
+  @override
+  String get startCampaignConfirmBody => '已报名参加者将收到活动开始通知，并可开始记录。';
+
+  @override
+  String get completeCampaign => '完成';
+
+  @override
+  String get completeCampaignConfirmTitle => '完成活动？';
+
+  @override
+  String get completeCampaignConfirmBody => '记录将关闭；行动定义锁定；历史保留。此操作不可撤销。';
+
+  @override
+  String get confirmAction => '确认';
+
+  @override
+  String get campaignFieldLocked => '发布后已锁定';
+
+  @override
+  String get campaignSaveSettings => '保存更改';
+
+  @override
+  String get campaignSettingsSaved => '活动已更新。';
+
+  @override
+  String get campaignMilestonesComingSoon => '里程碑管理将在后续阶段提供。下方可管理影响系数。';
+
+  @override
+  String get campaignDescriptionLabel => '描述';
+
+  @override
+  String get errorCampaignFieldLocked => '发布后仅可修改描述，以及延长结束日期。';
+
+  @override
+  String get errorCampaignEndDateLocked => '发布后结束日期只能延长，不能提前。';
+
+  @override
+  String get campaignDatesRequired => '请选择开始与结束日期。';
+
+  @override
+  String get campaignStrategyRequired => '请选择规则策略。';
+
+  @override
+  String get campaignActionsRequired => '请至少添加一个行动定义。';
 }

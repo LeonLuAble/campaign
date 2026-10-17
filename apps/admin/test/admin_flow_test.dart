@@ -139,17 +139,44 @@ void main() {
 
     await tester.tap(navIcon(Icons.flag_outlined));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Create campaign'));
+    await tester.tap(find.widgetWithText(FilledButton, 'New campaign'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField).first, 'Spring 速素数数');
-    await tester.tap(find.widgetWithText(FilledButton, 'Create campaign'));
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Name (简体中文)'),
+      'Spring 速素数数',
+    );
+    Future<void> next() async {
+      await tester.tap(find.widgetWithText(FilledButton, 'Next'));
+      await tester.pumpAndSettle();
+    }
+
+    await next();
+    await tester.tap(find.text('Pick start date'));
     await tester.pumpAndSettle();
-    expect(find.text('draft'), findsOneWidget);
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Pick end date'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    await next();
+    await tester.tap(find.textContaining('Vegetarian'));
+    await tester.pumpAndSettle();
+    await next();
+    await next();
+    await next();
+    await tester.tap(find.widgetWithText(FilledButton, 'Create as draft'));
+    await tester.pumpAndSettle();
+    expect(find.text('Draft'), findsWidgets);
     await tester.tap(find.widgetWithText(FilledButton, 'Publish'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Publish').last);
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Start'));
     await tester.pumpAndSettle();
-    expect(find.text('started'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Start').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Started'), findsWidgets);
 
     final created = api.campaigns.last;
     api.actions = [
@@ -169,17 +196,18 @@ void main() {
         ),
       ),
     ];
-    await tester.tap(find.widgetWithText(OutlinedButton, 'Submissions'));
+    await tester.tap(find.text('Submissions'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Reject'));
     await tester.pumpAndSettle();
 
-    final reportFinder = find.widgetWithText(OutlinedButton, 'Campaign report');
-    if (reportFinder.evaluate().isEmpty) {
-      await tester.pageBack();
-      await tester.pumpAndSettle();
-    }
-    await tester.tap(find.widgetWithText(OutlinedButton, 'Campaign report'));
+    final reportsTab = find.text('Dashboard & reports');
+    await tester.ensureVisible(reportsTab);
+    await tester.tap(reportsTab);
+    await tester.pumpAndSettle();
+    final reportSegment = find.text('Campaign report');
+    await tester.ensureVisible(reportSegment);
+    await tester.tap(reportSegment);
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Export CSV'));
     await tester.pumpAndSettle();

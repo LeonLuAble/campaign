@@ -3,9 +3,9 @@ import 'package:go_router/go_router.dart';
 import '../auth/activate_page.dart';
 import '../auth/login_page.dart';
 import '../auth/password_reset_page.dart';
-import '../campaigns/campaign_admin_page.dart';
-import '../campaigns/campaign_form_page.dart';
 import '../campaigns/campaign_list_page.dart';
+import '../campaigns/campaign_wizard_page.dart';
+import '../campaigns/campaign_workspace_page.dart';
 import '../campaigns/impact_factors_page.dart';
 import '../campaigns/participants_page.dart';
 import '../campaigns/submissions_page.dart';
@@ -251,7 +251,7 @@ GoRouter createRouter({required SessionController session}) {
                           GoRoute(
                             path: 'new',
                             name: 'campaignNew',
-                            builder: (context, state) => CampaignFormPage(
+                            builder: (context, state) => CampaignWizardPage(
                               customerId:
                                   state.pathParameters['customerId']!,
                             ),
@@ -259,7 +259,7 @@ GoRouter createRouter({required SessionController session}) {
                           GoRoute(
                             path: ':campaignId',
                             name: 'campaign',
-                            builder: (context, state) => CampaignAdminPage(
+                            builder: (context, state) => CampaignWorkspacePage(
                               customerId:
                                   state.pathParameters['customerId']!,
                               campaignId:

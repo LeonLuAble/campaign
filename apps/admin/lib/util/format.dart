@@ -59,6 +59,10 @@ String localizeApiError(AppLocalizations l10n, Object error) {
       return l10n.errorRateLimited;
     case 'errorValidation':
       return l10n.errorValidation;
+    case 'errorCampaignFieldLocked':
+      return l10n.errorCampaignFieldLocked;
+    case 'errorCampaignEndDateLocked':
+      return l10n.errorCampaignEndDateLocked;
     default:
       return error.message.isEmpty ? l10n.errorUnexpected : error.message;
   }

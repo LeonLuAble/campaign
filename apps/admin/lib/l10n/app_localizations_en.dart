@@ -1164,4 +1164,249 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get createAction => 'Create';
+
+  @override
+  String get newCampaign => 'New campaign';
+
+  @override
+  String get campaignSearchHint => 'Search campaigns';
+
+  @override
+  String get campaignFilterStatus => 'Status';
+
+  @override
+  String get campaignFilterAll => 'All statuses';
+
+  @override
+  String get campaignStatusDraft => 'Draft';
+
+  @override
+  String get campaignStatusPublished => 'Published';
+
+  @override
+  String get campaignStatusStarted => 'Started';
+
+  @override
+  String get campaignStatusCompleted => 'Completed';
+
+  @override
+  String get campaignColumnName => 'Name';
+
+  @override
+  String get campaignColumnStatus => 'Status';
+
+  @override
+  String get campaignColumnDates => 'Dates';
+
+  @override
+  String get campaignColumnParticipants => 'Participants';
+
+  @override
+  String get campaignDatesUnset => 'Dates not set';
+
+  @override
+  String campaignParticipantCount(int count) {
+    return '$count';
+  }
+
+  @override
+  String get campaignWizardTitle => 'Create campaign';
+
+  @override
+  String get campaignStepBasics => 'Basics';
+
+  @override
+  String get campaignStepSchedule => 'Schedule';
+
+  @override
+  String get campaignStepRules => 'Rules';
+
+  @override
+  String get campaignStepAudience => 'Audience';
+
+  @override
+  String get campaignStepActions => 'Actions';
+
+  @override
+  String get campaignStepReview => 'Review';
+
+  @override
+  String get campaignNameZhLabel => 'Name (简体中文)';
+
+  @override
+  String get campaignDescriptionZhLabel => 'Description (简体中文)';
+
+  @override
+  String get campaignNameEnLabel => 'Name (English, optional)';
+
+  @override
+  String get campaignDescriptionEnLabel => 'Description (English, optional)';
+
+  @override
+  String get campaignPickStartDate => 'Pick start date';
+
+  @override
+  String get campaignPickEndDate => 'Pick end date';
+
+  @override
+  String get campaignTimezoneSearch => 'Search timezone';
+
+  @override
+  String get campaignRulesStrategyHint =>
+      'Choose a rules strategy. Pledge rules come from the server — do not type a free-text strategy key.';
+
+  @override
+  String get campaignAudienceCustomerWide => 'Whole organisation';
+
+  @override
+  String get campaignAudienceSelected => 'Selected communities';
+
+  @override
+  String get campaignAudiencePickCommunities => 'Select communities';
+
+  @override
+  String get campaignAudienceRequired =>
+      'Select at least one community, or choose whole organisation.';
+
+  @override
+  String get campaignReviewModeLabel => 'Submission review';
+
+  @override
+  String get campaignReviewModeAuto => 'Auto';
+
+  @override
+  String get campaignReviewModeManual => 'Manual';
+
+  @override
+  String get campaignReviewModeAutoHelp =>
+      'Records are approved automatically. Leaders can still spot-check and reject mistaken entries.';
+
+  @override
+  String get campaignReviewModeManualHelp =>
+      'Every record waits in a review queue until a leader approves or rejects it.';
+
+  @override
+  String get campaignActionDefinitionsTitle => 'Action definitions';
+
+  @override
+  String get campaignActionNameLabel => 'Action name';
+
+  @override
+  String get campaignActionKeyLabel => 'Key';
+
+  @override
+  String get campaignActionUnitLabel => 'Unit';
+
+  @override
+  String get campaignAddActionDefinition => 'Add action';
+
+  @override
+  String get campaignRemoveActionDefinition => 'Remove';
+
+  @override
+  String get campaignApplyRecommendedActions => 'Apply recommended definitions';
+
+  @override
+  String get campaignCreateAsDraft => 'Create as draft';
+
+  @override
+  String get campaignReviewSummary =>
+      'Review your campaign, then create it as a draft.';
+
+  @override
+  String get campaignWorkspaceOverview => 'Overview';
+
+  @override
+  String get campaignWorkspaceSettings => 'Settings';
+
+  @override
+  String get campaignWorkspaceParticipants => 'Participants';
+
+  @override
+  String get campaignWorkspaceSubmissions => 'Submissions';
+
+  @override
+  String get campaignWorkspaceMilestonesImpact => 'Milestones & impact';
+
+  @override
+  String get campaignWorkspaceDashboardReports => 'Dashboard & reports';
+
+  @override
+  String get campaignPublishChecklistTitle => 'Ready to publish';
+
+  @override
+  String get campaignChecklistDates => 'Start and end dates';
+
+  @override
+  String get campaignChecklistActions => 'At least one action definition';
+
+  @override
+  String get campaignChecklistAudience =>
+      'Audience (organisation-wide or communities)';
+
+  @override
+  String get campaignChecklistMissing => 'Missing';
+
+  @override
+  String get campaignChecklistReady => 'Ready';
+
+  @override
+  String get publishCampaignConfirmTitle => 'Publish campaign?';
+
+  @override
+  String get publishCampaignConfirmBody =>
+      'Members will be able to see and join. Setup fields lock after publish; only the description and extending the end date stay editable.';
+
+  @override
+  String get startCampaignConfirmTitle => 'Start campaign?';
+
+  @override
+  String get startCampaignConfirmBody =>
+      'Enrolled participants will be notified that the campaign has started. Recording becomes available.';
+
+  @override
+  String get completeCampaign => 'Complete';
+
+  @override
+  String get completeCampaignConfirmTitle => 'Complete campaign?';
+
+  @override
+  String get completeCampaignConfirmBody =>
+      'Recording closes; action definitions lock; history is kept. This cannot be undone.';
+
+  @override
+  String get confirmAction => 'Confirm';
+
+  @override
+  String get campaignFieldLocked => 'Locked after publish';
+
+  @override
+  String get campaignSaveSettings => 'Save changes';
+
+  @override
+  String get campaignSettingsSaved => 'Campaign updated.';
+
+  @override
+  String get campaignMilestonesComingSoon =>
+      'Milestone management arrives in a later phase. Impact factors are available below.';
+
+  @override
+  String get campaignDescriptionLabel => 'Description';
+
+  @override
+  String get errorCampaignFieldLocked =>
+      'Only the description and extending the end date can be changed after publish.';
+
+  @override
+  String get errorCampaignEndDateLocked =>
+      'The end date may only be extended after publish.';
+
+  @override
+  String get campaignDatesRequired => 'Choose start and end dates.';
+
+  @override
+  String get campaignStrategyRequired => 'Choose a rules strategy.';
+
+  @override
+  String get campaignActionsRequired => 'Add at least one action definition.';
 }

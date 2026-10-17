@@ -2228,6 +2228,468 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Create'**
   String get createAction;
+
+  /// No description provided for @newCampaign.
+  ///
+  /// In en, this message translates to:
+  /// **'New campaign'**
+  String get newCampaign;
+
+  /// No description provided for @campaignSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search campaigns'**
+  String get campaignSearchHint;
+
+  /// No description provided for @campaignFilterStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get campaignFilterStatus;
+
+  /// No description provided for @campaignFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All statuses'**
+  String get campaignFilterAll;
+
+  /// No description provided for @campaignStatusDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft'**
+  String get campaignStatusDraft;
+
+  /// No description provided for @campaignStatusPublished.
+  ///
+  /// In en, this message translates to:
+  /// **'Published'**
+  String get campaignStatusPublished;
+
+  /// No description provided for @campaignStatusStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Started'**
+  String get campaignStatusStarted;
+
+  /// No description provided for @campaignStatusCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get campaignStatusCompleted;
+
+  /// No description provided for @campaignColumnName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get campaignColumnName;
+
+  /// No description provided for @campaignColumnStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get campaignColumnStatus;
+
+  /// No description provided for @campaignColumnDates.
+  ///
+  /// In en, this message translates to:
+  /// **'Dates'**
+  String get campaignColumnDates;
+
+  /// No description provided for @campaignColumnParticipants.
+  ///
+  /// In en, this message translates to:
+  /// **'Participants'**
+  String get campaignColumnParticipants;
+
+  /// No description provided for @campaignDatesUnset.
+  ///
+  /// In en, this message translates to:
+  /// **'Dates not set'**
+  String get campaignDatesUnset;
+
+  /// No description provided for @campaignParticipantCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}'**
+  String campaignParticipantCount(int count);
+
+  /// No description provided for @campaignWizardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create campaign'**
+  String get campaignWizardTitle;
+
+  /// No description provided for @campaignStepBasics.
+  ///
+  /// In en, this message translates to:
+  /// **'Basics'**
+  String get campaignStepBasics;
+
+  /// No description provided for @campaignStepSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule'**
+  String get campaignStepSchedule;
+
+  /// No description provided for @campaignStepRules.
+  ///
+  /// In en, this message translates to:
+  /// **'Rules'**
+  String get campaignStepRules;
+
+  /// No description provided for @campaignStepAudience.
+  ///
+  /// In en, this message translates to:
+  /// **'Audience'**
+  String get campaignStepAudience;
+
+  /// No description provided for @campaignStepActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Actions'**
+  String get campaignStepActions;
+
+  /// No description provided for @campaignStepReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get campaignStepReview;
+
+  /// No description provided for @campaignNameZhLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name (简体中文)'**
+  String get campaignNameZhLabel;
+
+  /// No description provided for @campaignDescriptionZhLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Description (简体中文)'**
+  String get campaignDescriptionZhLabel;
+
+  /// No description provided for @campaignNameEnLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name (English, optional)'**
+  String get campaignNameEnLabel;
+
+  /// No description provided for @campaignDescriptionEnLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Description (English, optional)'**
+  String get campaignDescriptionEnLabel;
+
+  /// No description provided for @campaignPickStartDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick start date'**
+  String get campaignPickStartDate;
+
+  /// No description provided for @campaignPickEndDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick end date'**
+  String get campaignPickEndDate;
+
+  /// No description provided for @campaignTimezoneSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search timezone'**
+  String get campaignTimezoneSearch;
+
+  /// No description provided for @campaignRulesStrategyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a rules strategy. Pledge rules come from the server — do not type a free-text strategy key.'**
+  String get campaignRulesStrategyHint;
+
+  /// No description provided for @campaignAudienceCustomerWide.
+  ///
+  /// In en, this message translates to:
+  /// **'Whole organisation'**
+  String get campaignAudienceCustomerWide;
+
+  /// No description provided for @campaignAudienceSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected communities'**
+  String get campaignAudienceSelected;
+
+  /// No description provided for @campaignAudiencePickCommunities.
+  ///
+  /// In en, this message translates to:
+  /// **'Select communities'**
+  String get campaignAudiencePickCommunities;
+
+  /// No description provided for @campaignAudienceRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Select at least one community, or choose whole organisation.'**
+  String get campaignAudienceRequired;
+
+  /// No description provided for @campaignReviewModeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Submission review'**
+  String get campaignReviewModeLabel;
+
+  /// No description provided for @campaignReviewModeAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get campaignReviewModeAuto;
+
+  /// No description provided for @campaignReviewModeManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual'**
+  String get campaignReviewModeManual;
+
+  /// No description provided for @campaignReviewModeAutoHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Records are approved automatically. Leaders can still spot-check and reject mistaken entries.'**
+  String get campaignReviewModeAutoHelp;
+
+  /// No description provided for @campaignReviewModeManualHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Every record waits in a review queue until a leader approves or rejects it.'**
+  String get campaignReviewModeManualHelp;
+
+  /// No description provided for @campaignActionDefinitionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Action definitions'**
+  String get campaignActionDefinitionsTitle;
+
+  /// No description provided for @campaignActionNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Action name'**
+  String get campaignActionNameLabel;
+
+  /// No description provided for @campaignActionKeyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Key'**
+  String get campaignActionKeyLabel;
+
+  /// No description provided for @campaignActionUnitLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit'**
+  String get campaignActionUnitLabel;
+
+  /// No description provided for @campaignAddActionDefinition.
+  ///
+  /// In en, this message translates to:
+  /// **'Add action'**
+  String get campaignAddActionDefinition;
+
+  /// No description provided for @campaignRemoveActionDefinition.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get campaignRemoveActionDefinition;
+
+  /// No description provided for @campaignApplyRecommendedActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply recommended definitions'**
+  String get campaignApplyRecommendedActions;
+
+  /// No description provided for @campaignCreateAsDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Create as draft'**
+  String get campaignCreateAsDraft;
+
+  /// No description provided for @campaignReviewSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Review your campaign, then create it as a draft.'**
+  String get campaignReviewSummary;
+
+  /// No description provided for @campaignWorkspaceOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Overview'**
+  String get campaignWorkspaceOverview;
+
+  /// No description provided for @campaignWorkspaceSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get campaignWorkspaceSettings;
+
+  /// No description provided for @campaignWorkspaceParticipants.
+  ///
+  /// In en, this message translates to:
+  /// **'Participants'**
+  String get campaignWorkspaceParticipants;
+
+  /// No description provided for @campaignWorkspaceSubmissions.
+  ///
+  /// In en, this message translates to:
+  /// **'Submissions'**
+  String get campaignWorkspaceSubmissions;
+
+  /// No description provided for @campaignWorkspaceMilestonesImpact.
+  ///
+  /// In en, this message translates to:
+  /// **'Milestones & impact'**
+  String get campaignWorkspaceMilestonesImpact;
+
+  /// No description provided for @campaignWorkspaceDashboardReports.
+  ///
+  /// In en, this message translates to:
+  /// **'Dashboard & reports'**
+  String get campaignWorkspaceDashboardReports;
+
+  /// No description provided for @campaignPublishChecklistTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to publish'**
+  String get campaignPublishChecklistTitle;
+
+  /// No description provided for @campaignChecklistDates.
+  ///
+  /// In en, this message translates to:
+  /// **'Start and end dates'**
+  String get campaignChecklistDates;
+
+  /// No description provided for @campaignChecklistActions.
+  ///
+  /// In en, this message translates to:
+  /// **'At least one action definition'**
+  String get campaignChecklistActions;
+
+  /// No description provided for @campaignChecklistAudience.
+  ///
+  /// In en, this message translates to:
+  /// **'Audience (organisation-wide or communities)'**
+  String get campaignChecklistAudience;
+
+  /// No description provided for @campaignChecklistMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing'**
+  String get campaignChecklistMissing;
+
+  /// No description provided for @campaignChecklistReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready'**
+  String get campaignChecklistReady;
+
+  /// No description provided for @publishCampaignConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish campaign?'**
+  String get publishCampaignConfirmTitle;
+
+  /// No description provided for @publishCampaignConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Members will be able to see and join. Setup fields lock after publish; only the description and extending the end date stay editable.'**
+  String get publishCampaignConfirmBody;
+
+  /// No description provided for @startCampaignConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start campaign?'**
+  String get startCampaignConfirmTitle;
+
+  /// No description provided for @startCampaignConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Enrolled participants will be notified that the campaign has started. Recording becomes available.'**
+  String get startCampaignConfirmBody;
+
+  /// No description provided for @completeCampaign.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete'**
+  String get completeCampaign;
+
+  /// No description provided for @completeCampaignConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete campaign?'**
+  String get completeCampaignConfirmTitle;
+
+  /// No description provided for @completeCampaignConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording closes; action definitions lock; history is kept. This cannot be undone.'**
+  String get completeCampaignConfirmBody;
+
+  /// No description provided for @confirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirmAction;
+
+  /// No description provided for @campaignFieldLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked after publish'**
+  String get campaignFieldLocked;
+
+  /// No description provided for @campaignSaveSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get campaignSaveSettings;
+
+  /// No description provided for @campaignSettingsSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Campaign updated.'**
+  String get campaignSettingsSaved;
+
+  /// No description provided for @campaignMilestonesComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Milestone management arrives in a later phase. Impact factors are available below.'**
+  String get campaignMilestonesComingSoon;
+
+  /// No description provided for @campaignDescriptionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get campaignDescriptionLabel;
+
+  /// No description provided for @errorCampaignFieldLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the description and extending the end date can be changed after publish.'**
+  String get errorCampaignFieldLocked;
+
+  /// No description provided for @errorCampaignEndDateLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'The end date may only be extended after publish.'**
+  String get errorCampaignEndDateLocked;
+
+  /// No description provided for @campaignDatesRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose start and end dates.'**
+  String get campaignDatesRequired;
+
+  /// No description provided for @campaignStrategyRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a rules strategy.'**
+  String get campaignStrategyRequired;
+
+  /// No description provided for @campaignActionsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one action definition.'**
+  String get campaignActionsRequired;
 }
 
 class _AppLocalizationsDelegate

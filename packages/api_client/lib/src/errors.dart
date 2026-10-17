@@ -68,6 +68,10 @@ String apiErrorMessageKey(String code) {
     case 'BAD_REQUEST':
     case 'UNPROCESSABLE_ENTITY':
       return 'errorValidation';
+    case 'CAMPAIGN_FIELD_LOCKED':
+      return 'errorCampaignFieldLocked';
+    case 'CAMPAIGN_END_DATE_LOCKED':
+      return 'errorCampaignEndDateLocked';
     default:
       return 'errorUnexpected';
   }

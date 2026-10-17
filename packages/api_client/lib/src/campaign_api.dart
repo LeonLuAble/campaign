@@ -135,9 +135,22 @@ abstract class CampaignApiClient {
   Future<List<UserImportRow>> listUserImportRows(String userImportId);
 
   Future<List<CampaignTemplate>> listTemplates(String customerId);
+  Future<CampaignTemplate> createTemplate({
+    required String customerId,
+    required String name,
+    String? key,
+    String? description,
+  });
   Future<List<CampaignScope>> listScopes(
     String customerId, {
     String? templateId,
+  });
+  Future<CampaignScope> createScope({
+    required String customerId,
+    required String templateId,
+    required String name,
+    String? key,
+    String? description,
   });
   Future<List<CampaignRuleStrategy>> listCampaignRuleStrategies(
     String customerId,
@@ -186,6 +199,13 @@ abstract class CampaignApiClient {
   });
 
   Future<List<ActionDefinition>> listActionDefinitions(String campaignId);
+  Future<ActionDefinition> createActionDefinition({
+    required String campaignId,
+    required String name,
+    required String unit,
+    String? key,
+    String? description,
+  });
   Future<List<RecordedAction>> listCampaignActions(String campaignId);
   Future<List<RecordedAction>> listParticipationActions(String participationId);
   Future<RecordedAction> recordAction({
@@ -827,6 +847,25 @@ class HttpCampaignApiClient implements CampaignApiClient {
   }
 
   @override
+  Future<CampaignTemplate> createTemplate({
+    required String customerId,
+    required String name,
+    String? key,
+    String? description,
+  }) {
+    return _post(
+      '/campaign-templates',
+      data: {
+        'customerId': customerId,
+        'name': name,
+        if (key != null) 'key': key,
+        if (description != null) 'description': description,
+      },
+      parser: CampaignTemplate.fromJson,
+    );
+  }
+
+  @override
   Future<List<CampaignScope>> listScopes(
     String customerId, {
     String? templateId,
@@ -836,6 +875,27 @@ class HttpCampaignApiClient implements CampaignApiClient {
       query: {
         'customerId': customerId,
         if (templateId != null) 'templateId': templateId,
+      },
+      parser: CampaignScope.fromJson,
+    );
+  }
+
+  @override
+  Future<CampaignScope> createScope({
+    required String customerId,
+    required String templateId,
+    required String name,
+    String? key,
+    String? description,
+  }) {
+    return _post(
+      '/campaign-scopes',
+      data: {
+        'customerId': customerId,
+        'templateId': templateId,
+        'name': name,
+        if (key != null) 'key': key,
+        if (description != null) 'description': description,
       },
       parser: CampaignScope.fromJson,
     );
@@ -1005,6 +1065,26 @@ class HttpCampaignApiClient implements CampaignApiClient {
   Future<List<ActionDefinition>> listActionDefinitions(String campaignId) {
     return _getList(
       '/campaigns/$campaignId/action-definitions',
+      parser: ActionDefinition.fromJson,
+    );
+  }
+
+  @override
+  Future<ActionDefinition> createActionDefinition({
+    required String campaignId,
+    required String name,
+    required String unit,
+    String? key,
+    String? description,
+  }) {
+    return _post(
+      '/campaigns/$campaignId/action-definitions',
+      data: {
+        'name': name,
+        'unit': unit,
+        if (key != null) 'key': key,
+        if (description != null) 'description': description,
+      },
       parser: ActionDefinition.fromJson,
     );
   }
