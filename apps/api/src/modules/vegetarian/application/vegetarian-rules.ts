@@ -16,7 +16,6 @@ import {
   VEGETARIAN_TRANSLATION_NAMESPACE,
   vegetarianTranslationFallback,
 } from './vegetarian-i18n.js';
-import type { SupportedLocale } from '../../localization/application/locale-catalog.js';
 
 export const VEGETARIAN_RULES_STRATEGY_KEY = 'vegetarian';
 
@@ -147,7 +146,7 @@ export class VegetarianRuleStrategy implements CampaignRuleStrategy {
   }
 
   resolveLocalizedCopy(locale: string, key: string): string | null {
-    return vegetarianTranslationFallback(locale as SupportedLocale, key);
+    return vegetarianTranslationFallback(locale, key);
   }
 
   validateAction(input: ActionRuleInput): void {
