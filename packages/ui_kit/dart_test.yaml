@@ -1,0 +1,6 @@
+tags:
+  golden:
+    description: >
+      Pixel-comparison golden tests. Generated on the local OS (typically macOS)
+      and excluded from CI Linux runners. Regenerate with:
+      flutter test --update-goldens --tags golden

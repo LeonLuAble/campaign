@@ -1,3 +1,6 @@
+@Tags(['golden'])
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_kit/ui_kit.dart';
@@ -30,8 +33,16 @@ void main() {
   final cases = <({String name, Locale locale, double scale})>[
     (name: 'en_1x', locale: const Locale('en'), scale: 1),
     (name: 'en_2x', locale: const Locale('en'), scale: 2),
-    (name: 'zh_1x', locale: const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'), scale: 1),
-    (name: 'zh_2x', locale: const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'), scale: 2),
+    (
+      name: 'zh_1x',
+      locale: const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
+      scale: 1,
+    ),
+    (
+      name: 'zh_2x',
+      locale: const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
+      scale: 2,
+    ),
   ];
 
   for (final c in cases) {
@@ -91,12 +102,12 @@ void main() {
 
     testWidgets('ProgressRing golden ${c.name}', (tester) async {
       await tester.binding.setSurfaceSize(const Size(400, 280));
-      final label = c.locale.languageCode == 'zh' ? '120%' : '120%';
+      const label = '120%';
       await tester.pumpWidget(
         _harness(
           locale: c.locale,
           textScale: c.scale,
-          child: ProgressRing(completion: 1.2, label: label),
+          child: const ProgressRing(completion: 1.2, label: label),
         ),
       );
       await expectLater(
@@ -129,7 +140,8 @@ void main() {
 
     testWidgets('TreeVisualization golden ${c.name}', (tester) async {
       await tester.binding.setSurfaceSize(const Size(400, 280));
-      final completion = c.locale.languageCode == 'zh' ? '完成：64%' : 'Completion: 64%';
+      final completion =
+          c.locale.languageCode == 'zh' ? '完成：64%' : 'Completion: 64%';
       await tester.pumpWidget(
         _harness(
           locale: c.locale,
