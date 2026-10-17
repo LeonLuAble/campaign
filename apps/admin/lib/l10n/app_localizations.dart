@@ -1334,6 +1334,204 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{admins} admins · {pending} pending invites'**
   String adminCountSummary(int admins, int pending);
+
+  /// No description provided for @communitiesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Organise members into a hierarchy of any depth.'**
+  String get communitiesSubtitle;
+
+  /// No description provided for @createFirstCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your first community'**
+  String get createFirstCommunity;
+
+  /// No description provided for @createRootCommunityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create community'**
+  String get createRootCommunityTitle;
+
+  /// No description provided for @createChildCommunityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add child community'**
+  String get createChildCommunityTitle;
+
+  /// No description provided for @addChildCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Add child'**
+  String get addChildCommunity;
+
+  /// No description provided for @renameCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get renameCommunity;
+
+  /// No description provided for @renameCommunityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename community'**
+  String get renameCommunityTitle;
+
+  /// No description provided for @moveCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to…'**
+  String get moveCommunity;
+
+  /// No description provided for @moveCommunityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Move community'**
+  String get moveCommunityTitle;
+
+  /// No description provided for @moveCommunityHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a new parent for {name}. Its own descendants are excluded.'**
+  String moveCommunityHint(String name);
+
+  /// No description provided for @moveCommunityConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Move'**
+  String get moveCommunityConfirm;
+
+  /// No description provided for @communityRootLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Organisation root (no parent)'**
+  String get communityRootLabel;
+
+  /// No description provided for @noMoveTargets.
+  ///
+  /// In en, this message translates to:
+  /// **'No other communities available as a parent.'**
+  String get noMoveTargets;
+
+  /// No description provided for @deactivateCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate'**
+  String get deactivateCommunity;
+
+  /// No description provided for @reactivateCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Reactivate'**
+  String get reactivateCommunity;
+
+  /// No description provided for @deactivateCommunityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate community'**
+  String get deactivateCommunityTitle;
+
+  /// No description provided for @reactivateCommunityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reactivate community'**
+  String get reactivateCommunityTitle;
+
+  /// No description provided for @deactivateCommunityBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate {name}? It will stay in the tree but mark as inactive.'**
+  String deactivateCommunityBody(String name);
+
+  /// No description provided for @reactivateCommunityBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Reactivate {name}?'**
+  String reactivateCommunityBody(String name);
+
+  /// No description provided for @deactivateCommunityConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate'**
+  String get deactivateCommunityConfirm;
+
+  /// No description provided for @reactivateCommunityConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Reactivate'**
+  String get reactivateCommunityConfirm;
+
+  /// No description provided for @communityCycleError.
+  ///
+  /// In en, this message translates to:
+  /// **'That move would create a cycle. Choose a different parent.'**
+  String get communityCycleError;
+
+  /// No description provided for @communityCreatedSnackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'Community created.'**
+  String get communityCreatedSnackbar;
+
+  /// No description provided for @communityRenamedSnackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'Community renamed.'**
+  String get communityRenamedSnackbar;
+
+  /// No description provided for @communityMovedSnackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'Community moved.'**
+  String get communityMovedSnackbar;
+
+  /// No description provided for @communityDeactivatedSnackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'Community deactivated.'**
+  String get communityDeactivatedSnackbar;
+
+  /// No description provided for @communityReactivatedSnackbar.
+  ///
+  /// In en, this message translates to:
+  /// **'Community reactivated.'**
+  String get communityReactivatedSnackbar;
+
+  /// No description provided for @expandNode.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand'**
+  String get expandNode;
+
+  /// No description provided for @collapseNode.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse'**
+  String get collapseNode;
+
+  /// No description provided for @communityActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Community actions'**
+  String get communityActions;
+
+  /// No description provided for @communityNodeSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Community {name}'**
+  String communityNodeSemantics(String name);
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @createAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get createAction;
 }
 
 class _AppLocalizationsDelegate

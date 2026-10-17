@@ -652,6 +652,113 @@ class AppLocalizationsZh extends AppLocalizations {
   String adminCountSummary(int admins, int pending) {
     return '$admins 位管理员 · $pending 个待激活邀请';
   }
+
+  @override
+  String get communitiesSubtitle => '将成员组织成任意深度的层级结构。';
+
+  @override
+  String get createFirstCommunity => '创建第一个社区';
+
+  @override
+  String get createRootCommunityTitle => '创建社区';
+
+  @override
+  String get createChildCommunityTitle => '添加子社区';
+
+  @override
+  String get addChildCommunity => '添加子节点';
+
+  @override
+  String get renameCommunity => '重命名';
+
+  @override
+  String get renameCommunityTitle => '重命名社区';
+
+  @override
+  String get moveCommunity => '移动到…';
+
+  @override
+  String get moveCommunityTitle => '移动社区';
+
+  @override
+  String moveCommunityHint(String name) {
+    return '为 $name 选择新的上级。其自身的子孙节点已被排除。';
+  }
+
+  @override
+  String get moveCommunityConfirm => '移动';
+
+  @override
+  String get communityRootLabel => '组织根（无上级）';
+
+  @override
+  String get noMoveTargets => '没有可用作上级的其他社区。';
+
+  @override
+  String get deactivateCommunity => '停用';
+
+  @override
+  String get reactivateCommunity => '重新启用';
+
+  @override
+  String get deactivateCommunityTitle => '停用社区';
+
+  @override
+  String get reactivateCommunityTitle => '重新启用社区';
+
+  @override
+  String deactivateCommunityBody(String name) {
+    return '停用 $name？它仍会保留在树中，但标记为停用。';
+  }
+
+  @override
+  String reactivateCommunityBody(String name) {
+    return '重新启用 $name？';
+  }
+
+  @override
+  String get deactivateCommunityConfirm => '停用';
+
+  @override
+  String get reactivateCommunityConfirm => '重新启用';
+
+  @override
+  String get communityCycleError => '该移动会造成循环，请选择其他上级。';
+
+  @override
+  String get communityCreatedSnackbar => '社区已创建。';
+
+  @override
+  String get communityRenamedSnackbar => '社区已重命名。';
+
+  @override
+  String get communityMovedSnackbar => '社区已移动。';
+
+  @override
+  String get communityDeactivatedSnackbar => '社区已停用。';
+
+  @override
+  String get communityReactivatedSnackbar => '社区已重新启用。';
+
+  @override
+  String get expandNode => '展开';
+
+  @override
+  String get collapseNode => '折叠';
+
+  @override
+  String get communityActions => '社区操作';
+
+  @override
+  String communityNodeSemantics(String name) {
+    return '社区 $name';
+  }
+
+  @override
+  String get save => '保存';
+
+  @override
+  String get createAction => '创建';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -1301,4 +1408,111 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String adminCountSummary(int admins, int pending) {
     return '$admins 位管理员 · $pending 个待激活邀请';
   }
+
+  @override
+  String get communitiesSubtitle => '将成员组织成任意深度的层级结构。';
+
+  @override
+  String get createFirstCommunity => '创建第一个社区';
+
+  @override
+  String get createRootCommunityTitle => '创建社区';
+
+  @override
+  String get createChildCommunityTitle => '添加子社区';
+
+  @override
+  String get addChildCommunity => '添加子节点';
+
+  @override
+  String get renameCommunity => '重命名';
+
+  @override
+  String get renameCommunityTitle => '重命名社区';
+
+  @override
+  String get moveCommunity => '移动到…';
+
+  @override
+  String get moveCommunityTitle => '移动社区';
+
+  @override
+  String moveCommunityHint(String name) {
+    return '为 $name 选择新的上级。其自身的子孙节点已被排除。';
+  }
+
+  @override
+  String get moveCommunityConfirm => '移动';
+
+  @override
+  String get communityRootLabel => '组织根（无上级）';
+
+  @override
+  String get noMoveTargets => '没有可用作上级的其他社区。';
+
+  @override
+  String get deactivateCommunity => '停用';
+
+  @override
+  String get reactivateCommunity => '重新启用';
+
+  @override
+  String get deactivateCommunityTitle => '停用社区';
+
+  @override
+  String get reactivateCommunityTitle => '重新启用社区';
+
+  @override
+  String deactivateCommunityBody(String name) {
+    return '停用 $name？它仍会保留在树中，但标记为停用。';
+  }
+
+  @override
+  String reactivateCommunityBody(String name) {
+    return '重新启用 $name？';
+  }
+
+  @override
+  String get deactivateCommunityConfirm => '停用';
+
+  @override
+  String get reactivateCommunityConfirm => '重新启用';
+
+  @override
+  String get communityCycleError => '该移动会造成循环，请选择其他上级。';
+
+  @override
+  String get communityCreatedSnackbar => '社区已创建。';
+
+  @override
+  String get communityRenamedSnackbar => '社区已重命名。';
+
+  @override
+  String get communityMovedSnackbar => '社区已移动。';
+
+  @override
+  String get communityDeactivatedSnackbar => '社区已停用。';
+
+  @override
+  String get communityReactivatedSnackbar => '社区已重新启用。';
+
+  @override
+  String get expandNode => '展开';
+
+  @override
+  String get collapseNode => '折叠';
+
+  @override
+  String get communityActions => '社区操作';
+
+  @override
+  String communityNodeSemantics(String name) {
+    return '社区 $name';
+  }
+
+  @override
+  String get save => '保存';
+
+  @override
+  String get createAction => '创建';
 }

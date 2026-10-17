@@ -388,6 +388,7 @@ class FakeCampaignApiClient implements CampaignApiClient {
   final Map<String, List<FakePlatformAdmin>> platformAdmins = {};
   ApiException? createCustomerError;
   ApiException? listPlatformCustomersError;
+  bool forceCycleOnNextCommunityUpdate = false;
   final List<({String customerId, String userId})> resendActivationCalls = [];
   List<Campaign> campaigns;
   List<CampaignTemplate> templates;
@@ -870,12 +871,40 @@ class FakeCampaignApiClient implements CampaignApiClient {
     String communityId, {
     String? name,
     bool? isActive,
+    bool updateParent = false,
+    String? parentId,
   }) async {
+    if (forceCycleOnNextCommunityUpdate) {
+      forceCycleOnNextCommunityUpdate = false;
+      _throw(
+        'BAD_REQUEST',
+        status: 400,
+        message: 'Community parent would create a cycle',
+      );
+    }
     final current = communities.firstWhere((row) => row.id == communityId);
+    var nextParent = current.parentId;
+    if (updateParent) {
+      if (parentId != null) {
+        if (parentId == communityId ||
+            _isDescendantOf(ancestorId: communityId, nodeId: parentId)) {
+          _throw(
+            'BAD_REQUEST',
+            status: 400,
+            message: 'Community parent would create a cycle',
+          );
+        }
+        final parentExists = communities.any((row) => row.id == parentId);
+        if (!parentExists) {
+          _throw('NOT_FOUND', status: 404);
+        }
+      }
+      nextParent = parentId;
+    }
     final updated = Community(
       id: current.id,
       customerId: current.customerId,
-      parentId: current.parentId,
+      parentId: nextParent,
       name: name ?? current.name,
       slug: current.slug,
       isActive: isActive ?? current.isActive,
@@ -885,6 +914,20 @@ class FakeCampaignApiClient implements CampaignApiClient {
         if (row.id == communityId) updated else row,
     ];
     return updated;
+  }
+
+  bool _isDescendantOf({required String ancestorId, required String nodeId}) {
+    final byId = {for (final row in communities) row.id: row};
+    var current = byId[nodeId]?.parentId;
+    final seen = <String>{};
+    while (current != null && !seen.contains(current)) {
+      if (current == ancestorId) {
+        return true;
+      }
+      seen.add(current);
+      current = byId[current]?.parentId;
+    }
+    return false;
   }
 
   @override

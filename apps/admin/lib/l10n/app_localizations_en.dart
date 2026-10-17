@@ -672,4 +672,113 @@ class AppLocalizationsEn extends AppLocalizations {
   String adminCountSummary(int admins, int pending) {
     return '$admins admins · $pending pending invites';
   }
+
+  @override
+  String get communitiesSubtitle =>
+      'Organise members into a hierarchy of any depth.';
+
+  @override
+  String get createFirstCommunity => 'Create your first community';
+
+  @override
+  String get createRootCommunityTitle => 'Create community';
+
+  @override
+  String get createChildCommunityTitle => 'Add child community';
+
+  @override
+  String get addChildCommunity => 'Add child';
+
+  @override
+  String get renameCommunity => 'Rename';
+
+  @override
+  String get renameCommunityTitle => 'Rename community';
+
+  @override
+  String get moveCommunity => 'Move to…';
+
+  @override
+  String get moveCommunityTitle => 'Move community';
+
+  @override
+  String moveCommunityHint(String name) {
+    return 'Choose a new parent for $name. Its own descendants are excluded.';
+  }
+
+  @override
+  String get moveCommunityConfirm => 'Move';
+
+  @override
+  String get communityRootLabel => 'Organisation root (no parent)';
+
+  @override
+  String get noMoveTargets => 'No other communities available as a parent.';
+
+  @override
+  String get deactivateCommunity => 'Deactivate';
+
+  @override
+  String get reactivateCommunity => 'Reactivate';
+
+  @override
+  String get deactivateCommunityTitle => 'Deactivate community';
+
+  @override
+  String get reactivateCommunityTitle => 'Reactivate community';
+
+  @override
+  String deactivateCommunityBody(String name) {
+    return 'Deactivate $name? It will stay in the tree but mark as inactive.';
+  }
+
+  @override
+  String reactivateCommunityBody(String name) {
+    return 'Reactivate $name?';
+  }
+
+  @override
+  String get deactivateCommunityConfirm => 'Deactivate';
+
+  @override
+  String get reactivateCommunityConfirm => 'Reactivate';
+
+  @override
+  String get communityCycleError =>
+      'That move would create a cycle. Choose a different parent.';
+
+  @override
+  String get communityCreatedSnackbar => 'Community created.';
+
+  @override
+  String get communityRenamedSnackbar => 'Community renamed.';
+
+  @override
+  String get communityMovedSnackbar => 'Community moved.';
+
+  @override
+  String get communityDeactivatedSnackbar => 'Community deactivated.';
+
+  @override
+  String get communityReactivatedSnackbar => 'Community reactivated.';
+
+  @override
+  String get expandNode => 'Expand';
+
+  @override
+  String get collapseNode => 'Collapse';
+
+  @override
+  String get communityActions => 'Community actions';
+
+  @override
+  String communityNodeSemantics(String name) {
+    return 'Community $name';
+  }
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get createAction => 'Create';
 }

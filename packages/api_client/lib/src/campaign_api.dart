@@ -70,10 +70,13 @@ abstract class CampaignApiClient {
     required String name,
     String? parentId,
   });
+  /// When [updateParent] is true, send [parentId] (null = move to root).
   Future<Community> updateCommunity(
     String communityId, {
     String? name,
     bool? isActive,
+    bool updateParent = false,
+    String? parentId,
   });
 
   Future<MembershipListPage> listMemberships(
@@ -557,12 +560,15 @@ class HttpCampaignApiClient implements CampaignApiClient {
     String communityId, {
     String? name,
     bool? isActive,
+    bool updateParent = false,
+    String? parentId,
   }) {
     return _patch(
       '/communities/$communityId',
       data: {
         if (name != null) 'name': name,
         if (isActive != null) 'isActive': isActive,
+        if (updateParent) 'parentId': parentId,
       },
       parser: Community.fromJson,
     );

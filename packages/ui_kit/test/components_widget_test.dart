@@ -217,6 +217,66 @@ void main() {
         );
       });
 
+      testWidgets('TreeListView expands, collapses, and exposes actions', (
+        tester,
+      ) async {
+        await tester.binding.setSurfaceSize(const Size(640, 480));
+        final root = isZh(c.locale) ? '根' : 'Root';
+        final child = isZh(c.locale) ? '子' : 'Child';
+        final expand = isZh(c.locale) ? '展开' : 'Expand';
+        final collapse = isZh(c.locale) ? '折叠' : 'Collapse';
+        final actions = isZh(c.locale) ? '操作' : 'Actions';
+        final rename = isZh(c.locale) ? '重命名' : 'Rename';
+        var renamed = false;
+        await tester.pumpWidget(
+          harness(
+            locale: c.locale,
+            textScale: c.scale,
+            child: SizedBox(
+              height: 400,
+              child: TreeListView<String>(
+                nodes: [
+                  TreeListNode(
+                    id: 'root',
+                    data: root,
+                    children: [
+                      TreeListNode(id: 'child', data: child),
+                    ],
+                  ),
+                ],
+                labelBuilder: (node) => node.data,
+                semanticsLabelBuilder: (node) => node.data,
+                expandTooltip: expand,
+                collapseTooltip: collapse,
+                actionsTooltip: actions,
+                actionsBuilder: (node) => [
+                  TreeListAction(
+                    id: 'rename',
+                    label: rename,
+                    onSelected: () => renamed = true,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        expect(find.text(root), findsOneWidget);
+        expect(find.text(child), findsOneWidget);
+        await tester.tap(find.byTooltip(collapse));
+        await tester.pumpAndSettle();
+        expect(find.text(child), findsNothing);
+        await tester.tap(find.byTooltip(expand));
+        await tester.pumpAndSettle();
+        expect(find.text(child), findsOneWidget);
+        await tester.tap(find.byTooltip(actions).first);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(rename).last);
+        await tester.pumpAndSettle();
+        expect(renamed, isTrue);
+      });
+
       testWidgets('WizardStepper shows steps and footer actions', (tester) async {
         await tester.binding.setSurfaceSize(const Size(640, 480));
         final step1 = isZh(c.locale) ? '组织' : 'Organisation';

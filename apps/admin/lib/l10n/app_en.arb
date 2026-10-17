@@ -262,5 +262,51 @@
       "admins": { "type": "int" },
       "pending": { "type": "int" }
     }
-  }
+  },
+
+  "communitiesSubtitle": "Organise members into a hierarchy of any depth.",
+  "createFirstCommunity": "Create your first community",
+  "createRootCommunityTitle": "Create community",
+  "createChildCommunityTitle": "Add child community",
+  "addChildCommunity": "Add child",
+  "renameCommunity": "Rename",
+  "renameCommunityTitle": "Rename community",
+  "moveCommunity": "Move to…",
+  "moveCommunityTitle": "Move community",
+  "moveCommunityHint": "Choose a new parent for {name}. Its own descendants are excluded.",
+  "@moveCommunityHint": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "moveCommunityConfirm": "Move",
+  "communityRootLabel": "Organisation root (no parent)",
+  "noMoveTargets": "No other communities available as a parent.",
+  "deactivateCommunity": "Deactivate",
+  "reactivateCommunity": "Reactivate",
+  "deactivateCommunityTitle": "Deactivate community",
+  "reactivateCommunityTitle": "Reactivate community",
+  "deactivateCommunityBody": "Deactivate {name}? It will stay in the tree but mark as inactive.",
+  "@deactivateCommunityBody": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "reactivateCommunityBody": "Reactivate {name}?",
+  "@reactivateCommunityBody": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "deactivateCommunityConfirm": "Deactivate",
+  "reactivateCommunityConfirm": "Reactivate",
+  "communityCycleError": "That move would create a cycle. Choose a different parent.",
+  "communityCreatedSnackbar": "Community created.",
+  "communityRenamedSnackbar": "Community renamed.",
+  "communityMovedSnackbar": "Community moved.",
+  "communityDeactivatedSnackbar": "Community deactivated.",
+  "communityReactivatedSnackbar": "Community reactivated.",
+  "expandNode": "Expand",
+  "collapseNode": "Collapse",
+  "communityActions": "Community actions",
+  "communityNodeSemantics": "Community {name}",
+  "@communityNodeSemantics": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "save": "Save",
+  "createAction": "Create"
 }

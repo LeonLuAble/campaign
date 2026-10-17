@@ -101,8 +101,15 @@ void main() {
     await tester.tap(navIcon(Icons.account_tree_outlined));
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.byType(TextField).first, 'KL Chapter');
-    await tester.tap(find.widgetWithText(FilledButton, 'Create community'));
+    await tester.tap(
+      find.widgetWithText(FilledButton, 'Create your first community'),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Community name'),
+      'KL Chapter',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Create'));
     await tester.pumpAndSettle();
     expect(find.text('KL Chapter'), findsOneWidget);
 
