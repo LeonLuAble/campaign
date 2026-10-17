@@ -19,6 +19,15 @@ import { hasTenantLevelMembership } from '../../authorization/application/member
 import type { TenantContext } from '../../authorization/application/tenant-context.js';
 import { CommunityService } from '../../communities/application/community.service.js';
 import { CustomerService } from '../../customers/application/customer.service.js';
+import type { SupportedLocale } from '../../localization/application/locale-catalog.js';
+import {
+  LocalizationService,
+  type CampaignContentTranslations,
+} from '../../localization/application/localization.service.js';
+import {
+  CAMPAIGN_NOTIFICATIONS,
+  type CampaignNotifications,
+} from '../../notifications/application/campaign-notifications.js';
 import { CampaignCommunity } from '../domain/campaign-community.entity.js';
 import { CampaignConfiguration } from '../domain/campaign-configuration.entity.js';
 import { CampaignScope } from '../domain/campaign-scope.entity.js';
@@ -30,10 +39,6 @@ import {
 } from './campaign-lifecycle.js';
 import { campaignVisibleToMemberships } from './campaign-visibility.js';
 import { readSubmissionReview } from './campaign-settings.js';
-import {
-  CAMPAIGN_NOTIFICATIONS,
-  type CampaignNotifications,
-} from '../../notifications/application/campaign-notifications.js';
 import {
   assertDateOrder,
   assertIanaTimeZone,
@@ -113,6 +118,7 @@ export class CampaignService {
     private readonly customers: CustomerService,
     @Inject(forwardRef(() => CommunityService))
     private readonly communities: CommunityService,
+    private readonly localization: LocalizationService,
     @Optional()
     @Inject(forwardRef(() => CAMPAIGN_NOTIFICATIONS))
     private readonly campaignNotifications: CampaignNotifications | null,
@@ -380,12 +386,15 @@ export class CampaignService {
     return this.toScopeResponse(saved);
   }
 
-  async listCampaigns(tenant: TenantContext): Promise<CampaignResponse[]> {
+  async listCampaigns(
+    tenant: TenantContext,
+    locale: SupportedLocale = 'en',
+  ): Promise<CampaignResponse[]> {
     const campaigns = await this.campaignRepository.find({
       where: { tenant_id: tenant.tenantId },
       order: { created_at: 'ASC' },
     });
-    const responses = await this.toCampaignResponses(campaigns);
+    const responses = await this.toCampaignResponses(campaigns, locale);
     const ancestorsByCommunityId = await this.ancestorsForMemberships(tenant);
     return responses.filter((campaign) =>
       campaignVisibleToMemberships(
@@ -399,9 +408,10 @@ export class CampaignService {
   async getCampaign(
     tenant: TenantContext,
     campaignId: string,
+    locale: SupportedLocale = 'en',
   ): Promise<CampaignResponse> {
     const campaign = await this.requireVisibleCampaign(tenant, campaignId);
-    const [mapped] = await this.toCampaignResponses([campaign]);
+    const [mapped] = await this.toCampaignResponses([campaign], locale);
     return mapped;
   }
 
@@ -418,7 +428,9 @@ export class CampaignService {
       endsOn?: string | null;
       communityIds?: string[];
       configuration?: Record<string, unknown>;
+      translations?: CampaignContentTranslations;
     },
+    locale: SupportedLocale = 'en',
   ): Promise<CampaignResponse> {
     await this.assertCanMutateCatalog(tenant);
     const template = await this.requireTemplate(
@@ -483,6 +495,12 @@ export class CampaignService {
       communityIds,
     );
 
+    await this.localization.upsertCampaignContentTranslations(
+      tenant.tenantId,
+      saved.id,
+      input.translations,
+    );
+
     this.logger.log({
       msg: 'campaign_created',
       tenantId: tenant.tenantId,
@@ -490,7 +508,7 @@ export class CampaignService {
       templateId: template.id,
       scopeId: scope.id,
     });
-    const [mapped] = await this.toCampaignResponses([saved]);
+    const [mapped] = await this.toCampaignResponses([saved], locale);
     return mapped;
   }
 
@@ -505,10 +523,20 @@ export class CampaignService {
       endsOn?: string | null;
       communityIds?: string[];
       configuration?: Record<string, unknown>;
+      translations?: CampaignContentTranslations;
     },
+    locale: SupportedLocale = 'en',
   ): Promise<CampaignResponse> {
     await this.assertCanMutateCatalog(tenant);
     const campaign = await this.requireVisibleCampaign(tenant, campaignId);
+
+    if (
+      campaign.status === CampaignStatus.PUBLISHED ||
+      campaign.status === CampaignStatus.STARTED
+    ) {
+      return this.updatePublishedCampaign(tenant, campaign, input, locale);
+    }
+
     this.assertDraft(campaign);
 
     if (input.name !== undefined) {
@@ -561,13 +589,99 @@ export class CampaignService {
         input.configuration,
       );
     }
+    await this.localization.upsertCampaignContentTranslations(
+      tenant.tenantId,
+      campaign.id,
+      input.translations,
+    );
 
     this.logger.log({
       msg: 'campaign_updated',
       tenantId: tenant.tenantId,
       campaignId: campaign.id,
     });
-    return this.getCampaign(tenant, campaign.id);
+    return this.getCampaign(tenant, campaign.id, locale);
+  }
+
+  private async updatePublishedCampaign(
+    tenant: TenantContext,
+    campaign: Campaign,
+    input: {
+      name?: string;
+      description?: string | null;
+      timezone?: string;
+      startsOn?: string | null;
+      endsOn?: string | null;
+      communityIds?: string[];
+      configuration?: Record<string, unknown>;
+      translations?: CampaignContentTranslations;
+    },
+    locale: SupportedLocale,
+  ): Promise<CampaignResponse> {
+    const lockedKeys: string[] = [];
+    if (input.name !== undefined) lockedKeys.push('name');
+    if (input.timezone !== undefined) lockedKeys.push('timezone');
+    if (input.startsOn !== undefined) lockedKeys.push('startsOn');
+    if (input.communityIds !== undefined) lockedKeys.push('communityIds');
+    if (input.configuration !== undefined) lockedKeys.push('configuration');
+    const en = input.translations?.en;
+    if (en && ('name' in en || 'treeDisplayName' in en)) {
+      lockedKeys.push('translations');
+    }
+    if (lockedKeys.length > 0) {
+      throw new ResourceConflictException(
+        'Only description and extending endsOn may be changed after publish',
+        'CAMPAIGN_FIELD_LOCKED',
+      );
+    }
+
+    if (input.endsOn !== undefined) {
+      if (input.endsOn == null) {
+        throw new ResourceConflictException(
+          'endsOn may only be extended after publish',
+          'CAMPAIGN_END_DATE_LOCKED',
+        );
+      }
+      const next = parseIsoDate(input.endsOn, 'endsOn');
+      const current = toIsoDate(campaign.ends_on);
+      if (current && next < current) {
+        throw new ResourceConflictException(
+          'endsOn may only be extended after publish',
+          'CAMPAIGN_END_DATE_LOCKED',
+        );
+      }
+      campaign.ends_on = next;
+    }
+    if (input.description !== undefined) {
+      campaign.description = input.description?.trim() || null;
+    }
+    assertDateOrder(toIsoDate(campaign.starts_on), toIsoDate(campaign.ends_on));
+
+    try {
+      await this.campaignRepository.save(campaign);
+    } catch (error) {
+      if (isCheckViolation(error)) {
+        throw new InvalidRequestException(
+          'endsOn must be on or after startsOn',
+        );
+      }
+      throw error;
+    }
+
+    if (input.translations?.en && 'description' in input.translations.en) {
+      await this.localization.upsertCampaignContentTranslations(
+        tenant.tenantId,
+        campaign.id,
+        { en: { description: input.translations.en.description } },
+      );
+    }
+
+    this.logger.log({
+      msg: 'campaign_updated_post_publish',
+      tenantId: tenant.tenantId,
+      campaignId: campaign.id,
+    });
+    return this.getCampaign(tenant, campaign.id, locale);
   }
 
   async publishCampaign(
@@ -962,6 +1076,7 @@ export class CampaignService {
 
   private async toCampaignResponses(
     campaigns: Campaign[],
+    locale: SupportedLocale = 'en',
   ): Promise<CampaignResponse[]> {
     if (campaigns.length === 0) {
       return [];
@@ -983,27 +1098,46 @@ export class CampaignService {
       configurations.map((row) => [row.campaign_id, row.settings]),
     );
 
-    return campaigns.map((campaign) => ({
-      id: campaign.id,
-      customerId: campaign.tenant_id,
-      templateId: campaign.template_id,
-      scopeId: campaign.scope_id,
-      name: campaign.name,
-      slug: campaign.slug,
-      description: campaign.description,
-      status: campaign.status,
-      timezone: campaign.timezone,
-      startsOn: toIsoDate(campaign.starts_on),
-      endsOn: toIsoDate(campaign.ends_on),
-      communityIds: communitiesByCampaign.get(campaign.id) ?? [],
-      configuration: configurationByCampaign.get(campaign.id) ?? {},
-      createdByUserId: campaign.created_by_user_id,
-      publishedAt: campaign.published_at?.toISOString() ?? null,
-      startedAt: campaign.started_at?.toISOString() ?? null,
-      completedAt: campaign.completed_at?.toISOString() ?? null,
-      createdAt: campaign.created_at.toISOString(),
-      updatedAt: campaign.updated_at.toISOString(),
-    }));
+    const mapped: CampaignResponse[] = [];
+    for (const campaign of campaigns) {
+      const name =
+        (await this.localization.resolveCampaignContent(
+          locale,
+          campaign.tenant_id,
+          campaign.id,
+          'name',
+          campaign.name,
+        )) ?? campaign.name;
+      const description = await this.localization.resolveCampaignContent(
+        locale,
+        campaign.tenant_id,
+        campaign.id,
+        'description',
+        campaign.description,
+      );
+      mapped.push({
+        id: campaign.id,
+        customerId: campaign.tenant_id,
+        templateId: campaign.template_id,
+        scopeId: campaign.scope_id,
+        name,
+        slug: campaign.slug,
+        description,
+        status: campaign.status,
+        timezone: campaign.timezone,
+        startsOn: toIsoDate(campaign.starts_on),
+        endsOn: toIsoDate(campaign.ends_on),
+        communityIds: communitiesByCampaign.get(campaign.id) ?? [],
+        configuration: configurationByCampaign.get(campaign.id) ?? {},
+        createdByUserId: campaign.created_by_user_id,
+        publishedAt: campaign.published_at?.toISOString() ?? null,
+        startedAt: campaign.started_at?.toISOString() ?? null,
+        completedAt: campaign.completed_at?.toISOString() ?? null,
+        createdAt: campaign.created_at.toISOString(),
+        updatedAt: campaign.updated_at.toISOString(),
+      });
+    }
+    return mapped;
   }
 
   private toTemplateResponse(

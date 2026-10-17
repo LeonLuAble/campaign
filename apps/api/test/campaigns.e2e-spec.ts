@@ -155,7 +155,8 @@ describe('Campaigns and participations (e2e)', () => {
       .patch(`/api/v1/campaigns/${created.body.id}`)
       .set(auth(admin.accessToken))
       .send({ name: 'Changed' });
-    expect(locked.status).toBe(400);
+    expect(locked.status).toBe(409);
+    expect(locked.body.code).toBe('CAMPAIGN_FIELD_LOCKED');
 
     const started = await request(app.getHttpServer())
       .post(`/api/v1/campaigns/${created.body.id}/start`)

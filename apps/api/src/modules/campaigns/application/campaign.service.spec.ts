@@ -4,11 +4,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   AccessForbiddenException,
   InvalidRequestException,
+  ResourceConflictException,
   ResourceNotFoundException,
 } from '../../../shared/errors/domain-http.exceptions.js';
 import type { TenantContext } from '../../authorization/application/tenant-context.js';
 import { CommunityService } from '../../communities/application/community.service.js';
 import { CustomerService } from '../../customers/application/customer.service.js';
+import { LocalizationService } from '../../localization/application/localization.service.js';
 import { CampaignCommunity } from '../domain/campaign-community.entity.js';
 import { CampaignConfiguration } from '../domain/campaign-configuration.entity.js';
 import { CampaignScope } from '../domain/campaign-scope.entity.js';
@@ -143,6 +145,20 @@ describe('CampaignService', () => {
   };
   const customers = { requireActive: vi.fn() };
   const communities = { get: vi.fn(), listAncestorIds: vi.fn() };
+  const localization = {
+    upsertCampaignContentTranslations: vi.fn().mockResolvedValue(undefined),
+    resolveCampaignContent: vi
+      .fn()
+      .mockImplementation(
+        async (
+          _locale: string,
+          _tenantId: string,
+          _campaignId: string,
+          _field: string,
+          primary: string | null,
+        ) => primary,
+      ),
+  };
 
   beforeEach(async () => {
     vi.resetAllMocks();
@@ -150,6 +166,16 @@ describe('CampaignService', () => {
     communities.listAncestorIds.mockResolvedValue([]);
     configurationRepository.find.mockResolvedValue([]);
     campaignCommunityRepository.find.mockResolvedValue([]);
+    localization.upsertCampaignContentTranslations.mockResolvedValue(undefined);
+    localization.resolveCampaignContent.mockImplementation(
+      async (
+        _locale: string,
+        _tenantId: string,
+        _campaignId: string,
+        _field: string,
+        primary: string | null,
+      ) => primary,
+    );
     campaignRepository.save.mockImplementation(async (value: Campaign) => ({
       ...value,
       id: value.id ?? campaignId,
@@ -178,6 +204,7 @@ describe('CampaignService', () => {
         },
         { provide: CustomerService, useValue: customers },
         { provide: CommunityService, useValue: communities },
+        { provide: LocalizationService, useValue: localization },
       ],
     }).compile();
     service = module.get(CampaignService);
@@ -248,13 +275,42 @@ describe('CampaignService', () => {
     expect(completed.status).toBe(CampaignStatus.COMPLETED);
   });
 
-  it('rejects definition edits after publish', async () => {
+  it('rejects locked field edits after publish with 409', async () => {
     campaignRepository.findOne.mockResolvedValue(
       campaign({ status: CampaignStatus.PUBLISHED }),
     );
     await expect(
       service.updateCampaign(adminTenant(), campaignId, { name: 'Changed' }),
-    ).rejects.toBeInstanceOf(InvalidRequestException);
+    ).rejects.toBeInstanceOf(ResourceConflictException);
+  });
+
+  it('allows extending endsOn and description after publish', async () => {
+    const published = campaign({
+      status: CampaignStatus.PUBLISHED,
+      ends_on: '2026-12-31',
+      description: 'Primary',
+    });
+    campaignRepository.findOne.mockResolvedValue(published);
+    const updated = await service.updateCampaign(adminTenant(), campaignId, {
+      description: 'Updated description',
+      endsOn: '2027-01-31',
+    });
+    expect(updated.description).toBe('Updated description');
+    expect(updated.endsOn).toBe('2027-01-31');
+  });
+
+  it('rejects shortening endsOn after publish', async () => {
+    campaignRepository.findOne.mockResolvedValue(
+      campaign({
+        status: CampaignStatus.PUBLISHED,
+        ends_on: '2026-12-31',
+      }),
+    );
+    await expect(
+      service.updateCampaign(adminTenant(), campaignId, {
+        endsOn: '2026-06-01',
+      }),
+    ).rejects.toBeInstanceOf(ResourceConflictException);
   });
 
   it('hides another tenant campaign behind not found', async () => {

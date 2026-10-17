@@ -2,6 +2,7 @@ import { InvalidRequestException } from '../../../shared/errors/domain-http.exce
 import type {
   ActionRuleInput,
   CampaignRuleStrategy,
+  CampaignRuleStrategyCatalogDescriptor,
   CommitmentOptionsDescriptor,
   CommitmentRuleInput,
   ProgressContributionInput,
@@ -9,6 +10,13 @@ import type {
   ProgressTargetContext,
 } from '../../campaigns/application/campaign-rule-strategy.js';
 import { inclusiveIsoDateCount } from '../../campaigns/application/timezone.js';
+import {
+  VEGETARIAN_DAY_DEFINITION_KEY,
+  VEGETARIAN_MEAL_DEFINITION_KEY,
+  VEGETARIAN_TRANSLATION_NAMESPACE,
+  vegetarianTranslationFallback,
+} from './vegetarian-i18n.js';
+import type { SupportedLocale } from '../../localization/application/locale-catalog.js';
 
 export const VEGETARIAN_RULES_STRATEGY_KEY = 'vegetarian';
 
@@ -123,6 +131,23 @@ export class VegetarianRuleStrategy implements CampaignRuleStrategy {
         };
       }),
     };
+  }
+
+  describeCatalog(): CampaignRuleStrategyCatalogDescriptor {
+    return {
+      key: this.key,
+      units: [...VEGETARIAN_UNITS],
+      reviewModes: ['auto', 'manual'],
+      recommendedActionDefinitions: [
+        { key: VEGETARIAN_DAY_DEFINITION_KEY, unit: 'days' },
+        { key: VEGETARIAN_MEAL_DEFINITION_KEY, unit: 'meals' },
+      ],
+      translationNamespace: VEGETARIAN_TRANSLATION_NAMESPACE,
+    };
+  }
+
+  resolveLocalizedCopy(locale: string, key: string): string | null {
+    return vegetarianTranslationFallback(locale as SupportedLocale, key);
   }
 
   validateAction(input: ActionRuleInput): void {

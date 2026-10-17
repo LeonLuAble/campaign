@@ -5,6 +5,7 @@ import { AuthorizationModule } from '../authorization/authorization.module.js';
 import { AuthModule } from '../auth/auth.module.js';
 import { CampaignsModule } from '../campaigns/campaigns.module.js';
 import { CustomersModule } from '../customers/customers.module.js';
+import { LocalizationModule } from '../localization/localization.module.js';
 import { ParticipationModule } from '../participation/participation.module.js';
 import { VegetarianModule } from '../vegetarian/vegetarian.module.js';
 import { CommitmentService } from './application/commitment.service.js';
@@ -17,6 +18,7 @@ import { ParticipationCommitmentsController } from './presentation/participation
   imports: [
     TypeOrmModule.forFeature([Commitment]),
     AuthModule,
+    LocalizationModule,
     VegetarianModule,
     forwardRef(() => AuthorizationModule),
     forwardRef(() => CampaignsModule),

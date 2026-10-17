@@ -28,6 +28,8 @@ import {
 import { canPledgeCommitment } from '../../campaigns/application/campaign-lifecycle.js';
 import { CampaignService } from '../../campaigns/application/campaign.service.js';
 import { normalizeSettings } from '../../campaigns/application/timezone.js';
+import type { SupportedLocale } from '../../localization/application/locale-catalog.js';
+import { LocalizationService } from '../../localization/application/localization.service.js';
 import { ParticipationStatus } from '../../participation/domain/participation.entity.js';
 import { ParticipationService } from '../../participation/application/participation.service.js';
 import { CustomerService } from '../../customers/application/customer.service.js';
@@ -62,6 +64,7 @@ export class CommitmentService {
     private readonly campaigns: CampaignService,
     @Inject(forwardRef(() => CustomerService))
     private readonly customers: CustomerService,
+    private readonly localization: LocalizationService,
     @Optional()
     @Inject(CAMPAIGN_RULE_STRATEGIES)
     private readonly strategies: CampaignRuleStrategy[] | null,
@@ -79,6 +82,7 @@ export class CommitmentService {
   async listCommitmentOptions(
     tenant: TenantContext,
     campaignId: string,
+    locale: SupportedLocale = 'en',
   ): Promise<{
     campaignId: string;
     customerId: string;
@@ -87,6 +91,8 @@ export class CommitmentService {
     choices: Array<{
       key: string;
       name: string;
+      label: string;
+      description: string;
       canonicalUnit: string;
       suggestedTarget: number | null;
       usesCampaignDuration: boolean;
@@ -98,10 +104,40 @@ export class CommitmentService {
       this.strategyList(),
       this.genericRules,
     );
+    const descriptor = rules.describeCommitmentOptions();
+    const namespace = rules.describeCatalog().translationNamespace;
+    const choices = [];
+    for (const choice of descriptor.choices) {
+      const labelKey = `choices.${choice.key}.label`;
+      const descriptionKey = `choices.${choice.key}.description`;
+      const label =
+        (await this.localization.resolveTranslation(
+          locale,
+          namespace,
+          labelKey,
+        )) ??
+        rules.resolveLocalizedCopy?.(locale, labelKey) ??
+        choice.name;
+      const description =
+        (await this.localization.resolveTranslation(
+          locale,
+          namespace,
+          descriptionKey,
+        )) ??
+        rules.resolveLocalizedCopy?.(locale, descriptionKey) ??
+        '';
+      choices.push({
+        ...choice,
+        label,
+        description,
+      });
+    }
     return {
       campaignId: campaign.id,
       customerId: campaign.tenantId,
-      ...rules.describeCommitmentOptions(),
+      strategy: descriptor.strategy,
+      units: descriptor.units,
+      choices,
     };
   }
 

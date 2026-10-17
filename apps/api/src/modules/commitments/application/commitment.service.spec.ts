@@ -10,6 +10,7 @@ import type { TenantContext } from '../../authorization/application/tenant-conte
 import { PERMISSIONS } from '../../authorization/domain/permission-keys.js';
 import { CAMPAIGN_RULE_STRATEGIES } from '../../campaigns/application/campaign-rule-strategy.js';
 import { CampaignService } from '../../campaigns/application/campaign.service.js';
+import { LocalizationService } from '../../localization/application/localization.service.js';
 import { CampaignStatus } from '../../campaigns/domain/campaign.entity.js';
 import { CustomerService } from '../../customers/application/customer.service.js';
 import { ParticipationStatus } from '../../participation/domain/participation.entity.js';
@@ -129,6 +130,12 @@ describe('CommitmentService', () => {
         { provide: CampaignService, useValue: campaigns },
         { provide: CustomerService, useValue: customers },
         {
+          provide: LocalizationService,
+          useValue: {
+            resolveTranslation: vi.fn().mockResolvedValue(null),
+          },
+        },
+        {
           provide: CAMPAIGN_RULE_STRATEGIES,
           useValue: [new VegetarianRuleStrategy()],
         },
@@ -141,6 +148,7 @@ describe('CommitmentService', () => {
     const options = await service.listCommitmentOptions(
       memberContext(),
       campaignId,
+      'en',
     );
     expect(options).toMatchObject({
       campaignId,
@@ -149,6 +157,10 @@ describe('CommitmentService', () => {
     });
     expect(options.choices.map((choice) => choice.key)).toContain('fa_yuan_su');
     expect(options.units).toEqual(['days', 'meals']);
+    const faYuan = options.choices.find((choice) => choice.key === 'fa_yuan_su');
+    expect(faYuan?.label).toBe('Fa Yuan Su');
+    expect(faYuan?.description).toContain('personal vow');
+    expect(faYuan?.name).toBe('发愿素');
   });
 
   it('lets a member pledge a vegetarian commitment on their participation', async () => {

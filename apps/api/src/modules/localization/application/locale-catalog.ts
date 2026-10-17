@@ -110,6 +110,22 @@ export function renderNotificationTemplate(
   };
 }
 
+const CAMPAIGN_STRATEGY_COPY: Record<
+  SupportedLocale,
+  Record<string, string>
+> = {
+  en: {
+    'strategies.generic.label': 'Generic',
+    'strategies.generic.description':
+      'No built-in pledge catalog. Configure action definitions for the campaign.',
+  },
+  'zh-Hans': {
+    'strategies.generic.label': '通用',
+    'strategies.generic.description':
+      '无内置发愿目录。请为活动配置行动定义。',
+  },
+};
+
 export function listTranslationRows(): Array<{
   locale: SupportedLocale;
   namespace: string;
@@ -138,6 +154,14 @@ export function listTranslationRows(): Array<{
         namespace: 'notifications',
         key: `${type}.body`,
         value: template.body,
+      });
+    }
+    for (const [key, value] of Object.entries(CAMPAIGN_STRATEGY_COPY[locale])) {
+      rows.push({
+        locale,
+        namespace: 'campaigns',
+        key,
+        value,
       });
     }
   }

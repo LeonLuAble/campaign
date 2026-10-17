@@ -828,24 +828,111 @@ class CommitmentChoice {
     required this.name,
     required this.canonicalUnit,
     required this.usesCampaignDuration,
+    this.label,
+    this.description,
     this.suggestedTarget,
   });
 
   final String key;
   final String name;
+  final String? label;
+  final String? description;
   final String canonicalUnit;
   final num? suggestedTarget;
   final bool usesCampaignDuration;
 
   factory CommitmentChoice.fromJson(Map<String, dynamic> json) {
+    final name = json['name'] as String;
     return CommitmentChoice(
       key: json['key'] as String,
-      name: json['name'] as String,
+      name: name,
+      label: _string(json['label']) ?? name,
+      description: _string(json['description']) ?? '',
       canonicalUnit: json['canonicalUnit'] as String,
       suggestedTarget: json['suggestedTarget'] as num?,
       usesCampaignDuration: _bool(json['usesCampaignDuration']),
     );
   }
+}
+
+class RecommendedActionDefinition {
+  const RecommendedActionDefinition({
+    required this.key,
+    required this.unit,
+    required this.name,
+  });
+
+  final String key;
+  final String unit;
+  final String name;
+
+  factory RecommendedActionDefinition.fromJson(Map<String, dynamic> json) {
+    return RecommendedActionDefinition(
+      key: json['key'] as String,
+      unit: json['unit'] as String,
+      name: json['name'] as String,
+    );
+  }
+}
+
+class CampaignRuleStrategy {
+  const CampaignRuleStrategy({
+    required this.key,
+    required this.label,
+    required this.description,
+    required this.units,
+    required this.reviewModes,
+    required this.recommendedActionDefinitions,
+  });
+
+  final String key;
+  final String label;
+  final String description;
+  final List<String> units;
+  final List<String> reviewModes;
+  final List<RecommendedActionDefinition> recommendedActionDefinitions;
+
+  factory CampaignRuleStrategy.fromJson(Map<String, dynamic> json) {
+    return CampaignRuleStrategy(
+      key: json['key'] as String,
+      label: json['label'] as String,
+      description: json['description'] as String? ?? '',
+      units: _list(json['units']).map((row) => row.toString()).toList(),
+      reviewModes:
+          _list(json['reviewModes']).map((row) => row.toString()).toList(),
+      recommendedActionDefinitions: _list(json['recommendedActionDefinitions'])
+          .map((row) => RecommendedActionDefinition.fromJson(_map(row)))
+          .toList(),
+    );
+  }
+}
+
+class CampaignContentTranslations {
+  const CampaignContentTranslations({this.en});
+
+  final CampaignEnglishTranslations? en;
+
+  Map<String, dynamic> toJson() => {
+        if (en != null) 'en': en!.toJson(),
+      };
+}
+
+class CampaignEnglishTranslations {
+  const CampaignEnglishTranslations({
+    this.name,
+    this.description,
+    this.treeDisplayName,
+  });
+
+  final String? name;
+  final String? description;
+  final String? treeDisplayName;
+
+  Map<String, dynamic> toJson() => {
+        if (name != null) 'name': name,
+        if (description != null) 'description': description,
+        if (treeDisplayName != null) 'treeDisplayName': treeDisplayName,
+      };
 }
 
 class CommitmentOptions {

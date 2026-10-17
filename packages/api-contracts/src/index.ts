@@ -471,6 +471,14 @@ export interface CampaignResponse {
   updatedAt: string;
 }
 
+export interface CampaignContentTranslations {
+  en?: {
+    name?: string | null;
+    description?: string | null;
+    treeDisplayName?: string | null;
+  };
+}
+
 export interface CreateCampaignRequest {
   customerId: string;
   templateId: string;
@@ -482,6 +490,7 @@ export interface CreateCampaignRequest {
   endsOn?: string;
   communityIds?: string[];
   configuration?: Record<string, unknown>;
+  translations?: CampaignContentTranslations;
 }
 
 export interface UpdateCampaignRequest {
@@ -492,6 +501,22 @@ export interface UpdateCampaignRequest {
   endsOn?: string | null;
   communityIds?: string[];
   configuration?: Record<string, unknown>;
+  translations?: CampaignContentTranslations;
+}
+
+export interface RecommendedActionDefinition {
+  key: string;
+  unit: string;
+  name: string;
+}
+
+export interface CampaignRuleStrategyResponse {
+  key: string;
+  label: string;
+  description: string;
+  units: string[];
+  reviewModes: Array<'auto' | 'manual'>;
+  recommendedActionDefinitions: RecommendedActionDefinition[];
 }
 
 export interface CampaignConfigurationResponse {
@@ -592,6 +617,8 @@ export interface CreateCommitmentRequest {
 export interface CommitmentChoiceOption {
   key: string;
   name: string;
+  label: string;
+  description: string;
   canonicalUnit: string;
   suggestedTarget: number | null;
   usesCampaignDuration: boolean;

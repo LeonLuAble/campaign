@@ -15,6 +15,8 @@ import type { TenantContext } from '../../authorization/application/tenant-conte
 import { CampaignService } from '../../campaigns/application/campaign.service.js';
 import { normalizeSettings } from '../../campaigns/application/timezone.js';
 import { CustomerService } from '../../customers/application/customer.service.js';
+import type { SupportedLocale } from '../../localization/application/locale-catalog.js';
+import { LocalizationService } from '../../localization/application/localization.service.js';
 import type { AggregateProgressResponse } from '../../progress/application/progress.service.js';
 import { ProgressService } from '../../progress/application/progress.service.js';
 import {
@@ -63,6 +65,7 @@ export class VisualizationService {
     private readonly customers: CustomerService,
     @Inject(forwardRef(() => ProgressService))
     private readonly progress: ProgressService,
+    private readonly localization: LocalizationService,
   ) {}
 
   async get(
@@ -127,6 +130,7 @@ export class VisualizationService {
   async getData(
     tenant: TenantContext,
     campaignId: string,
+    locale: SupportedLocale = 'en',
   ): Promise<VisualizationDataResponse> {
     const campaign = await this.campaigns.getCampaignRecord(tenant, campaignId);
     const visualization = await this.visualizationRepository.findOne({
@@ -136,20 +140,30 @@ export class VisualizationService {
       tenant,
       campaign.id,
     );
-    return this.toData(campaign, visualization, aggregate);
+    return this.toData(campaign, visualization, aggregate, tenant.tenantId, locale);
   }
 
-  toData(
-    campaign: { id: string; timezone: string },
+  async toData(
+    campaign: { id: string; timezone: string; tenantId?: string },
     visualization: Visualization | null,
     aggregate: AggregateProgressResponse,
     tenantId?: string,
-  ): VisualizationDataResponse {
+    locale: SupportedLocale = 'en',
+  ): Promise<VisualizationDataResponse> {
     const primary = aggregate.units[0] ?? null;
-    const displayName = readDisplayName(visualization?.settings);
+    const resolvedTenantId = tenantId ?? campaign.tenantId ?? aggregate.customerId;
+    const primaryName = readDisplayName(visualization?.settings);
+    const displayName =
+      (await this.localization.resolveCampaignContent(
+        locale,
+        resolvedTenantId,
+        campaign.id,
+        'treeDisplayName',
+        primaryName,
+      )) ?? primaryName;
     return {
       campaignId: campaign.id,
-      customerId: tenantId ?? aggregate.customerId,
+      customerId: resolvedTenantId,
       timezone: campaign.timezone,
       type: visualization?.type ?? VISUALIZATION_TYPE_TREE,
       displayName,

@@ -59,6 +59,7 @@ User import: `/user-imports` (tenant-scoped via `customerId` query; requires `us
 Imported users activate through POST /auth/activate with a password. Invitation delivery reuses the existing activation token + NotificationSender path (SMTP when configured; tokens never logged).
 
 Campaign (tenant-scoped via `customerId` query/body or resource id; generic configuration, no vegetarian schema in this module):
+- GET `/campaign-rule-strategies?customerId=` → requires `campaigns.read`. Returns `[{ key, label, description, units, reviewModes, recommendedActionDefinitions }]` from the strategy registry. Labels, descriptions, and recommended definition names follow `Accept-Language` (`en`, `zh-Hans`). Vegetarian strategy lists recommended `vegetarian_day` (`days`) and `vegetarian_meal` (`meals`) definitions; vegetarian copy lives in the `vegetarian` translations namespace.
 - POST /campaign-templates `{ customerId, key?, name, description? }` → 201. Requires `campaign_templates.create`.
 - GET /campaign-templates?customerId= → requires `campaign_templates.read`
 - GET /campaign-templates/:templateId → requires `campaign_templates.read`
@@ -67,10 +68,10 @@ Campaign (tenant-scoped via `customerId` query/body or resource id; generic conf
 - GET /campaign-scopes?customerId=&templateId? → requires `campaign_scopes.read`
 - GET /campaign-scopes/:scopeId → requires `campaign_scopes.read`
 - PATCH /campaign-scopes/:scopeId `{ name?, description?, isActive? }` → requires `campaign_scopes.update`
-- POST /campaigns `{ customerId, templateId, scopeId, name, timezone, description?, startsOn?, endsOn?, communityIds?, configuration? }` → 201 draft. Requires `campaigns.create`.
-- GET /campaigns?customerId= → requires `campaigns.read`
-- GET /campaigns/:campaignId → requires `campaigns.read`
-- PATCH /campaigns/:campaignId → draft only; requires `campaigns.update`
+- POST /campaigns `{ customerId, templateId, scopeId, name, timezone, description?, startsOn?, endsOn?, communityIds?, configuration?, translations? }` → 201 draft. Requires `campaigns.create`. Primary `name`/`description` are zh-Hans (or the authored primary). Optional `translations.en.{name,description,treeDisplayName}` stores English overrides in the `translations` table under namespace `tenant:{customerId}`.
+- GET /campaigns?customerId= → requires `campaigns.read`. `name`/`description` follow `Accept-Language` with fallback to the primary text.
+- GET /campaigns/:campaignId → requires `campaigns.read`. Same locale fallback as list.
+- PATCH /campaigns/:campaignId → requires `campaigns.update`. Draft: full edit (including `translations`). Published/started: only `description` and extending `endsOn` (later than current); anything else → 409 `CAMPAIGN_FIELD_LOCKED`; shortened `endsOn` → 409 `CAMPAIGN_END_DATE_LOCKED`.
 - POST /campaigns/:campaignId/publish|start|complete → one-step forward lifecycle; requires `campaigns.update`
 - GET/PUT /campaigns/:campaignId/configuration `{ settings }` → GET `campaigns.read`; PUT draft only, `campaigns.update`
 - GET/PUT /campaigns/:campaignId/communities `{ communityIds }` → empty list means tenant-wide; PUT draft only
@@ -96,7 +97,7 @@ Actions (tenant-scoped via campaign/participation/action ids; generic recording,
 - POST /submissions/:submissionId/approve|reject `{ note? }` → requires `submissions.update`. Admins may reject auto-approved submissions. Phase 6 progress must count only `approved` submissions on non-cancelled actions.
 
 Commitments:
-- GET `/campaigns/:campaignId/commitment-options` → requires `commitments.read`. Returns the campaign rule strategy’s pledge choices, units, suggested targets, and whether the target uses campaign duration. Vegetarian campaigns (`rulesStrategy = "vegetarian"`) return the seven 速素数数 choices. Generic campaigns return empty `choices`. Flutter must not hardcode choice catalogs.
+- GET `/campaigns/:campaignId/commitment-options` → requires `commitments.read`. Returns the campaign rule strategy’s pledge choices, units, suggested targets, and whether the target uses campaign duration. Each choice includes `name` (primary), plus localized `label` and `description` from the `translations` catalog (vegetarian namespace) per `Accept-Language`. Vegetarian campaigns (`rulesStrategy = "vegetarian"`) return the seven 速素数数 choices. Generic campaigns return empty `choices`. Flutter must not hardcode choice catalogs.
 - POST /participations/:participationId/commitments `{ typeKey?, targetValue, unit, payload? }` → 201 create-or-replace (one commitment per participation). Members may pledge only on their own enrolled participation (`commitments.create`). Acting on another user requires `commitments.update`. Allowed while the campaign is published or started.
 - GET /participations/:participationId/commitments → requires `commitments.read`. Members see only their own.
 - GET /commitments/:commitmentId → requires `commitments.read`

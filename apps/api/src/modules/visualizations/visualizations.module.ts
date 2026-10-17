@@ -4,6 +4,7 @@ import { AuthorizationModule } from '../authorization/authorization.module.js';
 import { AuthModule } from '../auth/auth.module.js';
 import { CampaignsModule } from '../campaigns/campaigns.module.js';
 import { CustomersModule } from '../customers/customers.module.js';
+import { LocalizationModule } from '../localization/localization.module.js';
 import { OutcomesModule } from '../outcomes/outcomes.module.js';
 import { ProgressModule } from '../progress/progress.module.js';
 import { DashboardService } from './application/dashboard.service.js';
@@ -16,6 +17,7 @@ import { ParticipationDashboardsController } from './presentation/participation-
   imports: [
     TypeOrmModule.forFeature([Visualization]),
     AuthModule,
+    LocalizationModule,
     forwardRef(() => AuthorizationModule),
     forwardRef(() => CampaignsModule),
     forwardRef(() => CustomersModule),

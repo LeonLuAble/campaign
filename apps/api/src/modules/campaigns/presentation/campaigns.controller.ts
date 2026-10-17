@@ -22,6 +22,8 @@ import { CurrentTenant } from '../../authorization/presentation/current-tenant.d
 import { PermissionsGuard } from '../../authorization/presentation/permissions.guard.js';
 import { RequirePermission } from '../../authorization/presentation/require-permission.decorator.js';
 import { TenantScopeGuard } from '../../authorization/presentation/tenant-scope.guard.js';
+import type { SupportedLocale } from '../../localization/application/locale-catalog.js';
+import { AcceptLanguage } from '../../localization/presentation/accept-language.decorator.js';
 import { CampaignService } from '../application/campaign.service.js';
 import { CreateCampaignDto } from '../dto/create-campaign.dto.js';
 import { ReplaceCampaignCommunitiesDto } from '../dto/replace-campaign-communities.dto.js';
@@ -40,14 +42,18 @@ export class CampaignsController {
     @CurrentTenant() tenant: TenantContext,
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CreateCampaignDto,
+    @AcceptLanguage() locale: SupportedLocale,
   ) {
-    return this.campaigns.createCampaign(tenant, user.userId, dto);
+    return this.campaigns.createCampaign(tenant, user.userId, dto, locale);
   }
 
   @Get()
   @RequirePermission(PERMISSIONS.CAMPAIGNS_READ)
-  list(@CurrentTenant() tenant: TenantContext) {
-    return this.campaigns.listCampaigns(tenant);
+  list(
+    @CurrentTenant() tenant: TenantContext,
+    @AcceptLanguage() locale: SupportedLocale,
+  ) {
+    return this.campaigns.listCampaigns(tenant, locale);
   }
 
   @Get(':campaignId')
@@ -55,8 +61,9 @@ export class CampaignsController {
   get(
     @CurrentTenant() tenant: TenantContext,
     @Param('campaignId', ParseUUIDPipe) campaignId: string,
+    @AcceptLanguage() locale: SupportedLocale,
   ) {
-    return this.campaigns.getCampaign(tenant, campaignId);
+    return this.campaigns.getCampaign(tenant, campaignId, locale);
   }
 
   @Patch(':campaignId')
@@ -65,8 +72,9 @@ export class CampaignsController {
     @CurrentTenant() tenant: TenantContext,
     @Param('campaignId', ParseUUIDPipe) campaignId: string,
     @Body() dto: UpdateCampaignDto,
+    @AcceptLanguage() locale: SupportedLocale,
   ) {
-    return this.campaigns.updateCampaign(tenant, campaignId, dto);
+    return this.campaigns.updateCampaign(tenant, campaignId, dto, locale);
   }
 
   @Post(':campaignId/publish')

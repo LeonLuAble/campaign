@@ -40,6 +40,10 @@ export interface CommitmentChoiceOption {
   canonicalUnit: string;
   suggestedTarget: number | null;
   usesCampaignDuration: boolean;
+  /** Localized display label (Accept-Language). */
+  label?: string;
+  /** Localized one-line explanation (Accept-Language). */
+  description?: string;
 }
 
 export interface CommitmentOptionsDescriptor {
@@ -48,12 +52,31 @@ export interface CommitmentOptionsDescriptor {
   choices: CommitmentChoiceOption[];
 }
 
+export type CampaignReviewMode = 'auto' | 'manual';
+
+export interface RecommendedActionDefinition {
+  key: string;
+  unit: string;
+}
+
+export interface CampaignRuleStrategyCatalogDescriptor {
+  key: string;
+  units: string[];
+  reviewModes: CampaignReviewMode[];
+  recommendedActionDefinitions: RecommendedActionDefinition[];
+  /** Translation namespace for label/description/action names. */
+  translationNamespace: string;
+}
+
 export interface CampaignRuleStrategy {
   readonly key: string;
   validateCommitment(input: CommitmentRuleInput): void;
   validateAction(input: ActionRuleInput): void;
   normalizeCommitment?(input: CommitmentRuleInput): CommitmentRuleInput;
   describeCommitmentOptions(): CommitmentOptionsDescriptor;
+  describeCatalog(): CampaignRuleStrategyCatalogDescriptor;
+  /** Optional in-module fallback when translations table has no row. */
+  resolveLocalizedCopy?(locale: string, key: string): string | null;
   contributeToProgress(
     contribution: ProgressContributionInput,
     commitment: CommitmentRuleInput | null,
@@ -85,6 +108,16 @@ export class GenericCampaignRules implements CampaignRuleStrategy {
       strategy: this.key,
       units: [],
       choices: [],
+    };
+  }
+
+  describeCatalog(): CampaignRuleStrategyCatalogDescriptor {
+    return {
+      key: this.key,
+      units: [],
+      reviewModes: ['auto', 'manual'],
+      recommendedActionDefinitions: [],
+      translationNamespace: 'campaigns',
     };
   }
 

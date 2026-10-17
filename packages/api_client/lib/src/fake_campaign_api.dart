@@ -1561,6 +1561,44 @@ class FakeCampaignApiClient implements CampaignApiClient {
   }
 
   @override
+  Future<List<CampaignRuleStrategy>> listCampaignRuleStrategies(
+    String customerId,
+  ) async {
+    assert(customerId.isNotEmpty);
+    return const [
+      CampaignRuleStrategy(
+        key: 'generic',
+        label: 'Generic',
+        description:
+            'No built-in pledge catalog. Configure action definitions for the campaign.',
+        units: [],
+        reviewModes: ['auto', 'manual'],
+        recommendedActionDefinitions: [],
+      ),
+      CampaignRuleStrategy(
+        key: 'vegetarian',
+        label: 'Vegetarian (速素数数)',
+        description:
+            'Seven pledge choices with days and meals units for a vegetarian observance campaign.',
+        units: ['days', 'meals'],
+        reviewModes: ['auto', 'manual'],
+        recommendedActionDefinitions: [
+          RecommendedActionDefinition(
+            key: 'vegetarian_day',
+            unit: 'days',
+            name: 'Vegetarian day',
+          ),
+          RecommendedActionDefinition(
+            key: 'vegetarian_meal',
+            unit: 'meals',
+            name: 'Vegetarian meal',
+          ),
+        ],
+      ),
+    ];
+  }
+
+  @override
   Future<List<Campaign>> listCampaigns(String customerId) async =>
       campaigns.where((row) => row.customerId == customerId).toList();
 
@@ -1580,14 +1618,20 @@ class FakeCampaignApiClient implements CampaignApiClient {
     String? endsOn,
     List<String>? communityIds,
     Map<String, dynamic>? configuration,
+    CampaignContentTranslations? translations,
   }) async {
+    final localeName =
+        lastAcceptLanguage.startsWith('en') ? translations?.en?.name : null;
+    final localeDescription = lastAcceptLanguage.startsWith('en')
+        ? translations?.en?.description
+        : null;
     final created = Campaign(
       id: 'camp-${campaigns.length + 1}',
       customerId: customerId,
       templateId: templateId,
       scopeId: scopeId,
-      name: name,
-      description: description,
+      name: localeName ?? name,
+      description: localeDescription ?? description,
       status: 'draft',
       timezone: timezone,
       startsOn: startsOn,
@@ -1597,6 +1641,65 @@ class FakeCampaignApiClient implements CampaignApiClient {
     );
     campaigns = [...campaigns, created];
     return created;
+  }
+
+  @override
+  Future<Campaign> updateCampaign(
+    String campaignId, {
+    String? name,
+    String? description,
+    String? timezone,
+    String? startsOn,
+    String? endsOn,
+    List<String>? communityIds,
+    Map<String, dynamic>? configuration,
+    CampaignContentTranslations? translations,
+  }) async {
+    final current = await getCampaign(campaignId);
+    if (current.status != 'draft') {
+      if (name != null ||
+          timezone != null ||
+          startsOn != null ||
+          communityIds != null ||
+          configuration != null ||
+          translations?.en?.name != null ||
+          translations?.en?.treeDisplayName != null) {
+        throw ApiException(
+          statusCode: 409,
+          code: 'CAMPAIGN_FIELD_LOCKED',
+          message:
+              'Only description and extending endsOn may be changed after publish',
+        );
+      }
+      if (endsOn != null &&
+          current.endsOn != null &&
+          endsOn.compareTo(current.endsOn!) < 0) {
+        throw ApiException(
+          statusCode: 409,
+          code: 'CAMPAIGN_END_DATE_LOCKED',
+          message: 'endsOn may only be extended after publish',
+        );
+      }
+    }
+    final updated = Campaign(
+      id: current.id,
+      customerId: current.customerId,
+      templateId: current.templateId,
+      scopeId: current.scopeId,
+      name: name ?? current.name,
+      description: description ?? current.description,
+      status: current.status,
+      timezone: timezone ?? current.timezone,
+      startsOn: startsOn ?? current.startsOn,
+      endsOn: endsOn ?? current.endsOn,
+      communityIds: communityIds ?? current.communityIds,
+      configuration: configuration ?? current.configuration,
+    );
+    campaigns = [
+      for (final row in campaigns)
+        if (row.id == campaignId) updated else row,
+    ];
+    return updated;
   }
 
   Campaign _withStatus(Campaign campaign, String status) {

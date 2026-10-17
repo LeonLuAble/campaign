@@ -139,6 +139,9 @@ abstract class CampaignApiClient {
     String customerId, {
     String? templateId,
   });
+  Future<List<CampaignRuleStrategy>> listCampaignRuleStrategies(
+    String customerId,
+  );
   Future<List<Campaign>> listCampaigns(String customerId);
   Future<Campaign> getCampaign(String campaignId);
   Future<Campaign> createCampaign({
@@ -152,6 +155,18 @@ abstract class CampaignApiClient {
     String? endsOn,
     List<String>? communityIds,
     Map<String, dynamic>? configuration,
+    CampaignContentTranslations? translations,
+  });
+  Future<Campaign> updateCampaign(
+    String campaignId, {
+    String? name,
+    String? description,
+    String? timezone,
+    String? startsOn,
+    String? endsOn,
+    List<String>? communityIds,
+    Map<String, dynamic>? configuration,
+    CampaignContentTranslations? translations,
   });
   Future<Campaign> publishCampaign(String campaignId);
   Future<Campaign> startCampaign(String campaignId);
@@ -827,6 +842,17 @@ class HttpCampaignApiClient implements CampaignApiClient {
   }
 
   @override
+  Future<List<CampaignRuleStrategy>> listCampaignRuleStrategies(
+    String customerId,
+  ) {
+    return _getList(
+      '/campaign-rule-strategies',
+      query: {'customerId': customerId},
+      parser: CampaignRuleStrategy.fromJson,
+    );
+  }
+
+  @override
   Future<List<Campaign>> listCampaigns(String customerId) {
     return _getList(
       '/campaigns',
@@ -852,6 +878,7 @@ class HttpCampaignApiClient implements CampaignApiClient {
     String? endsOn,
     List<String>? communityIds,
     Map<String, dynamic>? configuration,
+    CampaignContentTranslations? translations,
   }) {
     return _post(
       '/campaigns',
@@ -866,6 +893,35 @@ class HttpCampaignApiClient implements CampaignApiClient {
         if (endsOn != null) 'endsOn': endsOn,
         if (communityIds != null) 'communityIds': communityIds,
         if (configuration != null) 'configuration': configuration,
+        if (translations != null) 'translations': translations.toJson(),
+      },
+      parser: Campaign.fromJson,
+    );
+  }
+
+  @override
+  Future<Campaign> updateCampaign(
+    String campaignId, {
+    String? name,
+    String? description,
+    String? timezone,
+    String? startsOn,
+    String? endsOn,
+    List<String>? communityIds,
+    Map<String, dynamic>? configuration,
+    CampaignContentTranslations? translations,
+  }) {
+    return _patch(
+      '/campaigns/$campaignId',
+      data: {
+        if (name != null) 'name': name,
+        if (description != null) 'description': description,
+        if (timezone != null) 'timezone': timezone,
+        if (startsOn != null) 'startsOn': startsOn,
+        if (endsOn != null) 'endsOn': endsOn,
+        if (communityIds != null) 'communityIds': communityIds,
+        if (configuration != null) 'configuration': configuration,
+        if (translations != null) 'translations': translations.toJson(),
       },
       parser: Campaign.fromJson,
     );

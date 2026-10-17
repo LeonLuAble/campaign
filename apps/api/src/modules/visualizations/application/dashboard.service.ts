@@ -90,7 +90,7 @@ export class DashboardService {
       measurements: bundle.snapshot.measurements,
       outcomes: bundle.snapshot.outcomes,
       timeSeries: bundle.timeSeries,
-      visualization: this.visualizations.toData(
+      visualization: await this.visualizations.toData(
         bundle.campaign,
         visualizationRow,
         campaignProgress,
@@ -164,7 +164,7 @@ export class DashboardService {
     );
   }
 
-  private toAggregateDashboard(
+  private async toAggregateDashboard(
     tenantId: string,
     scope: 'campaign' | 'community',
     communityId: string | null,
@@ -174,7 +174,7 @@ export class DashboardService {
       ReturnType<VisualizationService['findForCampaign']>
     >,
     visualizationProgress: AggregateProgressResponse,
-  ): AggregateDashboardResponse {
+  ): Promise<AggregateDashboardResponse> {
     const measurements = mergeFromSnapshots(
       bundle.snapshots.map((row) => row.measurements),
     );
@@ -191,7 +191,7 @@ export class DashboardService {
       measurements,
       outcomes,
       timeSeries: bundle.timeSeries,
-      visualization: this.visualizations.toData(
+      visualization: await this.visualizations.toData(
         bundle.campaign,
         visualizationRow,
         visualizationProgress,

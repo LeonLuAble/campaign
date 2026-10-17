@@ -26,9 +26,9 @@ export class AccessForbiddenException extends ForbiddenException {
 }
 
 export class ResourceConflictException extends ConflictException {
-  constructor(message = 'Resource already exists') {
+  constructor(message = 'Resource already exists', code = 'CONFLICT') {
     super({
-      code: 'CONFLICT',
+      code,
       error: 'Conflict',
       message,
     });

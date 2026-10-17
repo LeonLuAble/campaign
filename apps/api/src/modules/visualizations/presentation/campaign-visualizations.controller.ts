@@ -19,6 +19,8 @@ import { CurrentTenant } from '../../authorization/presentation/current-tenant.d
 import { PermissionsGuard } from '../../authorization/presentation/permissions.guard.js';
 import { RequirePermission } from '../../authorization/presentation/require-permission.decorator.js';
 import { TenantScopeGuard } from '../../authorization/presentation/tenant-scope.guard.js';
+import type { SupportedLocale } from '../../localization/application/locale-catalog.js';
+import { AcceptLanguage } from '../../localization/presentation/accept-language.decorator.js';
 import { DashboardService } from '../application/dashboard.service.js';
 import { VisualizationService } from '../application/visualization.service.js';
 import { DashboardQueryDto } from '../dto/dashboard-query.dto.js';
@@ -57,8 +59,9 @@ export class CampaignVisualizationsController {
   getData(
     @CurrentTenant() tenant: TenantContext,
     @Param('campaignId', ParseUUIDPipe) campaignId: string,
+    @AcceptLanguage() locale: SupportedLocale,
   ) {
-    return this.visualizations.getData(tenant, campaignId);
+    return this.visualizations.getData(tenant, campaignId, locale);
   }
 
   @Get('dashboard')

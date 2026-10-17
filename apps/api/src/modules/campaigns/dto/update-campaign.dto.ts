@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsArray,
   IsObject,
@@ -7,7 +8,9 @@ import {
   Matches,
   MaxLength,
   ValidateIf,
+  ValidateNested,
 } from 'class-validator';
+import { CampaignTranslationsDto } from './campaign-translations.dto.js';
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -47,4 +50,10 @@ export class UpdateCampaignDto {
   @IsOptional()
   @IsObject()
   configuration?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => CampaignTranslationsDto)
+  translations?: CampaignTranslationsDto;
 }
