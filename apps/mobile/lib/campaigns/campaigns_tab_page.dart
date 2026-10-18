@@ -5,9 +5,21 @@ import 'package:ui_kit/ui_kit.dart';
 
 import '../l10n/app_localizations.dart';
 import '../session/api_scope.dart';
+import '../session/session_controller.dart';
 import '../util/format.dart';
+import 'campaign_helpers.dart';
 
-/// Campaign discovery list for the Campaigns tab.
+class _CampaignRow {
+  const _CampaignRow({
+    required this.campaign,
+    required this.enrolled,
+  });
+
+  final Campaign campaign;
+  final bool enrolled;
+}
+
+/// Campaign discovery list: Joined, Open to join, and Past.
 class CampaignsTabPage extends StatefulWidget {
   const CampaignsTabPage({super.key});
 
@@ -16,27 +28,65 @@ class CampaignsTabPage extends StatefulWidget {
 }
 
 class _CampaignsTabPageState extends State<CampaignsTabPage> {
-  List<Campaign> _campaigns = const [];
+  List<_CampaignRow> _rows = const [];
   var _loading = true;
   String? _error;
-  var _requested = false;
+  String? _loadedForCustomerId;
+  String? _loadedForUserId;
+  SessionController? _session;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (!_requested) {
-      _requested = true;
-      _load();
+    final session = ApiScope.of(context).session;
+    if (_session != session) {
+      _session?.removeListener(_onSessionChanged);
+      _session = session;
+      _session!.addListener(_onSessionChanged);
     }
+    _ensureLoaded(session);
+  }
+
+  @override
+  void dispose() {
+    _session?.removeListener(_onSessionChanged);
+    super.dispose();
+  }
+
+  void _onSessionChanged() {
+    final session = _session;
+    if (session == null || !mounted) {
+      return;
+    }
+    _ensureLoaded(session);
+  }
+
+  void _ensureLoaded(SessionController session) {
+    if (!session.ready) {
+      return;
+    }
+    final customerId = session.customer?.id;
+    final userId = session.profile?.id;
+    if (_loadedForCustomerId == customerId &&
+        _loadedForUserId == userId &&
+        !_loading) {
+      return;
+    }
+    _load();
   }
 
   Future<void> _load() async {
     final l10n = AppLocalizations.of(context);
-    final customerId = ApiScope.of(context).session.customer?.id;
+    final session = ApiScope.of(context).session;
+    final customerId = session.customer?.id;
+    final userId = session.profile?.id;
+    _loadedForCustomerId = customerId;
+    _loadedForUserId = userId;
     if (customerId == null) {
       setState(() {
-        _campaigns = const [];
+        _rows = const [];
         _loading = false;
+        _error = null;
       });
       return;
     }
@@ -45,20 +95,34 @@ class _CampaignsTabPageState extends State<CampaignsTabPage> {
       _error = null;
     });
     try {
-      final campaigns =
-          await ApiScope.of(context).client.listCampaigns(customerId);
+      final client = ApiScope.of(context).client;
+      final campaigns = await client.listCampaigns(customerId);
+      final visible = campaigns
+          .where(
+            (row) =>
+                row.status == 'published' ||
+                row.status == 'started' ||
+                row.status == 'completed',
+          )
+          .toList();
+      final rows = <_CampaignRow>[];
+      for (final campaign in visible) {
+        var enrolled = false;
+        if (userId != null) {
+          try {
+            final parts = await client.listParticipations(campaign.id);
+            enrolled = parts.any(
+              (row) => row.userId == userId && row.isEnrolled,
+            );
+          } catch (_) {}
+        }
+        rows.add(_CampaignRow(campaign: campaign, enrolled: enrolled));
+      }
       if (!mounted) {
         return;
       }
       setState(() {
-        _campaigns = campaigns
-            .where(
-              (row) =>
-                  row.status == 'published' ||
-                  row.status == 'started' ||
-                  row.status == 'completed',
-            )
-            .toList();
+        _rows = rows;
         _loading = false;
       });
     } catch (error) {
@@ -72,31 +136,26 @@ class _CampaignsTabPageState extends State<CampaignsTabPage> {
     }
   }
 
-  String _statusLabel(AppLocalizations l10n, String status) {
-    switch (status) {
-      case 'published':
-        return l10n.campaignStatusPublished;
-      case 'started':
-        return l10n.campaignStatusStarted;
-      case 'completed':
-        return l10n.campaignStatusCompleted;
-      default:
-        return status;
-    }
-  }
+  List<_CampaignRow> get _joined => _rows
+      .where(
+        (row) =>
+            row.enrolled &&
+            (row.campaign.status == 'published' ||
+                row.campaign.status == 'started'),
+      )
+      .toList();
 
-  IconData _statusIcon(String status) {
-    switch (status) {
-      case 'published':
-        return Icons.public_outlined;
-      case 'started':
-        return Icons.play_arrow;
-      case 'completed':
-        return Icons.check_circle_outline;
-      default:
-        return Icons.flag_outlined;
-    }
-  }
+  List<_CampaignRow> get _open => _rows
+      .where(
+        (row) =>
+            !row.enrolled &&
+            (row.campaign.status == 'published' ||
+                row.campaign.status == 'started'),
+      )
+      .toList();
+
+  List<_CampaignRow> get _past =>
+      _rows.where((row) => row.campaign.status == 'completed').toList();
 
   @override
   Widget build(BuildContext context) {
@@ -107,13 +166,13 @@ class _CampaignsTabPageState extends State<CampaignsTabPage> {
       appBar: AppBar(title: Text(l10n.campaignsTitle)),
       body: RefreshIndicator(
         onRefresh: _load,
-        child: _loading && _campaigns.isEmpty
+        child: _loading && _rows.isEmpty
             ? ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: EdgeInsets.all(tokens.spaceLg),
                 children: const [LoadingSkeleton(lines: 5)],
               )
-            : _error != null && _campaigns.isEmpty
+            : _error != null && _rows.isEmpty
                 ? ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: EdgeInsets.all(tokens.spaceLg),
@@ -125,7 +184,7 @@ class _CampaignsTabPageState extends State<CampaignsTabPage> {
                       ),
                     ],
                   )
-                : _campaigns.isEmpty
+                : _rows.isEmpty
                     ? ListView(
                         physics: const AlwaysScrollableScrollPhysics(),
                         padding: EdgeInsets.all(tokens.spaceLg),
@@ -133,33 +192,88 @@ class _CampaignsTabPageState extends State<CampaignsTabPage> {
                           EmptyState(message: l10n.noCampaigns),
                         ],
                       )
-                    : ListView.separated(
+                    : ListView(
                         physics: const AlwaysScrollableScrollPhysics(),
                         padding: EdgeInsets.all(tokens.spaceLg),
-                        itemCount: _campaigns.length,
-                        separatorBuilder: (context, index) =>
-                            SizedBox(height: tokens.spaceMd),
-                        itemBuilder: (context, index) {
-                          final campaign = _campaigns[index];
-                          return Card(
-                            child: ListTile(
-                              contentPadding: EdgeInsets.all(tokens.spaceMd),
-                              title: Text(campaign.name),
-                              subtitle: Padding(
-                                padding: EdgeInsets.only(top: tokens.spaceSm),
-                                child: StatusChip(
-                                  label: _statusLabel(l10n, campaign.status),
-                                  icon: _statusIcon(campaign.status),
-                                ),
-                              ),
-                              trailing: const Icon(Icons.chevron_right),
-                              onTap: () =>
-                                  context.push('/campaigns/${campaign.id}'),
-                            ),
-                          );
-                        },
+                        children: [
+                          _Section(
+                            title: l10n.sectionJoined,
+                            emptyMessage: l10n.emptyJoinedCampaigns,
+                            rows: _joined,
+                          ),
+                          SizedBox(height: tokens.spaceXl),
+                          _Section(
+                            title: l10n.sectionOpenToJoin,
+                            emptyMessage: l10n.emptyOpenCampaigns,
+                            rows: _open,
+                          ),
+                          SizedBox(height: tokens.spaceXl),
+                          _Section(
+                            title: l10n.sectionPast,
+                            emptyMessage: l10n.emptyPastCampaigns,
+                            rows: _past,
+                          ),
+                        ],
                       ),
       ),
+    );
+  }
+}
+
+class _Section extends StatelessWidget {
+  const _Section({
+    required this.title,
+    required this.emptyMessage,
+    required this.rows,
+  });
+
+  final String title;
+  final String emptyMessage;
+  final List<_CampaignRow> rows;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final tokens = AppTokens.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: Theme.of(context).textTheme.titleMedium),
+        SizedBox(height: tokens.spaceSm),
+        if (rows.isEmpty)
+          EmptyState(message: emptyMessage)
+        else
+          for (final row in rows) ...[
+            Card(
+              child: ListTile(
+                contentPadding: EdgeInsets.all(tokens.spaceMd),
+                title: Text(row.campaign.name),
+                subtitle: Padding(
+                  padding: EdgeInsets.only(top: tokens.spaceSm),
+                  child: Wrap(
+                    spacing: tokens.spaceSm,
+                    runSpacing: tokens.spaceXs,
+                    children: [
+                      StatusChip(
+                        label: campaignStatusLabel(l10n, row.campaign.status),
+                        icon: campaignStatusIcon(row.campaign.status),
+                      ),
+                      if (row.enrolled)
+                        StatusChip(
+                          label: l10n.enrolledLabel,
+                          icon: Icons.person_outline,
+                        ),
+                    ],
+                  ),
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.push('/campaigns/${row.campaign.id}'),
+                minVerticalPadding: 16,
+              ),
+            ),
+            SizedBox(height: tokens.spaceMd),
+          ],
+      ],
     );
   }
 }

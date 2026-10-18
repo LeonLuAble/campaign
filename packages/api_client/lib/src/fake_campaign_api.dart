@@ -455,6 +455,11 @@ class FakeCampaignApiClient implements CampaignApiClient {
   bool failLogin = false;
   bool tokenReused = false;
   bool setupRequired = false;
+  /// When set, [joinCampaign] throws this API code (e.g. CONFLICT, BAD_REQUEST).
+  String? joinFailureCode;
+  String? joinFailureMessage;
+  /// Forces the not-eligible BAD_REQUEST path used by membership targeting.
+  bool failJoinNotEligible = false;
   String lastAcceptLanguage = 'en';
   TokenStore? tokenStore;
   void Function()? onSessionExpired;
@@ -1795,13 +1800,61 @@ class FakeCampaignApiClient implements CampaignApiClient {
 
   @override
   Future<Participation> joinCampaign(String campaignId) async {
-    final existing = participations.where((row) => row.campaignId == campaignId);
+    if (joinFailureCode != null) {
+      _throw(
+        joinFailureCode!,
+        status: joinFailureCode == 'CONFLICT' ? 409 : 400,
+        message: joinFailureMessage ?? joinFailureCode,
+      );
+    }
+    if (failJoinNotEligible) {
+      _throw(
+        'BAD_REQUEST',
+        message: 'User is not in a community targeted by this campaign',
+      );
+    }
+    final matches = campaigns.where((row) => row.id == campaignId);
+    if (matches.isEmpty) {
+      _throw('NOT_FOUND', status: 404, message: 'Campaign not found');
+    }
+    final campaign = matches.first;
+    if (campaign.status != 'published' && campaign.status != 'started') {
+      _throw(
+        'BAD_REQUEST',
+        message: 'Users can only enroll in published or started campaigns',
+      );
+    }
+    final existing = participations
+        .where(
+          (row) => row.campaignId == campaignId && row.userId == profile.id,
+        )
+        .toList();
     if (existing.isNotEmpty) {
-      return existing.first;
+      final current = existing.first;
+      if (current.isEnrolled) {
+        _throw(
+          'CONFLICT',
+          status: 409,
+          message: 'User is already enrolled in this campaign',
+        );
+      }
+      final restored = Participation(
+        id: current.id,
+        customerId: current.customerId,
+        campaignId: current.campaignId,
+        userId: current.userId,
+        communityId: current.communityId,
+        status: 'enrolled',
+      );
+      participations = [
+        for (final row in participations)
+          if (row.id == current.id) restored else row,
+      ];
+      return restored;
     }
     final created = Participation(
       id: 'part-${participations.length + 1}',
-      customerId: 'cust-1',
+      customerId: campaign.customerId,
       campaignId: campaignId,
       userId: profile.id,
       status: 'enrolled',
@@ -1850,7 +1903,12 @@ class FakeCampaignApiClient implements CampaignApiClient {
       targetValue: targetValue,
       unit: unit,
     );
-    commitments = [...commitments, created];
+    // Create-or-replace: one commitment per participation.
+    commitments = [
+      for (final row in commitments)
+        if (row.participationId != participationId) row,
+      created,
+    ];
     return created;
   }
 

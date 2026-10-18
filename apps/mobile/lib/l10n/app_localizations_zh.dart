@@ -399,6 +399,134 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get dashboardProgressStatusInProgress => '进行中';
+
+  @override
+  String wholeCampaignDays(String days) {
+    return '整段活动（$days 天）';
+  }
+
+  @override
+  String suggestedTargetLabel(String value, String unit) {
+    return '建议：$value $unit';
+  }
+
+  @override
+  String get errorAlreadyJoined => '你已参加此活动。';
+
+  @override
+  String get errorNotEligible => '你不符合此活动的参加条件，请联系组织方。';
+
+  @override
+  String get errorCampaignEnded => '此活动已结束。';
+
+  @override
+  String get errorCampaignNotOpen => '此活动尚未开放参加。';
+
+  @override
+  String campaignDatesLabel(String dates) {
+    return '日期：$dates';
+  }
+
+  @override
+  String get campaignDescriptionHeading => '简介';
+
+  @override
+  String get howItWorksHeading => '如何参与';
+
+  @override
+  String get communityProgressHeading => '社区目前进度';
+
+  @override
+  String get viewParticipation => '查看我的参加情况';
+
+  @override
+  String get continueToPledge => '继续承诺';
+
+  @override
+  String get joinCampaignTitle => '参加活动';
+
+  @override
+  String get changePledgeTitle => '更改承诺';
+
+  @override
+  String get confirmPledgeHeading => '确认你的承诺';
+
+  @override
+  String confirmPledgeBody(String choice, String dates) {
+    return '你将承诺「$choice」，期间为 $dates。';
+  }
+
+  @override
+  String get joiningInProgress => '正在加入…';
+
+  @override
+  String get confirmJoinAndPledge => '确认并加入';
+
+  @override
+  String get backToChoices => '返回选择';
+
+  @override
+  String get backToCampaign => '返回活动';
+
+  @override
+  String get noCommitmentChoices => '此活动暂无可用的承诺选项。';
+
+  @override
+  String get reviewPledge => '预览承诺';
+
+  @override
+  String get participationTitle => '我的参加';
+
+  @override
+  String get myCommitmentHeading => '我的承诺';
+
+  @override
+  String get noPledgeYet => '你尚未选择承诺。';
+
+  @override
+  String get openCheckIn => '每日打卡';
+
+  @override
+  String get withdrawTitle => '退出活动';
+
+  @override
+  String get withdrawConfirmBody => '退出后你的历史记录会保留，之后仍可重新加入。';
+
+  @override
+  String get withdrawConfirm => '退出';
+
+  @override
+  String get cancelLabel => '取消';
+
+  @override
+  String get notEnrolledHint => '你尚未参加此活动。';
+
+  @override
+  String get checkInTitle => '打卡';
+
+  @override
+  String get checkInComingSoon => '每日打卡将在后续版本提供。';
+
+  @override
+  String get backToParticipation => '返回参加情况';
+
+  @override
+  String get sectionJoined => '已参加';
+
+  @override
+  String get sectionOpenToJoin => '可参加';
+
+  @override
+  String get sectionPast => '往期';
+
+  @override
+  String get emptyJoinedCampaigns => '你还没有参加任何活动。';
+
+  @override
+  String get emptyOpenCampaigns => '目前没有可参加的活动。';
+
+  @override
+  String get emptyPastCampaigns => '暂无往期活动。';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -795,4 +923,132 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get dashboardProgressStatusInProgress => '进行中';
+
+  @override
+  String wholeCampaignDays(String days) {
+    return '整段活动（$days 天）';
+  }
+
+  @override
+  String suggestedTargetLabel(String value, String unit) {
+    return '建议：$value $unit';
+  }
+
+  @override
+  String get errorAlreadyJoined => '你已参加此活动。';
+
+  @override
+  String get errorNotEligible => '你不符合此活动的参加条件，请联系组织方。';
+
+  @override
+  String get errorCampaignEnded => '此活动已结束。';
+
+  @override
+  String get errorCampaignNotOpen => '此活动尚未开放参加。';
+
+  @override
+  String campaignDatesLabel(String dates) {
+    return '日期：$dates';
+  }
+
+  @override
+  String get campaignDescriptionHeading => '简介';
+
+  @override
+  String get howItWorksHeading => '如何参与';
+
+  @override
+  String get communityProgressHeading => '社区目前进度';
+
+  @override
+  String get viewParticipation => '查看我的参加情况';
+
+  @override
+  String get continueToPledge => '继续承诺';
+
+  @override
+  String get joinCampaignTitle => '参加活动';
+
+  @override
+  String get changePledgeTitle => '更改承诺';
+
+  @override
+  String get confirmPledgeHeading => '确认你的承诺';
+
+  @override
+  String confirmPledgeBody(String choice, String dates) {
+    return '你将承诺「$choice」，期间为 $dates。';
+  }
+
+  @override
+  String get joiningInProgress => '正在加入…';
+
+  @override
+  String get confirmJoinAndPledge => '确认并加入';
+
+  @override
+  String get backToChoices => '返回选择';
+
+  @override
+  String get backToCampaign => '返回活动';
+
+  @override
+  String get noCommitmentChoices => '此活动暂无可用的承诺选项。';
+
+  @override
+  String get reviewPledge => '预览承诺';
+
+  @override
+  String get participationTitle => '我的参加';
+
+  @override
+  String get myCommitmentHeading => '我的承诺';
+
+  @override
+  String get noPledgeYet => '你尚未选择承诺。';
+
+  @override
+  String get openCheckIn => '每日打卡';
+
+  @override
+  String get withdrawTitle => '退出活动';
+
+  @override
+  String get withdrawConfirmBody => '退出后你的历史记录会保留，之后仍可重新加入。';
+
+  @override
+  String get withdrawConfirm => '退出';
+
+  @override
+  String get cancelLabel => '取消';
+
+  @override
+  String get notEnrolledHint => '你尚未参加此活动。';
+
+  @override
+  String get checkInTitle => '打卡';
+
+  @override
+  String get checkInComingSoon => '每日打卡将在后续版本提供。';
+
+  @override
+  String get backToParticipation => '返回参加情况';
+
+  @override
+  String get sectionJoined => '已参加';
+
+  @override
+  String get sectionOpenToJoin => '可参加';
+
+  @override
+  String get sectionPast => '往期';
+
+  @override
+  String get emptyJoinedCampaigns => '你还没有参加任何活动。';
+
+  @override
+  String get emptyOpenCampaigns => '目前没有可参加的活动。';
+
+  @override
+  String get emptyPastCampaigns => '暂无往期活动。';
 }

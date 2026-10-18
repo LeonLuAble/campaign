@@ -848,6 +848,246 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'In progress'**
   String get dashboardProgressStatusInProgress;
+
+  /// No description provided for @wholeCampaignDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Whole campaign ({days} days)'**
+  String wholeCampaignDays(String days);
+
+  /// No description provided for @suggestedTargetLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested: {value} {unit}'**
+  String suggestedTargetLabel(String value, String unit);
+
+  /// No description provided for @errorAlreadyJoined.
+  ///
+  /// In en, this message translates to:
+  /// **'You have already joined this campaign.'**
+  String get errorAlreadyJoined;
+
+  /// No description provided for @errorNotEligible.
+  ///
+  /// In en, this message translates to:
+  /// **'You are not eligible for this campaign. Contact your organiser.'**
+  String get errorNotEligible;
+
+  /// No description provided for @errorCampaignEnded.
+  ///
+  /// In en, this message translates to:
+  /// **'This campaign has ended.'**
+  String get errorCampaignEnded;
+
+  /// No description provided for @errorCampaignNotOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'This campaign is not open for joining yet.'**
+  String get errorCampaignNotOpen;
+
+  /// No description provided for @campaignDatesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Dates: {dates}'**
+  String campaignDatesLabel(String dates);
+
+  /// No description provided for @campaignDescriptionHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get campaignDescriptionHeading;
+
+  /// No description provided for @howItWorksHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'How it works'**
+  String get howItWorksHeading;
+
+  /// No description provided for @communityProgressHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Community progress so far'**
+  String get communityProgressHeading;
+
+  /// No description provided for @viewParticipation.
+  ///
+  /// In en, this message translates to:
+  /// **'View my participation'**
+  String get viewParticipation;
+
+  /// No description provided for @continueToPledge.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue to pledge'**
+  String get continueToPledge;
+
+  /// No description provided for @joinCampaignTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Join campaign'**
+  String get joinCampaignTitle;
+
+  /// No description provided for @changePledgeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Change pledge'**
+  String get changePledgeTitle;
+
+  /// No description provided for @confirmPledgeHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your pledge'**
+  String get confirmPledgeHeading;
+
+  /// No description provided for @confirmPledgeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You are committing to {choice} for {dates}.'**
+  String confirmPledgeBody(String choice, String dates);
+
+  /// No description provided for @joiningInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Joining…'**
+  String get joiningInProgress;
+
+  /// No description provided for @confirmJoinAndPledge.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm and join'**
+  String get confirmJoinAndPledge;
+
+  /// No description provided for @backToChoices.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to choices'**
+  String get backToChoices;
+
+  /// No description provided for @backToCampaign.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to campaign'**
+  String get backToCampaign;
+
+  /// No description provided for @noCommitmentChoices.
+  ///
+  /// In en, this message translates to:
+  /// **'No pledge choices are available for this campaign.'**
+  String get noCommitmentChoices;
+
+  /// No description provided for @reviewPledge.
+  ///
+  /// In en, this message translates to:
+  /// **'Review pledge'**
+  String get reviewPledge;
+
+  /// No description provided for @participationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My participation'**
+  String get participationTitle;
+
+  /// No description provided for @myCommitmentHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'My commitment'**
+  String get myCommitmentHeading;
+
+  /// No description provided for @noPledgeYet.
+  ///
+  /// In en, this message translates to:
+  /// **'You have not chosen a pledge yet.'**
+  String get noPledgeYet;
+
+  /// No description provided for @openCheckIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily check-in'**
+  String get openCheckIn;
+
+  /// No description provided for @withdrawTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave campaign'**
+  String get withdrawTitle;
+
+  /// No description provided for @withdrawConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You can leave now. Your past records are kept. You can re-join later.'**
+  String get withdrawConfirmBody;
+
+  /// No description provided for @withdrawConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get withdrawConfirm;
+
+  /// No description provided for @cancelLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancelLabel;
+
+  /// No description provided for @notEnrolledHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You are not enrolled in this campaign.'**
+  String get notEnrolledHint;
+
+  /// No description provided for @checkInTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check-in'**
+  String get checkInTitle;
+
+  /// No description provided for @checkInComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily check-in arrives in a later update.'**
+  String get checkInComingSoon;
+
+  /// No description provided for @backToParticipation.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to participation'**
+  String get backToParticipation;
+
+  /// No description provided for @sectionJoined.
+  ///
+  /// In en, this message translates to:
+  /// **'Joined'**
+  String get sectionJoined;
+
+  /// No description provided for @sectionOpenToJoin.
+  ///
+  /// In en, this message translates to:
+  /// **'Open to join'**
+  String get sectionOpenToJoin;
+
+  /// No description provided for @sectionPast.
+  ///
+  /// In en, this message translates to:
+  /// **'Past'**
+  String get sectionPast;
+
+  /// No description provided for @emptyJoinedCampaigns.
+  ///
+  /// In en, this message translates to:
+  /// **'You have not joined a campaign yet.'**
+  String get emptyJoinedCampaigns;
+
+  /// No description provided for @emptyOpenCampaigns.
+  ///
+  /// In en, this message translates to:
+  /// **'No campaigns are open to join right now.'**
+  String get emptyOpenCampaigns;
+
+  /// No description provided for @emptyPastCampaigns.
+  ///
+  /// In en, this message translates to:
+  /// **'No past campaigns yet.'**
+  String get emptyPastCampaigns;
 }
 
 class _AppLocalizationsDelegate

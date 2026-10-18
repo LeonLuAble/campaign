@@ -161,5 +161,63 @@
   "dashboardProgressStatusExceeded": "Exceeded",
   "dashboardProgressStatusAchieved": "Achieved",
   "dashboardProgressStatusNotStarted": "Not started",
-  "dashboardProgressStatusInProgress": "In progress"
+  "dashboardProgressStatusInProgress": "In progress",
+  "wholeCampaignDays": "Whole campaign ({days} days)",
+  "@wholeCampaignDays": {
+    "placeholders": { "days": { "type": "String" } }
+  },
+  "suggestedTargetLabel": "Suggested: {value} {unit}",
+  "@suggestedTargetLabel": {
+    "placeholders": {
+      "value": { "type": "String" },
+      "unit": { "type": "String" }
+    }
+  },
+  "errorAlreadyJoined": "You have already joined this campaign.",
+  "errorNotEligible": "You are not eligible for this campaign. Contact your organiser.",
+  "errorCampaignEnded": "This campaign has ended.",
+  "errorCampaignNotOpen": "This campaign is not open for joining yet.",
+  "campaignDatesLabel": "Dates: {dates}",
+  "@campaignDatesLabel": {
+    "placeholders": { "dates": { "type": "String" } }
+  },
+  "campaignDescriptionHeading": "About",
+  "howItWorksHeading": "How it works",
+  "communityProgressHeading": "Community progress so far",
+  "viewParticipation": "View my participation",
+  "continueToPledge": "Continue to pledge",
+  "joinCampaignTitle": "Join campaign",
+  "changePledgeTitle": "Change pledge",
+  "confirmPledgeHeading": "Confirm your pledge",
+  "confirmPledgeBody": "You are committing to {choice} for {dates}.",
+  "@confirmPledgeBody": {
+    "placeholders": {
+      "choice": { "type": "String" },
+      "dates": { "type": "String" }
+    }
+  },
+  "joiningInProgress": "Joining…",
+  "confirmJoinAndPledge": "Confirm and join",
+  "backToChoices": "Back to choices",
+  "backToCampaign": "Back to campaign",
+  "noCommitmentChoices": "No pledge choices are available for this campaign.",
+  "reviewPledge": "Review pledge",
+  "participationTitle": "My participation",
+  "myCommitmentHeading": "My commitment",
+  "noPledgeYet": "You have not chosen a pledge yet.",
+  "openCheckIn": "Daily check-in",
+  "withdrawTitle": "Leave campaign",
+  "withdrawConfirmBody": "You can leave now. Your past records are kept. You can re-join later.",
+  "withdrawConfirm": "Leave",
+  "cancelLabel": "Cancel",
+  "notEnrolledHint": "You are not enrolled in this campaign.",
+  "checkInTitle": "Check-in",
+  "checkInComingSoon": "Daily check-in arrives in a later update.",
+  "backToParticipation": "Back to participation",
+  "sectionJoined": "Joined",
+  "sectionOpenToJoin": "Open to join",
+  "sectionPast": "Past",
+  "emptyJoinedCampaigns": "You have not joined a campaign yet.",
+  "emptyOpenCampaigns": "No campaigns are open to join right now.",
+  "emptyPastCampaigns": "No past campaigns yet."
 }

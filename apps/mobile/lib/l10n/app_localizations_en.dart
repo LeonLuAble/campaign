@@ -414,4 +414,136 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dashboardProgressStatusInProgress => 'In progress';
+
+  @override
+  String wholeCampaignDays(String days) {
+    return 'Whole campaign ($days days)';
+  }
+
+  @override
+  String suggestedTargetLabel(String value, String unit) {
+    return 'Suggested: $value $unit';
+  }
+
+  @override
+  String get errorAlreadyJoined => 'You have already joined this campaign.';
+
+  @override
+  String get errorNotEligible =>
+      'You are not eligible for this campaign. Contact your organiser.';
+
+  @override
+  String get errorCampaignEnded => 'This campaign has ended.';
+
+  @override
+  String get errorCampaignNotOpen =>
+      'This campaign is not open for joining yet.';
+
+  @override
+  String campaignDatesLabel(String dates) {
+    return 'Dates: $dates';
+  }
+
+  @override
+  String get campaignDescriptionHeading => 'About';
+
+  @override
+  String get howItWorksHeading => 'How it works';
+
+  @override
+  String get communityProgressHeading => 'Community progress so far';
+
+  @override
+  String get viewParticipation => 'View my participation';
+
+  @override
+  String get continueToPledge => 'Continue to pledge';
+
+  @override
+  String get joinCampaignTitle => 'Join campaign';
+
+  @override
+  String get changePledgeTitle => 'Change pledge';
+
+  @override
+  String get confirmPledgeHeading => 'Confirm your pledge';
+
+  @override
+  String confirmPledgeBody(String choice, String dates) {
+    return 'You are committing to $choice for $dates.';
+  }
+
+  @override
+  String get joiningInProgress => 'Joining…';
+
+  @override
+  String get confirmJoinAndPledge => 'Confirm and join';
+
+  @override
+  String get backToChoices => 'Back to choices';
+
+  @override
+  String get backToCampaign => 'Back to campaign';
+
+  @override
+  String get noCommitmentChoices =>
+      'No pledge choices are available for this campaign.';
+
+  @override
+  String get reviewPledge => 'Review pledge';
+
+  @override
+  String get participationTitle => 'My participation';
+
+  @override
+  String get myCommitmentHeading => 'My commitment';
+
+  @override
+  String get noPledgeYet => 'You have not chosen a pledge yet.';
+
+  @override
+  String get openCheckIn => 'Daily check-in';
+
+  @override
+  String get withdrawTitle => 'Leave campaign';
+
+  @override
+  String get withdrawConfirmBody =>
+      'You can leave now. Your past records are kept. You can re-join later.';
+
+  @override
+  String get withdrawConfirm => 'Leave';
+
+  @override
+  String get cancelLabel => 'Cancel';
+
+  @override
+  String get notEnrolledHint => 'You are not enrolled in this campaign.';
+
+  @override
+  String get checkInTitle => 'Check-in';
+
+  @override
+  String get checkInComingSoon => 'Daily check-in arrives in a later update.';
+
+  @override
+  String get backToParticipation => 'Back to participation';
+
+  @override
+  String get sectionJoined => 'Joined';
+
+  @override
+  String get sectionOpenToJoin => 'Open to join';
+
+  @override
+  String get sectionPast => 'Past';
+
+  @override
+  String get emptyJoinedCampaigns => 'You have not joined a campaign yet.';
+
+  @override
+  String get emptyOpenCampaigns => 'No campaigns are open to join right now.';
+
+  @override
+  String get emptyPastCampaigns => 'No past campaigns yet.';
 }

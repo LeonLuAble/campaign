@@ -6,7 +6,9 @@ import '../auth/password_reset_page.dart';
 import '../auth/welcome_page.dart';
 import '../campaigns/campaign_detail_page.dart';
 import '../campaigns/campaigns_tab_page.dart';
-import '../campaigns/pledge_page.dart';
+import '../campaigns/check_in_placeholder_page.dart';
+import '../campaigns/join_flow_page.dart';
+import '../campaigns/participation_page.dart';
 import '../campaigns/progress_page.dart';
 import '../campaigns/record_action_page.dart';
 import '../dashboards/participant_dashboard_page.dart';
@@ -103,9 +105,33 @@ GoRouter createRouter({
                     ),
                     routes: [
                       GoRoute(
+                        path: 'join',
+                        name: 'join',
+                        builder: (context, state) => JoinFlowPage(
+                          campaignId: state.pathParameters['campaignId']!,
+                          changeOnly:
+                              state.uri.queryParameters['change'] == '1',
+                        ),
+                      ),
+                      GoRoute(
                         path: 'pledge',
                         name: 'pledge',
-                        builder: (context, state) => PledgePage(
+                        builder: (context, state) => JoinFlowPage(
+                          campaignId: state.pathParameters['campaignId']!,
+                          changeOnly: true,
+                        ),
+                      ),
+                      GoRoute(
+                        path: 'participation',
+                        name: 'participation',
+                        builder: (context, state) => ParticipationPage(
+                          campaignId: state.pathParameters['campaignId']!,
+                        ),
+                      ),
+                      GoRoute(
+                        path: 'check-in',
+                        name: 'checkIn',
+                        builder: (context, state) => CheckInPlaceholderPage(
                           campaignId: state.pathParameters['campaignId']!,
                         ),
                       ),

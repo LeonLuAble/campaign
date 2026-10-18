@@ -11,16 +11,23 @@ void main() {
     apiBaseUrl: 'http://localhost:3000/api/v1',
   );
 
-  testWidgets('login, join, pledge from API choices, and cancel a recording', (
+  testWidgets('login, join with pledge, then open check-in placeholder', (
     tester,
   ) async {
+    tester.view.physicalSize = const Size(800, 2000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     final api = FakeCampaignApiClient();
+    final store = MemoryTokenStore();
+    api.tokenStore = store;
     await tester.pumpWidget(
       CampaignApp(
         config: config,
         locale: AppLocales.en,
         apiClient: api,
-        tokenStore: MemoryTokenStore(),
+        tokenStore: store,
         initialLocation: '/login',
       ),
     );
@@ -31,36 +38,29 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
     await tester.pumpAndSettle();
 
-    expect(find.text('速素数数'), findsOneWidget);
+    await tester.tap(find.text('Campaigns'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('速素数数'));
     await tester.pumpAndSettle();
 
     expect(find.text('Join'), findsOneWidget);
     await tester.tap(find.widgetWithText(FilledButton, 'Join'));
     await tester.pumpAndSettle();
-    expect(find.text('Enrolled'), findsOneWidget);
-
-    await tester.tap(find.widgetWithText(FilledButton, 'Pledge'));
-    await tester.pumpAndSettle();
-    expect(find.text('发愿素'), findsOneWidget);
-    expect(find.text('已全素'), findsOneWidget);
     await tester.ensureVisible(find.text('一周素'));
-    await tester.tap(find.widgetWithText(RadioListTile<String>, '一周素'));
+    await tester.tap(find.text('一周素'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('7'), findsWidgets);
-    await tester.tap(find.widgetWithText(FilledButton, 'Save pledge'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Review pledge'));
     await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Confirm and join'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('My participation'), findsOneWidget);
     expect(api.commitments, isNotEmpty);
     expect(api.commitments.first.typeKey, 'yi_zhou_su');
 
-    await tester.tap(find.widgetWithText(OutlinedButton, 'Record meals'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Daily check-in'));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Record'));
-    await tester.pumpAndSettle();
-    expect(api.actions, isNotEmpty);
-    await tester.tap(find.widgetWithText(TextButton, 'Cancel recording'));
-    await tester.pumpAndSettle();
-    expect(api.actions.first.isCancelled, isTrue);
+    expect(find.textContaining('later update'), findsOneWidget);
   });
 
   testWidgets('shows API error copy for invalid credentials', (tester) async {
@@ -84,4 +84,5 @@ void main() {
       findsOneWidget,
     );
   });
+
 }

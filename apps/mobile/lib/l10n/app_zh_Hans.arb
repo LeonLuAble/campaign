@@ -127,5 +127,63 @@
   "dashboardProgressStatusExceeded": "超额完成",
   "dashboardProgressStatusAchieved": "已达成",
   "dashboardProgressStatusNotStarted": "未开始",
-  "dashboardProgressStatusInProgress": "进行中"
+  "dashboardProgressStatusInProgress": "进行中",
+  "wholeCampaignDays": "整段活动（{days} 天）",
+  "@wholeCampaignDays": {
+    "placeholders": { "days": { "type": "String" } }
+  },
+  "suggestedTargetLabel": "建议：{value} {unit}",
+  "@suggestedTargetLabel": {
+    "placeholders": {
+      "value": { "type": "String" },
+      "unit": { "type": "String" }
+    }
+  },
+  "errorAlreadyJoined": "你已参加此活动。",
+  "errorNotEligible": "你不符合此活动的参加条件，请联系组织方。",
+  "errorCampaignEnded": "此活动已结束。",
+  "errorCampaignNotOpen": "此活动尚未开放参加。",
+  "campaignDatesLabel": "日期：{dates}",
+  "@campaignDatesLabel": {
+    "placeholders": { "dates": { "type": "String" } }
+  },
+  "campaignDescriptionHeading": "简介",
+  "howItWorksHeading": "如何参与",
+  "communityProgressHeading": "社区目前进度",
+  "viewParticipation": "查看我的参加情况",
+  "continueToPledge": "继续承诺",
+  "joinCampaignTitle": "参加活动",
+  "changePledgeTitle": "更改承诺",
+  "confirmPledgeHeading": "确认你的承诺",
+  "confirmPledgeBody": "你将承诺「{choice}」，期间为 {dates}。",
+  "@confirmPledgeBody": {
+    "placeholders": {
+      "choice": { "type": "String" },
+      "dates": { "type": "String" }
+    }
+  },
+  "joiningInProgress": "正在加入…",
+  "confirmJoinAndPledge": "确认并加入",
+  "backToChoices": "返回选择",
+  "backToCampaign": "返回活动",
+  "noCommitmentChoices": "此活动暂无可用的承诺选项。",
+  "reviewPledge": "预览承诺",
+  "participationTitle": "我的参加",
+  "myCommitmentHeading": "我的承诺",
+  "noPledgeYet": "你尚未选择承诺。",
+  "openCheckIn": "每日打卡",
+  "withdrawTitle": "退出活动",
+  "withdrawConfirmBody": "退出后你的历史记录会保留，之后仍可重新加入。",
+  "withdrawConfirm": "退出",
+  "cancelLabel": "取消",
+  "notEnrolledHint": "你尚未参加此活动。",
+  "checkInTitle": "打卡",
+  "checkInComingSoon": "每日打卡将在后续版本提供。",
+  "backToParticipation": "返回参加情况",
+  "sectionJoined": "已参加",
+  "sectionOpenToJoin": "可参加",
+  "sectionPast": "往期",
+  "emptyJoinedCampaigns": "你还没有参加任何活动。",
+  "emptyOpenCampaigns": "目前没有可参加的活动。",
+  "emptyPastCampaigns": "暂无往期活动。"
 }
