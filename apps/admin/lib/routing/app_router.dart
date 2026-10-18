@@ -209,6 +209,8 @@ GoRouter createRouter({required SessionController session}) {
                             builder: (context, state) =>
                                 AggregateDashboardPage(
                               scope: 'community',
+                              customerId:
+                                  state.pathParameters['customerId'],
                               campaignId:
                                   state.uri.queryParameters['campaignId'],
                               communityId:
@@ -301,6 +303,8 @@ GoRouter createRouter({required SessionController session}) {
                                 builder: (context, state) =>
                                     AggregateDashboardPage(
                                   scope: 'campaign',
+                                  customerId:
+                                      state.pathParameters['customerId'],
                                   campaignId:
                                       state.pathParameters['campaignId'],
                                 ),
@@ -310,6 +314,8 @@ GoRouter createRouter({required SessionController session}) {
                                 name: 'campaignReport',
                                 builder: (context, state) =>
                                     CampaignReportPage(
+                                  customerId:
+                                      state.pathParameters['customerId'],
                                   campaignId:
                                       state.pathParameters['campaignId'],
                                 ),

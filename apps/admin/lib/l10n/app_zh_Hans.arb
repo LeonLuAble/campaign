@@ -498,6 +498,56 @@
   "campaignWorkspaceSubmissions": "提交",
   "campaignWorkspaceMilestonesImpact": "里程碑与影响",
   "campaignWorkspaceDashboardReports": "看板与报表",
+  "campaignWorkspaceDashboard": "看板",
+  "campaignWorkspaceReports": "报表",
+  "dashboardGranularityDay": "按日",
+  "dashboardGranularityWeek": "按周",
+  "dashboardMetricParticipants": "参加者",
+  "dashboardMetricParticipationRate": "参与率",
+  "dashboardMetricCompleted": "已完成总量",
+  "dashboardMetricProgress": "相对目标进度",
+  "dashboardParticipationRateValue": "{percent}%",
+  "@dashboardParticipationRateValue": {
+    "placeholders": { "percent": { "type": "String" } }
+  },
+  "dashboardProgressStatusExceeded": "已超额",
+  "dashboardProgressStatusAchieved": "已达成",
+  "dashboardProgressStatusInProgress": "进行中",
+  "dashboardProgressStatusNotStarted": "未开始",
+  "dashboardChartMode": "图表",
+  "dashboardTableMode": "表格",
+  "dashboardChartEmpty": "暂无时间序列数据。",
+  "dashboardCommunityPickerLabel": "社区",
+  "dashboardCommunityWholeCampaign": "整个活动",
+  "dashboardIncludeSubCommunities": "包含下级社区",
+  "dashboardIncludeSubCommunitiesHelp": "社区指标始终包含所选社区及其下级。",
+  "dashboardTreeTextAlternative": "{name}：活动目标的 {percent}%",
+  "@dashboardTreeTextAlternative": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "percent": { "type": "String" }
+    }
+  },
+  "reportCampaignTitle": "活动汇总报表",
+  "reportCampaignDescription": "匿名活动合计：参加者、承诺与按单位完成情况。不含联系方式。",
+  "reportCommunityTitle": "社区汇总报表",
+  "reportCommunityDescription": "某社区子树的匿名合计。不含联系方式或排名。",
+  "reportPickCommunity": "为社区报表选择社区",
+  "reportExportDownloaded": "已开始下载 CSV。",
+  "reportNoDateFilter": "此报表暂不支持日期范围筛选。",
+  "reportGeneratedAt": "生成于 {when}",
+  "@reportGeneratedAt": {
+    "placeholders": { "when": { "type": "String" } }
+  },
+  "reportUnitLine": "{unit}：{achieved} / {target}（{percent}）",
+  "@reportUnitLine": {
+    "placeholders": {
+      "unit": { "type": "String" },
+      "achieved": { "type": "String" },
+      "target": { "type": "String" },
+      "percent": { "type": "String" }
+    }
+  },
   "campaignPublishChecklistTitle": "发布检查清单",
   "campaignChecklistDates": "开始与结束日期",
   "campaignChecklistActions": "至少一个行动定义",

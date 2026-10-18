@@ -310,6 +310,40 @@ void main() {
         await tester.tap(find.text(next));
         expect(advanced, isTrue);
       });
+
+      testWidgets('TimeSeriesChart chart and table toggle without overflow', (
+        tester,
+      ) async {
+        await tester.binding.setSurfaceSize(const Size(640, 520));
+        final chartLabel = isZh(c.locale) ? '图表' : 'Chart';
+        final tableLabel = isZh(c.locale) ? '表格' : 'Table';
+        final empty = isZh(c.locale) ? '暂无数据' : 'No data';
+        final dayLabel = isZh(c.locale) ? '10月12日' : '12 Oct';
+        await tester.pumpWidget(
+          harness(
+            locale: c.locale,
+            textScale: c.scale,
+            child: SingleChildScrollView(
+              child: TimeSeriesChart(
+                chartModeLabel: chartLabel,
+                tableModeLabel: tableLabel,
+                emptyLabel: empty,
+                buckets: [
+                  TimeSeriesBucket(label: dayLabel, value: 5),
+                  TimeSeriesBucket(label: dayLabel, value: 3),
+                ],
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        expect(find.byType(TimeSeriesChart), findsOneWidget);
+        await tester.tap(find.text(tableLabel));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        expect(find.text('5'), findsWidgets);
+      });
     });
   }
 }

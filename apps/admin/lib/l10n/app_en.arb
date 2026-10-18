@@ -532,6 +532,56 @@
   "campaignWorkspaceSubmissions": "Submissions",
   "campaignWorkspaceMilestonesImpact": "Milestones & impact",
   "campaignWorkspaceDashboardReports": "Dashboard & reports",
+  "campaignWorkspaceDashboard": "Dashboard",
+  "campaignWorkspaceReports": "Reports",
+  "dashboardGranularityDay": "Day",
+  "dashboardGranularityWeek": "Week",
+  "dashboardMetricParticipants": "Participants",
+  "dashboardMetricParticipationRate": "Participation rate",
+  "dashboardMetricCompleted": "Total completed",
+  "dashboardMetricProgress": "Progress vs target",
+  "dashboardParticipationRateValue": "{percent}%",
+  "@dashboardParticipationRateValue": {
+    "placeholders": { "percent": { "type": "String" } }
+  },
+  "dashboardProgressStatusExceeded": "Exceeded",
+  "dashboardProgressStatusAchieved": "Achieved",
+  "dashboardProgressStatusInProgress": "In progress",
+  "dashboardProgressStatusNotStarted": "Not started",
+  "dashboardChartMode": "Chart",
+  "dashboardTableMode": "Table",
+  "dashboardChartEmpty": "No time-series data yet.",
+  "dashboardCommunityPickerLabel": "Community",
+  "dashboardCommunityWholeCampaign": "Whole campaign",
+  "dashboardIncludeSubCommunities": "Include sub-communities",
+  "dashboardIncludeSubCommunitiesHelp": "Community metrics always include the selected community and its descendants.",
+  "dashboardTreeTextAlternative": "{name}: {percent}% of campaign target",
+  "@dashboardTreeTextAlternative": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "percent": { "type": "String" }
+    }
+  },
+  "reportCampaignTitle": "Campaign aggregate report",
+  "reportCampaignDescription": "Anonymous campaign totals: participants, commitments, and completion by unit. No contact details.",
+  "reportCommunityTitle": "Community aggregate report",
+  "reportCommunityDescription": "Anonymous subtree totals for a community. No contact details or rankings.",
+  "reportPickCommunity": "Choose a community for the community report",
+  "reportExportDownloaded": "CSV download started.",
+  "reportNoDateFilter": "Date-range filters are not available on this report yet.",
+  "reportGeneratedAt": "Generated {when}",
+  "@reportGeneratedAt": {
+    "placeholders": { "when": { "type": "String" } }
+  },
+  "reportUnitLine": "{unit}: {achieved} of {target} ({percent})",
+  "@reportUnitLine": {
+    "placeholders": {
+      "unit": { "type": "String" },
+      "achieved": { "type": "String" },
+      "target": { "type": "String" },
+      "percent": { "type": "String" }
+    }
+  },
   "campaignPublishChecklistTitle": "Ready to publish",
   "campaignChecklistDates": "Start and end dates",
   "campaignChecklistActions": "At least one action definition",

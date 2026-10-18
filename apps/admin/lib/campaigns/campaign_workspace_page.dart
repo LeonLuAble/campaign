@@ -39,7 +39,7 @@ class _CampaignWorkspacePageState extends State<CampaignWorkspacePage>
   @override
   void initState() {
     super.initState();
-    _tabs = TabController(length: 6, vsync: this);
+    _tabs = TabController(length: 7, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
@@ -300,7 +300,8 @@ class _CampaignWorkspacePageState extends State<CampaignWorkspacePage>
               Tab(text: l10n.campaignWorkspaceParticipants),
               Tab(text: l10n.campaignWorkspaceSubmissions),
               Tab(text: l10n.campaignWorkspaceMilestonesImpact),
-              Tab(text: l10n.campaignWorkspaceDashboardReports),
+              Tab(text: l10n.campaignWorkspaceDashboard),
+              Tab(text: l10n.campaignWorkspaceReports),
             ],
           ),
           const SizedBox(height: 8),
@@ -329,7 +330,17 @@ class _CampaignWorkspacePageState extends State<CampaignWorkspacePage>
                   customerId: widget.customerId,
                   campaignId: widget.campaignId,
                 ),
-                _DashboardReportsTab(campaignId: widget.campaignId),
+                AggregateDashboardPage(
+                  scope: 'campaign',
+                  customerId: widget.customerId,
+                  campaignId: widget.campaignId,
+                  embedded: true,
+                ),
+                CampaignReportPage(
+                  customerId: widget.customerId,
+                  campaignId: widget.campaignId,
+                  embedded: true,
+                ),
               ],
             ),
           ),
@@ -696,52 +707,3 @@ class _MilestonesImpactTab extends StatelessWidget {
   }
 }
 
-class _DashboardReportsTab extends StatefulWidget {
-  const _DashboardReportsTab({required this.campaignId});
-
-  final String campaignId;
-
-  @override
-  State<_DashboardReportsTab> createState() => _DashboardReportsTabState();
-}
-
-class _DashboardReportsTabState extends State<_DashboardReportsTab> {
-  var _showReport = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SegmentedButton<bool>(
-          segments: [
-            ButtonSegment(
-              value: false,
-              label: Text(l10n.openCampaignDashboard),
-              icon: const Icon(Icons.dashboard_outlined),
-            ),
-            ButtonSegment(
-              value: true,
-              label: Text(l10n.openCampaignReport),
-              icon: const Icon(Icons.table_chart_outlined),
-            ),
-          ],
-          selected: {_showReport},
-          onSelectionChanged: (value) {
-            setState(() => _showReport = value.first);
-          },
-        ),
-        const SizedBox(height: 8),
-        Expanded(
-          child: _showReport
-              ? CampaignReportPage(campaignId: widget.campaignId)
-              : AggregateDashboardPage(
-                  scope: 'campaign',
-                  campaignId: widget.campaignId,
-                ),
-        ),
-      ],
-    );
-  }
-}

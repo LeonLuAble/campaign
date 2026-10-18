@@ -75,7 +75,11 @@
   "importUploadHint": "先下载模板，再选择 CSV。可选择默认社区，用于没有 communityPath 的行。",
   "importSelectedFile": "已选：{name}",
   "@importSelectedFile": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "importDefaultCommunity": "默认社区（可选）",
   "importFileRequired": "请选择 CSV 文件后继续。",
@@ -98,9 +102,15 @@
   "importValidateSummary": "{valid} 有效 · {invalid} 错误 · {review} 待复核",
   "@importValidateSummary": {
     "placeholders": {
-      "valid": { "type": "int" },
-      "invalid": { "type": "int" },
-      "review": { "type": "int" }
+      "valid": {
+        "type": "int"
+      },
+      "invalid": {
+        "type": "int"
+      },
+      "review": {
+        "type": "int"
+      }
     }
   },
   "importNoProblemRows": "没有错误或待复核行。",
@@ -110,23 +120,37 @@
   "importConfirmSummary": "将导入 {ready} 行。{skipped} 行错误或待复核将被跳过。",
   "@importConfirmSummary": {
     "placeholders": {
-      "ready": { "type": "int" },
-      "skipped": { "type": "int" }
+      "ready": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      }
     }
   },
   "importResultSummary": "已创建 {created} · 已匹配 {matched} · 错误 {errors}",
   "@importResultSummary": {
     "placeholders": {
-      "created": { "type": "int" },
-      "matched": { "type": "int" },
-      "errors": { "type": "int" }
+      "created": {
+        "type": "int"
+      },
+      "matched": {
+        "type": "int"
+      },
+      "errors": {
+        "type": "int"
+      }
     }
   },
   "importRowTitle": "第 {number} 行：{identifier}",
   "@importRowTitle": {
     "placeholders": {
-      "number": { "type": "int" },
-      "identifier": { "type": "String" }
+      "number": {
+        "type": "int"
+      },
+      "identifier": {
+        "type": "String"
+      }
     }
   },
   "downloadErrorCsv": "下载错误 CSV",
@@ -138,9 +162,15 @@
   "importCountsSummary": "已创建 {created} · 已匹配 {matched} · 错误 {errors}",
   "@importCountsSummary": {
     "placeholders": {
-      "created": { "type": "int" },
-      "matched": { "type": "int" },
-      "errors": { "type": "int" }
+      "created": {
+        "type": "int"
+      },
+      "matched": {
+        "type": "int"
+      },
+      "errors": {
+        "type": "int"
+      }
     }
   },
   "importStatusUploaded": "已上传",
@@ -220,7 +250,11 @@
   "metricCampaigns": "活动",
   "metricCampaignsByStatus": "活动 · {status}",
   "@metricCampaignsByStatus": {
-    "placeholders": { "status": { "type": "String" } }
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
   },
   "nextStepsTitle": "下一步",
   "nextStepCommunities": "创建社区",
@@ -270,7 +304,11 @@
   "inviteEmailSentTitle": "邀请已发送",
   "inviteEmailSentBody": "已向 {email} 发送激活邮件。",
   "@inviteEmailSentBody": {
-    "placeholders": { "email": { "type": "String" } }
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
   },
   "inviteMobileLinkTitle": "一次性激活链接",
   "inviteMobileLinkBody": "未发送短信。请复制此链接并仅分享一次给该成员。",
@@ -279,7 +317,11 @@
   "tenantLevelMembership": "组织级",
   "memberCommunityLabel": "社区：{name}",
   "@memberCommunityLabel": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "memberRolesHeading": "角色",
   "assignRoleAction": "添加角色",
@@ -288,7 +330,11 @@
   "removeRoleTitle": "移除角色",
   "removeRoleBody": "从该成员移除 {name} 角色？",
   "@removeRoleBody": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "removeRoleConfirm": "移除",
   "deactivateMember": "停用",
@@ -297,11 +343,19 @@
   "reactivateMemberTitle": "重新启用成员资格",
   "deactivateMemberBody": "停用 {name}？停用后将无法访问，直至重新启用。",
   "@deactivateMemberBody": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "reactivateMemberBody": "重新启用 {name}？",
   "@reactivateMemberBody": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "deactivateMemberConfirm": "停用",
   "reactivateMemberConfirm": "重新启用",
@@ -309,7 +363,6 @@
   "memberReactivatedSnackbar": "成员资格已重新启用。",
   "errorLastTenantAdmin": "不能移除或停用组织中的最后一位管理员。",
   "retry": "重试",
-
   "adminNameLabel": "管理员显示名称",
   "adminEmailLabel": "管理员邮箱",
   "adminEmailRequired": "请输入客户管理员邮箱。",
@@ -337,7 +390,6 @@
   "activateSuccess": "账户已激活，可以登录。",
   "resetSuccess": "密码已更新，可以登录。",
   "goToLogin": "前往登录",
-
   "platformCustomersTitle": "客户",
   "platformCustomersSubtitle": "入驻组织。仅平台元数据，不含租户业务数据。",
   "searchCustomers": "按名称或 slug 搜索",
@@ -362,11 +414,19 @@
   "createCustomerSuccessTitle": "客户已创建",
   "createCustomerSuccessMessage": "激活邮件已发送至 {email}。",
   "@createCustomerSuccessMessage": {
-    "placeholders": { "email": { "type": "String" } }
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
   },
   "createCustomerSuccessDetail": "{name} 已就绪。管理员可激活并登录。",
   "@createCustomerSuccessDetail": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "createCustomerFailureHint": "可重试创建，或打开客户详情重新发送激活邮件。",
   "viewCustomer": "查看客户",
@@ -380,23 +440,34 @@
   "inviteAdminConfirm": "发送邀请",
   "inviteAdminConfirmBody": "向 {email} 发送激活邀请？",
   "@inviteAdminConfirmBody": {
-    "placeholders": { "email": { "type": "String" } }
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
   },
   "inviteAdminSuccessSnackbar": "邀请已发送。",
   "resendActivationConfirmBody": "向 {email} 重新发送激活邮件？",
   "@resendActivationConfirmBody": {
-    "placeholders": { "email": { "type": "String" } }
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
   },
   "activationStatusPending": "待激活",
   "activationStatusActive": "已激活",
   "adminCountSummary": "{admins} 位管理员 · {pending} 个待激活邀请",
   "@adminCountSummary": {
     "placeholders": {
-      "admins": { "type": "int" },
-      "pending": { "type": "int" }
+      "admins": {
+        "type": "int"
+      },
+      "pending": {
+        "type": "int"
+      }
     }
   },
-
   "communitiesSubtitle": "将成员组织成任意深度的层级结构。",
   "createFirstCommunity": "创建第一个社区",
   "createRootCommunityTitle": "创建社区",
@@ -408,7 +479,11 @@
   "moveCommunityTitle": "移动社区",
   "moveCommunityHint": "为 {name} 选择新的上级。其自身的子孙节点已被排除。",
   "@moveCommunityHint": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "moveCommunityConfirm": "移动",
   "communityRootLabel": "组织根（无上级）",
@@ -419,11 +494,19 @@
   "reactivateCommunityTitle": "重新启用社区",
   "deactivateCommunityBody": "停用 {name}？它仍会保留在树中，但标记为停用。",
   "@deactivateCommunityBody": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "reactivateCommunityBody": "重新启用 {name}？",
   "@reactivateCommunityBody": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "deactivateCommunityConfirm": "停用",
   "reactivateCommunityConfirm": "重新启用",
@@ -438,7 +521,11 @@
   "communityActions": "社区操作",
   "communityNodeSemantics": "社区 {name}",
   "@communityNodeSemantics": {
-    "placeholders": { "name": { "type": "String" } }
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   },
   "save": "保存",
   "createAction": "创建",
@@ -457,7 +544,11 @@
   "campaignDatesUnset": "未设置日期",
   "campaignParticipantCount": "{count}",
   "@campaignParticipantCount": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "campaignWizardTitle": "创建活动",
   "campaignStepBasics": "基本信息",
@@ -498,6 +589,76 @@
   "campaignWorkspaceSubmissions": "提交",
   "campaignWorkspaceMilestonesImpact": "里程碑与影响",
   "campaignWorkspaceDashboardReports": "看板与报表",
+  "campaignWorkspaceDashboard": "看板",
+  "campaignWorkspaceReports": "报表",
+  "dashboardGranularityDay": "按日",
+  "dashboardGranularityWeek": "按周",
+  "dashboardMetricParticipants": "参加者",
+  "dashboardMetricParticipationRate": "参与率",
+  "dashboardMetricCompleted": "已完成总量",
+  "dashboardMetricProgress": "相对目标进度",
+  "dashboardParticipationRateValue": "{percent}%",
+  "@dashboardParticipationRateValue": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "dashboardProgressStatusExceeded": "已超额",
+  "dashboardProgressStatusAchieved": "已达成",
+  "dashboardProgressStatusInProgress": "进行中",
+  "dashboardProgressStatusNotStarted": "未开始",
+  "dashboardChartMode": "图表",
+  "dashboardTableMode": "表格",
+  "dashboardChartEmpty": "暂无时间序列数据。",
+  "dashboardCommunityPickerLabel": "社区",
+  "dashboardCommunityWholeCampaign": "整个活动",
+  "dashboardIncludeSubCommunities": "包含下级社区",
+  "dashboardIncludeSubCommunitiesHelp": "社区指标始终包含所选社区及其下级。",
+  "dashboardTreeTextAlternative": "{name}：活动目标的 {percent}%",
+  "@dashboardTreeTextAlternative": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "reportCampaignTitle": "活动汇总报表",
+  "reportCampaignDescription": "匿名活动合计：参加者、承诺与按单位完成情况。不含联系方式。",
+  "reportCommunityTitle": "社区汇总报表",
+  "reportCommunityDescription": "某社区子树的匿名合计。不含联系方式或排名。",
+  "reportPickCommunity": "为社区报表选择社区",
+  "reportExportDownloaded": "已开始下载 CSV。",
+  "reportNoDateFilter": "此报表暂不支持日期范围筛选。",
+  "reportGeneratedAt": "生成于 {when}",
+  "@reportGeneratedAt": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "reportUnitLine": "{unit}：{achieved} / {target}（{percent}）",
+  "@reportUnitLine": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      },
+      "achieved": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
   "campaignPublishChecklistTitle": "发布检查清单",
   "campaignChecklistDates": "开始与结束日期",
   "campaignChecklistActions": "至少一个行动定义",

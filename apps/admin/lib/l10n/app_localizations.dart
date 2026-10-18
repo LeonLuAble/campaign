@@ -2547,6 +2547,191 @@ abstract class AppLocalizations {
   /// **'Dashboard & reports'**
   String get campaignWorkspaceDashboardReports;
 
+  /// No description provided for @campaignWorkspaceDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Dashboard'**
+  String get campaignWorkspaceDashboard;
+
+  /// No description provided for @campaignWorkspaceReports.
+  ///
+  /// In en, this message translates to:
+  /// **'Reports'**
+  String get campaignWorkspaceReports;
+
+  /// No description provided for @dashboardGranularityDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get dashboardGranularityDay;
+
+  /// No description provided for @dashboardGranularityWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Week'**
+  String get dashboardGranularityWeek;
+
+  /// No description provided for @dashboardMetricParticipants.
+  ///
+  /// In en, this message translates to:
+  /// **'Participants'**
+  String get dashboardMetricParticipants;
+
+  /// No description provided for @dashboardMetricParticipationRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Participation rate'**
+  String get dashboardMetricParticipationRate;
+
+  /// No description provided for @dashboardMetricCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Total completed'**
+  String get dashboardMetricCompleted;
+
+  /// No description provided for @dashboardMetricProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress vs target'**
+  String get dashboardMetricProgress;
+
+  /// No description provided for @dashboardParticipationRateValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}%'**
+  String dashboardParticipationRateValue(String percent);
+
+  /// No description provided for @dashboardProgressStatusExceeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Exceeded'**
+  String get dashboardProgressStatusExceeded;
+
+  /// No description provided for @dashboardProgressStatusAchieved.
+  ///
+  /// In en, this message translates to:
+  /// **'Achieved'**
+  String get dashboardProgressStatusAchieved;
+
+  /// No description provided for @dashboardProgressStatusInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get dashboardProgressStatusInProgress;
+
+  /// No description provided for @dashboardProgressStatusNotStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not started'**
+  String get dashboardProgressStatusNotStarted;
+
+  /// No description provided for @dashboardChartMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Chart'**
+  String get dashboardChartMode;
+
+  /// No description provided for @dashboardTableMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Table'**
+  String get dashboardTableMode;
+
+  /// No description provided for @dashboardChartEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No time-series data yet.'**
+  String get dashboardChartEmpty;
+
+  /// No description provided for @dashboardCommunityPickerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get dashboardCommunityPickerLabel;
+
+  /// No description provided for @dashboardCommunityWholeCampaign.
+  ///
+  /// In en, this message translates to:
+  /// **'Whole campaign'**
+  String get dashboardCommunityWholeCampaign;
+
+  /// No description provided for @dashboardIncludeSubCommunities.
+  ///
+  /// In en, this message translates to:
+  /// **'Include sub-communities'**
+  String get dashboardIncludeSubCommunities;
+
+  /// No description provided for @dashboardIncludeSubCommunitiesHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Community metrics always include the selected community and its descendants.'**
+  String get dashboardIncludeSubCommunitiesHelp;
+
+  /// No description provided for @dashboardTreeTextAlternative.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}: {percent}% of campaign target'**
+  String dashboardTreeTextAlternative(String name, String percent);
+
+  /// No description provided for @reportCampaignTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Campaign aggregate report'**
+  String get reportCampaignTitle;
+
+  /// No description provided for @reportCampaignDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Anonymous campaign totals: participants, commitments, and completion by unit. No contact details.'**
+  String get reportCampaignDescription;
+
+  /// No description provided for @reportCommunityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Community aggregate report'**
+  String get reportCommunityTitle;
+
+  /// No description provided for @reportCommunityDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Anonymous subtree totals for a community. No contact details or rankings.'**
+  String get reportCommunityDescription;
+
+  /// No description provided for @reportPickCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a community for the community report'**
+  String get reportPickCommunity;
+
+  /// No description provided for @reportExportDownloaded.
+  ///
+  /// In en, this message translates to:
+  /// **'CSV download started.'**
+  String get reportExportDownloaded;
+
+  /// No description provided for @reportNoDateFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Date-range filters are not available on this report yet.'**
+  String get reportNoDateFilter;
+
+  /// No description provided for @reportGeneratedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Generated {when}'**
+  String reportGeneratedAt(String when);
+
+  /// No description provided for @reportUnitLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{unit}: {achieved} of {target} ({percent})'**
+  String reportUnitLine(
+    String unit,
+    String achieved,
+    String target,
+    String percent,
+  );
+
   /// No description provided for @campaignPublishChecklistTitle.
   ///
   /// In en, this message translates to:

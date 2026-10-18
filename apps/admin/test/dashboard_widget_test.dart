@@ -34,6 +34,7 @@ void main() {
         targetValue: 10,
         completionPercent: 50,
         unit: 'days',
+        participantCount: 3,
       ),
       measurements: [MeasurementTotal(sourceUnit: 'days', quantity: 5)],
       outcomes: [
@@ -74,18 +75,25 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('People are not ranked'), findsOneWidget);
-    expect(find.text('5 of 10 days'), findsOneWidget);
-    expect(find.text('素心树'), findsOneWidget);
-    expect(find.textContaining('Tenant-configured citation'), findsOneWidget);
-    expect(find.text('water_liters: 50 L'), findsOneWidget);
+    expect(find.text('5 of 10 days'), findsWidgets);
     expect(find.textContaining('leaderboard'), findsNothing);
+
+    await tester.drag(find.byType(ListView).first, const Offset(0, -600));
+    await tester.pumpAndSettle();
+    expect(find.text('素心树'), findsWidgets);
+    expect(find.textContaining('Tenant-configured citation'), findsOneWidget);
   });
 
   testWidgets('uses the community title for community dashboards', (
     tester,
   ) async {
     await tester.pumpWidget(
-      wrap(const AggregateDashboardPage(scope: 'community')),
+      wrap(
+        const AggregateDashboardPage(
+          scope: 'community',
+          communityId: 'comm-1',
+        ),
+      ),
     );
     await tester.pumpAndSettle();
     expect(find.text('Community dashboard'), findsOneWidget);

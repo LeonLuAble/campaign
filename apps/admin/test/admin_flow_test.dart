@@ -201,17 +201,16 @@ void main() {
     await tester.tap(find.text('Reject'));
     await tester.pumpAndSettle();
 
-    final reportsTab = find.text('Dashboard & reports');
+    final reportsTab = find.descendant(
+      of: find.byType(TabBar),
+      matching: find.text('Reports'),
+    );
     await tester.ensureVisible(reportsTab);
     await tester.tap(reportsTab);
     await tester.pumpAndSettle();
-    final reportSegment = find.text('Campaign report');
-    await tester.ensureVisible(reportSegment);
-    await tester.tap(reportSegment);
+    await tester.tap(find.widgetWithText(FilledButton, 'Export CSV').first);
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Export CSV'));
-    await tester.pumpAndSettle();
-    expect(find.text('CSV export is ready.'), findsOneWidget);
+    expect(find.textContaining('CSV download started'), findsOneWidget);
     expect(find.textContaining('campaign'), findsWidgets);
   });
 }

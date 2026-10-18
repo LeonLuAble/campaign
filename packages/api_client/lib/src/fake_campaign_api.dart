@@ -1955,24 +1955,59 @@ class FakeCampaignApiClient implements CampaignApiClient {
     String participationId,
   ) async => participantDashboard;
 
+  /// Last granularity requested by dashboard methods (for widget tests).
+  String lastDashboardGranularity = 'day';
+
+  /// Optional week-bucket series returned when [lastDashboardGranularity] is week.
+  List<TimeSeriesPoint>? weekTimeSeries;
+
   @override
-  Future<AggregateDashboard> getCampaignDashboard(String campaignId) async =>
-      campaignDashboard;
+  Future<AggregateDashboard> getCampaignDashboard(
+    String campaignId, {
+    String granularity = 'day',
+  }) async {
+    lastDashboardGranularity = granularity;
+    if (granularity == 'week' && weekTimeSeries != null) {
+      return AggregateDashboard(
+        scope: campaignDashboard.scope,
+        progress: campaignDashboard.progress,
+        measurements: campaignDashboard.measurements,
+        outcomes: campaignDashboard.outcomes,
+        timeSeries: weekTimeSeries!,
+        visualization: campaignDashboard.visualization,
+      );
+    }
+    return campaignDashboard;
+  }
 
   @override
   Future<AggregateDashboard> getCommunityDashboard({
     required String campaignId,
     required String communityId,
-  }) async =>
-      communityDashboard ??
-      AggregateDashboard(
-        scope: 'community',
-        progress: campaignDashboard.progress,
-        measurements: campaignDashboard.measurements,
-        outcomes: campaignDashboard.outcomes,
-        timeSeries: campaignDashboard.timeSeries,
-        visualization: campaignDashboard.visualization,
+    String granularity = 'day',
+  }) async {
+    lastDashboardGranularity = granularity;
+    final base = communityDashboard ??
+        AggregateDashboard(
+          scope: 'community',
+          progress: campaignDashboard.progress,
+          measurements: campaignDashboard.measurements,
+          outcomes: campaignDashboard.outcomes,
+          timeSeries: campaignDashboard.timeSeries,
+          visualization: campaignDashboard.visualization,
+        );
+    if (granularity == 'week' && weekTimeSeries != null) {
+      return AggregateDashboard(
+        scope: base.scope,
+        progress: base.progress,
+        measurements: base.measurements,
+        outcomes: base.outcomes,
+        timeSeries: weekTimeSeries!,
+        visualization: base.visualization,
       );
+    }
+    return base;
+  }
 
   @override
   Future<VisualizationData> getVisualizationData(String campaignId) async =>
@@ -2038,4 +2073,31 @@ class FakeCampaignApiClient implements CampaignApiClient {
 
   @override
   Future<String> exportCampaignReportCsv(String campaignId) async => campaignCsv;
+
+  String? lastExportedReportKind;
+
+  @override
+  Future<AggregateReport> getCommunityReport({
+    required String campaignId,
+    required String communityId,
+  }) async {
+    return AggregateReport(
+      scope: 'community',
+      campaignId: campaignId,
+      communityId: communityId,
+      generatedAt: campaignReport.generatedAt,
+      participantCount: campaignReport.participantCount,
+      committedParticipantCount: campaignReport.committedParticipantCount,
+      units: campaignReport.units,
+    );
+  }
+
+  @override
+  Future<String> exportCommunityReportCsv({
+    required String campaignId,
+    required String communityId,
+  }) async {
+    lastExportedReportKind = 'community';
+    return 'scope,campaignId,communityId\ncommunity,$campaignId,$communityId\n';
+  }
 }

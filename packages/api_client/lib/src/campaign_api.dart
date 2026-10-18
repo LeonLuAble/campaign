@@ -220,10 +220,14 @@ abstract class CampaignApiClient {
 
   Future<ParticipantProgress> getProgress(String participationId);
   Future<ParticipantDashboard> getParticipantDashboard(String participationId);
-  Future<AggregateDashboard> getCampaignDashboard(String campaignId);
+  Future<AggregateDashboard> getCampaignDashboard(
+    String campaignId, {
+    String granularity = 'day',
+  });
   Future<AggregateDashboard> getCommunityDashboard({
     required String campaignId,
     required String communityId,
+    String granularity = 'day',
   });
   Future<VisualizationData> getVisualizationData(String campaignId);
 
@@ -251,6 +255,14 @@ abstract class CampaignApiClient {
 
   Future<AggregateReport> getCampaignReport(String campaignId);
   Future<String> exportCampaignReportCsv(String campaignId);
+  Future<AggregateReport> getCommunityReport({
+    required String campaignId,
+    required String communityId,
+  });
+  Future<String> exportCommunityReportCsv({
+    required String campaignId,
+    required String communityId,
+  });
 }
 
 class HttpCampaignApiClient implements CampaignApiClient {
@@ -1157,9 +1169,13 @@ class HttpCampaignApiClient implements CampaignApiClient {
   }
 
   @override
-  Future<AggregateDashboard> getCampaignDashboard(String campaignId) {
+  Future<AggregateDashboard> getCampaignDashboard(
+    String campaignId, {
+    String granularity = 'day',
+  }) {
     return _get(
       '/campaigns/$campaignId/dashboard',
+      query: {'granularity': granularity},
       parser: AggregateDashboard.fromJson,
     );
   }
@@ -1168,9 +1184,11 @@ class HttpCampaignApiClient implements CampaignApiClient {
   Future<AggregateDashboard> getCommunityDashboard({
     required String campaignId,
     required String communityId,
+    String granularity = 'day',
   }) {
     return _get(
       '/campaigns/$campaignId/communities/$communityId/dashboard',
+      query: {'granularity': granularity},
       parser: AggregateDashboard.fromJson,
     );
   }
@@ -1261,6 +1279,33 @@ class HttpCampaignApiClient implements CampaignApiClient {
     try {
       final response = await _http.get<dynamic>(
         '/campaigns/$campaignId/report/export',
+        options: Options(responseType: ResponseType.plain),
+      );
+      return response.data?.toString() ?? '';
+    } on DioException catch (error) {
+      throw _toApiException(error);
+    }
+  }
+
+  @override
+  Future<AggregateReport> getCommunityReport({
+    required String campaignId,
+    required String communityId,
+  }) {
+    return _get(
+      '/campaigns/$campaignId/communities/$communityId/report',
+      parser: AggregateReport.fromJson,
+    );
+  }
+
+  @override
+  Future<String> exportCommunityReportCsv({
+    required String campaignId,
+    required String communityId,
+  }) async {
+    try {
+      final response = await _http.get<dynamic>(
+        '/campaigns/$campaignId/communities/$communityId/report/export',
         options: Options(responseType: ResponseType.plain),
       );
       return response.data?.toString() ?? '';

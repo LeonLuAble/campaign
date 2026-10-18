@@ -26,4 +26,5 @@ export 'src/tokens/typography.dart';
 export 'src/visualization/dashboard_view.dart';
 export 'src/visualization/metric_tile.dart';
 export 'src/visualization/progress_ring.dart';
+export 'src/visualization/time_series_chart.dart';
 export 'src/visualization/tree_visualization.dart';

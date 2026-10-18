@@ -1332,6 +1332,114 @@ class AppLocalizationsEn extends AppLocalizations {
   String get campaignWorkspaceDashboardReports => 'Dashboard & reports';
 
   @override
+  String get campaignWorkspaceDashboard => 'Dashboard';
+
+  @override
+  String get campaignWorkspaceReports => 'Reports';
+
+  @override
+  String get dashboardGranularityDay => 'Day';
+
+  @override
+  String get dashboardGranularityWeek => 'Week';
+
+  @override
+  String get dashboardMetricParticipants => 'Participants';
+
+  @override
+  String get dashboardMetricParticipationRate => 'Participation rate';
+
+  @override
+  String get dashboardMetricCompleted => 'Total completed';
+
+  @override
+  String get dashboardMetricProgress => 'Progress vs target';
+
+  @override
+  String dashboardParticipationRateValue(String percent) {
+    return '$percent%';
+  }
+
+  @override
+  String get dashboardProgressStatusExceeded => 'Exceeded';
+
+  @override
+  String get dashboardProgressStatusAchieved => 'Achieved';
+
+  @override
+  String get dashboardProgressStatusInProgress => 'In progress';
+
+  @override
+  String get dashboardProgressStatusNotStarted => 'Not started';
+
+  @override
+  String get dashboardChartMode => 'Chart';
+
+  @override
+  String get dashboardTableMode => 'Table';
+
+  @override
+  String get dashboardChartEmpty => 'No time-series data yet.';
+
+  @override
+  String get dashboardCommunityPickerLabel => 'Community';
+
+  @override
+  String get dashboardCommunityWholeCampaign => 'Whole campaign';
+
+  @override
+  String get dashboardIncludeSubCommunities => 'Include sub-communities';
+
+  @override
+  String get dashboardIncludeSubCommunitiesHelp =>
+      'Community metrics always include the selected community and its descendants.';
+
+  @override
+  String dashboardTreeTextAlternative(String name, String percent) {
+    return '$name: $percent% of campaign target';
+  }
+
+  @override
+  String get reportCampaignTitle => 'Campaign aggregate report';
+
+  @override
+  String get reportCampaignDescription =>
+      'Anonymous campaign totals: participants, commitments, and completion by unit. No contact details.';
+
+  @override
+  String get reportCommunityTitle => 'Community aggregate report';
+
+  @override
+  String get reportCommunityDescription =>
+      'Anonymous subtree totals for a community. No contact details or rankings.';
+
+  @override
+  String get reportPickCommunity =>
+      'Choose a community for the community report';
+
+  @override
+  String get reportExportDownloaded => 'CSV download started.';
+
+  @override
+  String get reportNoDateFilter =>
+      'Date-range filters are not available on this report yet.';
+
+  @override
+  String reportGeneratedAt(String when) {
+    return 'Generated $when';
+  }
+
+  @override
+  String reportUnitLine(
+    String unit,
+    String achieved,
+    String target,
+    String percent,
+  ) {
+    return '$unit: $achieved of $target ($percent)';
+  }
+
+  @override
   String get campaignPublishChecklistTitle => 'Ready to publish';
 
   @override

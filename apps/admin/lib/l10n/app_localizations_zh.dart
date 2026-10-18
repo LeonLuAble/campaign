@@ -1292,6 +1292,109 @@ class AppLocalizationsZh extends AppLocalizations {
   String get campaignWorkspaceDashboardReports => '看板与报表';
 
   @override
+  String get campaignWorkspaceDashboard => '看板';
+
+  @override
+  String get campaignWorkspaceReports => '报表';
+
+  @override
+  String get dashboardGranularityDay => '按日';
+
+  @override
+  String get dashboardGranularityWeek => '按周';
+
+  @override
+  String get dashboardMetricParticipants => '参加者';
+
+  @override
+  String get dashboardMetricParticipationRate => '参与率';
+
+  @override
+  String get dashboardMetricCompleted => '已完成总量';
+
+  @override
+  String get dashboardMetricProgress => '相对目标进度';
+
+  @override
+  String dashboardParticipationRateValue(String percent) {
+    return '$percent%';
+  }
+
+  @override
+  String get dashboardProgressStatusExceeded => '已超额';
+
+  @override
+  String get dashboardProgressStatusAchieved => '已达成';
+
+  @override
+  String get dashboardProgressStatusInProgress => '进行中';
+
+  @override
+  String get dashboardProgressStatusNotStarted => '未开始';
+
+  @override
+  String get dashboardChartMode => '图表';
+
+  @override
+  String get dashboardTableMode => '表格';
+
+  @override
+  String get dashboardChartEmpty => '暂无时间序列数据。';
+
+  @override
+  String get dashboardCommunityPickerLabel => '社区';
+
+  @override
+  String get dashboardCommunityWholeCampaign => '整个活动';
+
+  @override
+  String get dashboardIncludeSubCommunities => '包含下级社区';
+
+  @override
+  String get dashboardIncludeSubCommunitiesHelp => '社区指标始终包含所选社区及其下级。';
+
+  @override
+  String dashboardTreeTextAlternative(String name, String percent) {
+    return '$name：活动目标的 $percent%';
+  }
+
+  @override
+  String get reportCampaignTitle => '活动汇总报表';
+
+  @override
+  String get reportCampaignDescription => '匿名活动合计：参加者、承诺与按单位完成情况。不含联系方式。';
+
+  @override
+  String get reportCommunityTitle => '社区汇总报表';
+
+  @override
+  String get reportCommunityDescription => '某社区子树的匿名合计。不含联系方式或排名。';
+
+  @override
+  String get reportPickCommunity => '为社区报表选择社区';
+
+  @override
+  String get reportExportDownloaded => '已开始下载 CSV。';
+
+  @override
+  String get reportNoDateFilter => '此报表暂不支持日期范围筛选。';
+
+  @override
+  String reportGeneratedAt(String when) {
+    return '生成于 $when';
+  }
+
+  @override
+  String reportUnitLine(
+    String unit,
+    String achieved,
+    String target,
+    String percent,
+  ) {
+    return '$unit：$achieved / $target（$percent）';
+  }
+
+  @override
   String get campaignPublishChecklistTitle => '发布检查清单';
 
   @override
@@ -2650,6 +2753,109 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get campaignWorkspaceDashboardReports => '看板与报表';
+
+  @override
+  String get campaignWorkspaceDashboard => '看板';
+
+  @override
+  String get campaignWorkspaceReports => '报表';
+
+  @override
+  String get dashboardGranularityDay => '按日';
+
+  @override
+  String get dashboardGranularityWeek => '按周';
+
+  @override
+  String get dashboardMetricParticipants => '参加者';
+
+  @override
+  String get dashboardMetricParticipationRate => '参与率';
+
+  @override
+  String get dashboardMetricCompleted => '已完成总量';
+
+  @override
+  String get dashboardMetricProgress => '相对目标进度';
+
+  @override
+  String dashboardParticipationRateValue(String percent) {
+    return '$percent%';
+  }
+
+  @override
+  String get dashboardProgressStatusExceeded => '已超额';
+
+  @override
+  String get dashboardProgressStatusAchieved => '已达成';
+
+  @override
+  String get dashboardProgressStatusInProgress => '进行中';
+
+  @override
+  String get dashboardProgressStatusNotStarted => '未开始';
+
+  @override
+  String get dashboardChartMode => '图表';
+
+  @override
+  String get dashboardTableMode => '表格';
+
+  @override
+  String get dashboardChartEmpty => '暂无时间序列数据。';
+
+  @override
+  String get dashboardCommunityPickerLabel => '社区';
+
+  @override
+  String get dashboardCommunityWholeCampaign => '整个活动';
+
+  @override
+  String get dashboardIncludeSubCommunities => '包含下级社区';
+
+  @override
+  String get dashboardIncludeSubCommunitiesHelp => '社区指标始终包含所选社区及其下级。';
+
+  @override
+  String dashboardTreeTextAlternative(String name, String percent) {
+    return '$name：活动目标的 $percent%';
+  }
+
+  @override
+  String get reportCampaignTitle => '活动汇总报表';
+
+  @override
+  String get reportCampaignDescription => '匿名活动合计：参加者、承诺与按单位完成情况。不含联系方式。';
+
+  @override
+  String get reportCommunityTitle => '社区汇总报表';
+
+  @override
+  String get reportCommunityDescription => '某社区子树的匿名合计。不含联系方式或排名。';
+
+  @override
+  String get reportPickCommunity => '为社区报表选择社区';
+
+  @override
+  String get reportExportDownloaded => '已开始下载 CSV。';
+
+  @override
+  String get reportNoDateFilter => '此报表暂不支持日期范围筛选。';
+
+  @override
+  String reportGeneratedAt(String when) {
+    return '生成于 $when';
+  }
+
+  @override
+  String reportUnitLine(
+    String unit,
+    String achieved,
+    String target,
+    String percent,
+  ) {
+    return '$unit：$achieved / $target（$percent）';
+  }
 
   @override
   String get campaignPublishChecklistTitle => '发布检查清单';
