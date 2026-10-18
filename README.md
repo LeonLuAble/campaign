@@ -168,7 +168,19 @@ Sign in with `demo.admin@example.test` / `DemoPassw0rd!`.
 
 ### 6. Run the mobile participant app
 
-iOS Simulator (localhost is the Mac):
+With the API already running (step 4), from the repository root:
+
+```sh
+chmod +x infrastructure/scripts/run-mobile.sh   # once
+./infrastructure/scripts/run-mobile.sh          # first phone/emulator
+./infrastructure/scripts/run-mobile.sh android  # Android emulator
+./infrastructure/scripts/run-mobile.sh ios      # iOS Simulator
+./infrastructure/scripts/run-mobile.sh --list   # show devices
+```
+
+The script runs `flutter pub get` then `flutter run` with the correct `API_BASE_URL` (`localhost` on iOS, `10.0.2.2` on the Android emulator). Leave it running: press `r` for hot reload, `R` for hot restart. Re-run the same script after `pubspec.yaml` or native (Android/iOS) changes for a clean rebuild.
+
+Manual equivalent — iOS Simulator (localhost is the Mac):
 
 ```sh
 cd apps/mobile
