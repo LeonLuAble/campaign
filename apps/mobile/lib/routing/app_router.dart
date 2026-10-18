@@ -3,19 +3,26 @@ import 'package:go_router/go_router.dart';
 import '../auth/activate_page.dart';
 import '../auth/login_page.dart';
 import '../auth/password_reset_page.dart';
+import '../auth/welcome_page.dart';
 import '../campaigns/campaign_detail_page.dart';
-import '../campaigns/campaign_list_page.dart';
+import '../campaigns/campaigns_tab_page.dart';
 import '../campaigns/pledge_page.dart';
 import '../campaigns/progress_page.dart';
 import '../campaigns/record_action_page.dart';
 import '../dashboards/participant_dashboard_page.dart';
+import '../home/home_page.dart';
+import '../me/me_page.dart';
 import '../notifications/notifications_page.dart';
 import '../preferences/preferences_page.dart';
 import '../session/session_controller.dart';
+import '../shell/mobile_shell.dart';
 
-GoRouter createRouter({required SessionController session}) {
+GoRouter createRouter({
+  required SessionController session,
+  String? initialLocation,
+}) {
   return GoRouter(
-    initialLocation: '/',
+    initialLocation: initialLocation ?? '/',
     refreshListenable: session,
     redirect: (context, state) {
       if (!session.ready) {
@@ -23,10 +30,19 @@ GoRouter createRouter({required SessionController session}) {
       }
       final loggedIn = session.isAuthenticated;
       final location = state.matchedLocation;
-      const publicPaths = {'/login', '/activate', '/reset-password'};
+      const publicPaths = {
+        '/welcome',
+        '/login',
+        '/activate',
+        '/reset-password',
+      };
       final isPublic = publicPaths.contains(location);
       if (!loggedIn && !isPublic) {
-        return '/login';
+        // Surface TOKEN_REUSED on the sign-in screen with a clear message.
+        if (session.sessionEndedCode == 'TOKEN_REUSED') {
+          return '/login';
+        }
+        return '/welcome';
       }
       if (loggedIn && isPublic) {
         return '/';
@@ -34,6 +50,11 @@ GoRouter createRouter({required SessionController session}) {
       return null;
     },
     routes: [
+      GoRoute(
+        path: '/welcome',
+        name: 'welcome',
+        builder: (context, state) => const WelcomePage(),
+      ),
       GoRoute(
         path: '/login',
         name: 'login',
@@ -53,45 +74,78 @@ GoRouter createRouter({required SessionController session}) {
           initialToken: state.uri.queryParameters['token'],
         ),
       ),
-      GoRoute(
-        path: '/',
-        name: 'home',
-        builder: (context, state) => const CampaignListPage(),
-      ),
-      GoRoute(
-        path: '/campaigns/:campaignId',
-        name: 'campaign',
-        builder: (context, state) => CampaignDetailPage(
-          campaignId: state.pathParameters['campaignId']!,
-        ),
-      ),
-      GoRoute(
-        path: '/campaigns/:campaignId/pledge',
-        name: 'pledge',
-        builder: (context, state) => PledgePage(
-          campaignId: state.pathParameters['campaignId']!,
-        ),
-      ),
-      GoRoute(
-        path: '/campaigns/:campaignId/record',
-        name: 'record',
-        builder: (context, state) => RecordActionPage(
-          campaignId: state.pathParameters['campaignId']!,
-        ),
-      ),
-      GoRoute(
-        path: '/campaigns/:campaignId/progress',
-        name: 'progress',
-        builder: (context, state) => ProgressPage(
-          campaignId: state.pathParameters['campaignId']!,
-        ),
-      ),
-      GoRoute(
-        path: '/campaigns/:campaignId/dashboard',
-        name: 'dashboard',
-        builder: (context, state) => ParticipantDashboardPage(
-          campaignId: state.pathParameters['campaignId'],
-        ),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return MobileShell(navigationShell: navigationShell);
+        },
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/',
+                name: 'home',
+                builder: (context, state) => const HomePage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/campaigns',
+                name: 'campaigns',
+                builder: (context, state) => const CampaignsTabPage(),
+                routes: [
+                  GoRoute(
+                    path: ':campaignId',
+                    name: 'campaign',
+                    builder: (context, state) => CampaignDetailPage(
+                      campaignId: state.pathParameters['campaignId']!,
+                    ),
+                    routes: [
+                      GoRoute(
+                        path: 'pledge',
+                        name: 'pledge',
+                        builder: (context, state) => PledgePage(
+                          campaignId: state.pathParameters['campaignId']!,
+                        ),
+                      ),
+                      GoRoute(
+                        path: 'record',
+                        name: 'record',
+                        builder: (context, state) => RecordActionPage(
+                          campaignId: state.pathParameters['campaignId']!,
+                        ),
+                      ),
+                      GoRoute(
+                        path: 'progress',
+                        name: 'progress',
+                        builder: (context, state) => ProgressPage(
+                          campaignId: state.pathParameters['campaignId']!,
+                        ),
+                      ),
+                      GoRoute(
+                        path: 'dashboard',
+                        name: 'dashboard',
+                        builder: (context, state) => ParticipantDashboardPage(
+                          campaignId: state.pathParameters['campaignId'],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/me',
+                name: 'me',
+                builder: (context, state) => const MePage(),
+              ),
+            ],
+          ),
+        ],
       ),
       GoRoute(
         path: '/notifications',

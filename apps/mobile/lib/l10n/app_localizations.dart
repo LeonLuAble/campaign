@@ -680,6 +680,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Something went wrong. Try again.'**
   String get errorUnexpected;
+
+  /// No description provided for @errorAccountInactive.
+  ///
+  /// In en, this message translates to:
+  /// **'This account is inactive. Contact your organiser.'**
+  String get errorAccountInactive;
+
+  /// No description provided for @errorNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Network error. Check your connection and try again.'**
+  String get errorNetwork;
+
+  /// No description provided for @navHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get navHome;
+
+  /// No description provided for @navCampaigns.
+  ///
+  /// In en, this message translates to:
+  /// **'Campaigns'**
+  String get navCampaigns;
+
+  /// No description provided for @navMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Me'**
+  String get navMe;
+
+  /// No description provided for @welcomeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Join community campaigns and track your progress together.'**
+  String get welcomeSubtitle;
+
+  /// No description provided for @welcomeSpiritTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How it works'**
+  String get welcomeSpiritTitle;
+
+  /// No description provided for @welcomeSpiritBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your organiser invites you. Activate your account, sign in, then join campaigns and record daily actions.'**
+  String get welcomeSpiritBody;
+
+  /// No description provided for @welcomeContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue to sign in'**
+  String get welcomeContinue;
+
+  /// No description provided for @welcomeBackLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to welcome'**
+  String get welcomeBackLink;
+
+  /// No description provided for @activateIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste the invite token or the full activation link from your email or organiser.'**
+  String get activateIntro;
+
+  /// No description provided for @activationTokenHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Token or https://…/activate?token=…'**
+  String get activationTokenHint;
+
+  /// No description provided for @activateSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Account activated. Sign in with your new password.'**
+  String get activateSuccess;
+
+  /// No description provided for @resendActivationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Need a new link? Enter your email or mobile and resend.'**
+  String get resendActivationHint;
+
+  /// No description provided for @backToSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to sign in'**
+  String get backToSignIn;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @noOrganisationLinked.
+  ///
+  /// In en, this message translates to:
+  /// **'No organisation is linked to this account yet.'**
+  String get noOrganisationLinked;
+
+  /// No description provided for @homeCommunityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Community: {name}'**
+  String homeCommunityLabel(String name);
+
+  /// No description provided for @switchOrganisation.
+  ///
+  /// In en, this message translates to:
+  /// **'Organisation'**
+  String get switchOrganisation;
+
+  /// No description provided for @switchCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get switchCommunity;
+
+  /// No description provided for @homeCampaignsHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Your campaigns'**
+  String get homeCampaignsHeading;
+
+  /// No description provided for @homeCanJoinLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Available to join'**
+  String get homeCanJoinLabel;
+
+  /// No description provided for @homeProgressUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No progress yet'**
+  String get homeProgressUnavailable;
+
+  /// No description provided for @meAnonymousName.
+  ///
+  /// In en, this message translates to:
+  /// **'Member'**
+  String get meAnonymousName;
+
+  /// No description provided for @dashboardProgressStatusExceeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Exceeded'**
+  String get dashboardProgressStatusExceeded;
+
+  /// No description provided for @dashboardProgressStatusAchieved.
+  ///
+  /// In en, this message translates to:
+  /// **'Achieved'**
+  String get dashboardProgressStatusAchieved;
+
+  /// No description provided for @dashboardProgressStatusNotStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not started'**
+  String get dashboardProgressStatusNotStarted;
+
+  /// No description provided for @dashboardProgressStatusInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get dashboardProgressStatusInProgress;
 }
 
 class _AppLocalizationsDelegate

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ui_kit/ui_kit.dart';
 
 import '../l10n/app_localizations.dart';
 import '../session/api_scope.dart';
 import '../util/format.dart';
+import 'activate_page.dart';
 
 class PasswordResetPage extends StatefulWidget {
   const PasswordResetPage({this.initialToken, super.key});
@@ -58,7 +60,8 @@ class _PasswordResetPageState extends State<PasswordResetPage> {
 
   Future<void> _confirm() async {
     final l10n = AppLocalizations.of(context);
-    if (_token.text.trim().isEmpty) {
+    final token = extractActivationToken(_token.text);
+    if (token == null || token.isEmpty) {
       setState(() => _message = l10n.tokenRequired);
       return;
     }
@@ -69,7 +72,7 @@ class _PasswordResetPageState extends State<PasswordResetPage> {
     setState(() => _busy = true);
     try {
       await ApiScope.of(context).client.confirmPasswordReset(
-        token: _token.text.trim(),
+        token: token,
         password: _password.text,
       );
       if (mounted) {
@@ -87,40 +90,65 @@ class _PasswordResetPageState extends State<PasswordResetPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final tokens = AppTokens.of(context);
     return Scaffold(
       appBar: AppBar(title: Text(l10n.resetPasswordTitle)),
       body: ListView(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(tokens.spaceXl),
         children: [
           TextField(
             controller: _identifier,
-            decoration: InputDecoration(labelText: l10n.identifierLabel),
+            decoration: InputDecoration(
+              labelText: l10n.identifierLabel,
+              border: const OutlineInputBorder(),
+            ),
           ),
-          const SizedBox(height: 12),
-          OutlinedButton(
-            onPressed: _busy ? null : _request,
-            child: Text(l10n.requestReset),
+          SizedBox(height: tokens.spaceMd),
+          SizedBox(
+            height: 48,
+            child: OutlinedButton(
+              onPressed: _busy ? null : _request,
+              child: Text(l10n.requestReset),
+            ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: tokens.spaceXl),
           TextField(
             controller: _token,
-            decoration: InputDecoration(labelText: l10n.resetTokenLabel),
+            decoration: InputDecoration(
+              labelText: l10n.resetTokenLabel,
+              hintText: l10n.activationTokenHint,
+              border: const OutlineInputBorder(),
+            ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: tokens.spaceMd),
           TextField(
             controller: _password,
             obscureText: true,
-            decoration: InputDecoration(labelText: l10n.newPasswordLabel),
+            decoration: InputDecoration(
+              labelText: l10n.newPasswordLabel,
+              border: const OutlineInputBorder(),
+            ),
           ),
-          const SizedBox(height: 12),
-          FilledButton(
-            onPressed: _busy ? null : _confirm,
-            child: Text(l10n.confirmReset),
+          SizedBox(height: tokens.spaceMd),
+          SizedBox(
+            height: 48,
+            child: FilledButton(
+              onPressed: _busy ? null : _confirm,
+              child: Text(l10n.confirmReset),
+            ),
           ),
           if (_message != null) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: tokens.spaceMd),
             Text(_message!),
           ],
+          SizedBox(height: tokens.spaceLg),
+          SizedBox(
+            height: 48,
+            child: TextButton(
+              onPressed: () => context.go('/login'),
+              child: Text(l10n.backToSignIn),
+            ),
+          ),
         ],
       ),
     );

@@ -313,6 +313,92 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get errorUnexpected => '出现问题，请重试。';
+
+  @override
+  String get errorAccountInactive => '此账号已停用，请联系你的组织方。';
+
+  @override
+  String get errorNetwork => '网络错误，请检查连接后重试。';
+
+  @override
+  String get navHome => '首页';
+
+  @override
+  String get navCampaigns => '活动';
+
+  @override
+  String get navMe => '我的';
+
+  @override
+  String get welcomeSubtitle => '加入社区活动，一起记录进度。';
+
+  @override
+  String get welcomeSpiritTitle => '如何使用';
+
+  @override
+  String get welcomeSpiritBody => '由组织方邀请你加入。激活账号并登录后，即可参加活动并记录每日行动。';
+
+  @override
+  String get welcomeContinue => '继续登录';
+
+  @override
+  String get welcomeBackLink => '返回欢迎页';
+
+  @override
+  String get activateIntro => '粘贴邀请令牌，或邮件/组织方提供的完整激活链接。';
+
+  @override
+  String get activationTokenHint => '令牌或 https://…/activate?token=…';
+
+  @override
+  String get activateSuccess => '账号已激活，请使用新密码登录。';
+
+  @override
+  String get resendActivationHint => '需要新链接？输入邮箱或手机号后重发。';
+
+  @override
+  String get backToSignIn => '返回登录';
+
+  @override
+  String get retry => '重试';
+
+  @override
+  String get noOrganisationLinked => '此账号尚未关联任何组织。';
+
+  @override
+  String homeCommunityLabel(String name) {
+    return '社区：$name';
+  }
+
+  @override
+  String get switchOrganisation => '组织';
+
+  @override
+  String get switchCommunity => '社区';
+
+  @override
+  String get homeCampaignsHeading => '你的活动';
+
+  @override
+  String get homeCanJoinLabel => '可参加';
+
+  @override
+  String get homeProgressUnavailable => '暂无进度';
+
+  @override
+  String get meAnonymousName => '成员';
+
+  @override
+  String get dashboardProgressStatusExceeded => '超额完成';
+
+  @override
+  String get dashboardProgressStatusAchieved => '已达成';
+
+  @override
+  String get dashboardProgressStatusNotStarted => '未开始';
+
+  @override
+  String get dashboardProgressStatusInProgress => '进行中';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -623,4 +709,90 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get errorUnexpected => '出现问题，请重试。';
+
+  @override
+  String get errorAccountInactive => '此账号已停用，请联系你的组织方。';
+
+  @override
+  String get errorNetwork => '网络错误，请检查连接后重试。';
+
+  @override
+  String get navHome => '首页';
+
+  @override
+  String get navCampaigns => '活动';
+
+  @override
+  String get navMe => '我的';
+
+  @override
+  String get welcomeSubtitle => '加入社区活动，一起记录进度。';
+
+  @override
+  String get welcomeSpiritTitle => '如何使用';
+
+  @override
+  String get welcomeSpiritBody => '由组织方邀请你加入。激活账号并登录后，即可参加活动并记录每日行动。';
+
+  @override
+  String get welcomeContinue => '继续登录';
+
+  @override
+  String get welcomeBackLink => '返回欢迎页';
+
+  @override
+  String get activateIntro => '粘贴邀请令牌，或邮件/组织方提供的完整激活链接。';
+
+  @override
+  String get activationTokenHint => '令牌或 https://…/activate?token=…';
+
+  @override
+  String get activateSuccess => '账号已激活，请使用新密码登录。';
+
+  @override
+  String get resendActivationHint => '需要新链接？输入邮箱或手机号后重发。';
+
+  @override
+  String get backToSignIn => '返回登录';
+
+  @override
+  String get retry => '重试';
+
+  @override
+  String get noOrganisationLinked => '此账号尚未关联任何组织。';
+
+  @override
+  String homeCommunityLabel(String name) {
+    return '社区：$name';
+  }
+
+  @override
+  String get switchOrganisation => '组织';
+
+  @override
+  String get switchCommunity => '社区';
+
+  @override
+  String get homeCampaignsHeading => '你的活动';
+
+  @override
+  String get homeCanJoinLabel => '可参加';
+
+  @override
+  String get homeProgressUnavailable => '暂无进度';
+
+  @override
+  String get meAnonymousName => '成员';
+
+  @override
+  String get dashboardProgressStatusExceeded => '超额完成';
+
+  @override
+  String get dashboardProgressStatusAchieved => '已达成';
+
+  @override
+  String get dashboardProgressStatusNotStarted => '未开始';
+
+  @override
+  String get dashboardProgressStatusInProgress => '进行中';
 }

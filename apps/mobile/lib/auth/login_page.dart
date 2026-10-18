@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ui_kit/ui_kit.dart';
 
 import '../config/app_config_scope.dart';
 import '../l10n/app_localizations.dart';
@@ -28,6 +29,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _submit() async {
     final l10n = AppLocalizations.of(context);
+    final session = ApiScope.of(context).session;
     final identifier = _identifier.text.trim();
     final password = _password.text;
     if (!looksLikeIdentifier(identifier)) {
@@ -42,8 +44,9 @@ class _LoginPageState extends State<LoginPage> {
       _busy = true;
       _error = null;
     });
+    session.clearSessionEndedCode();
     try {
-      await ApiScope.of(context).session.login(
+      await session.login(
         identifier: identifier,
         password: password,
       );
@@ -59,9 +62,7 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _social(String provider) async {
     final l10n = AppLocalizations.of(context);
     setState(() {
-      _busy = true;
       _error = l10n.errorSocialTokenInvalid;
-      _busy = false;
     });
   }
 
@@ -69,53 +70,94 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final config = AppConfigScope.of(context);
+    final tokens = AppTokens.of(context);
+    final session = ApiScope.of(context).session;
+    final displayError = _error ??
+        (session.sessionEndedCode == 'TOKEN_REUSED'
+            ? l10n.errorTokenReused
+            : null);
+
     return Scaffold(
       appBar: AppBar(title: Text(l10n.loginTitle)),
       body: ListView(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(tokens.spaceXl),
         children: [
           TextField(
             controller: _identifier,
             keyboardType: TextInputType.emailAddress,
-            decoration: InputDecoration(labelText: l10n.identifierLabel),
+            textInputAction: TextInputAction.next,
+            decoration: InputDecoration(
+              labelText: l10n.identifierLabel,
+              border: const OutlineInputBorder(),
+            ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: tokens.spaceMd),
           TextField(
             controller: _password,
             obscureText: true,
-            decoration: InputDecoration(labelText: l10n.passwordLabel),
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => _busy ? null : _submit(),
+            decoration: InputDecoration(
+              labelText: l10n.passwordLabel,
+              border: const OutlineInputBorder(),
+            ),
           ),
-          if (_error != null) ...[
-            const SizedBox(height: 12),
-            Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+          if (displayError != null) ...[
+            SizedBox(height: tokens.spaceMd),
+            Text(
+              displayError,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
           ],
-          const SizedBox(height: 16),
-          FilledButton(
-            onPressed: _busy ? null : _submit,
-            child: Text(l10n.loginButton),
+          SizedBox(height: tokens.spaceLg),
+          SizedBox(
+            height: 48,
+            child: FilledButton(
+              onPressed: _busy ? null : _submit,
+              child: Text(l10n.loginButton),
+            ),
           ),
           if (config.googleSignInEnabled) ...[
-            const SizedBox(height: 12),
-            OutlinedButton(
-              onPressed: _busy ? null : () => _social('google'),
-              child: Text(l10n.googleSignIn),
+            SizedBox(height: tokens.spaceMd),
+            SizedBox(
+              height: 48,
+              child: OutlinedButton(
+                onPressed: _busy ? null : () => _social('google'),
+                child: Text(l10n.googleSignIn),
+              ),
             ),
           ],
           if (config.appleSignInEnabled) ...[
-            const SizedBox(height: 12),
-            OutlinedButton(
-              onPressed: _busy ? null : () => _social('apple'),
-              child: Text(l10n.appleSignIn),
+            SizedBox(height: tokens.spaceMd),
+            SizedBox(
+              height: 48,
+              child: OutlinedButton(
+                onPressed: _busy ? null : () => _social('apple'),
+                child: Text(l10n.appleSignIn),
+              ),
             ),
           ],
-          const SizedBox(height: 16),
-          TextButton(
-            onPressed: () => context.go('/activate'),
-            child: Text(l10n.activateLink),
+          SizedBox(height: tokens.spaceLg),
+          SizedBox(
+            height: 48,
+            child: TextButton(
+              onPressed: () => context.go('/activate'),
+              child: Text(l10n.activateLink),
+            ),
           ),
-          TextButton(
-            onPressed: () => context.go('/reset-password'),
-            child: Text(l10n.forgotPassword),
+          SizedBox(
+            height: 48,
+            child: TextButton(
+              onPressed: () => context.go('/reset-password'),
+              child: Text(l10n.forgotPassword),
+            ),
+          ),
+          SizedBox(
+            height: 48,
+            child: TextButton(
+              onPressed: () => context.go('/welcome'),
+              child: Text(l10n.welcomeBackLink),
+            ),
           ),
         ],
       ),

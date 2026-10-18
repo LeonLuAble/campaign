@@ -21,6 +21,7 @@ void main() {
         locale: AppLocales.en,
         apiClient: api,
         tokenStore: MemoryTokenStore(),
+        initialLocation: '/login',
       ),
     );
     await tester.pumpAndSettle();
@@ -70,6 +71,7 @@ void main() {
         locale: AppLocales.en,
         apiClient: api,
         tokenStore: MemoryTokenStore(),
+        initialLocation: '/login',
       ),
     );
     await tester.pumpAndSettle();

@@ -320,4 +320,98 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorUnexpected => 'Something went wrong. Try again.';
+
+  @override
+  String get errorAccountInactive =>
+      'This account is inactive. Contact your organiser.';
+
+  @override
+  String get errorNetwork =>
+      'Network error. Check your connection and try again.';
+
+  @override
+  String get navHome => 'Home';
+
+  @override
+  String get navCampaigns => 'Campaigns';
+
+  @override
+  String get navMe => 'Me';
+
+  @override
+  String get welcomeSubtitle =>
+      'Join community campaigns and track your progress together.';
+
+  @override
+  String get welcomeSpiritTitle => 'How it works';
+
+  @override
+  String get welcomeSpiritBody =>
+      'Your organiser invites you. Activate your account, sign in, then join campaigns and record daily actions.';
+
+  @override
+  String get welcomeContinue => 'Continue to sign in';
+
+  @override
+  String get welcomeBackLink => 'Back to welcome';
+
+  @override
+  String get activateIntro =>
+      'Paste the invite token or the full activation link from your email or organiser.';
+
+  @override
+  String get activationTokenHint => 'Token or https://…/activate?token=…';
+
+  @override
+  String get activateSuccess =>
+      'Account activated. Sign in with your new password.';
+
+  @override
+  String get resendActivationHint =>
+      'Need a new link? Enter your email or mobile and resend.';
+
+  @override
+  String get backToSignIn => 'Back to sign in';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get noOrganisationLinked =>
+      'No organisation is linked to this account yet.';
+
+  @override
+  String homeCommunityLabel(String name) {
+    return 'Community: $name';
+  }
+
+  @override
+  String get switchOrganisation => 'Organisation';
+
+  @override
+  String get switchCommunity => 'Community';
+
+  @override
+  String get homeCampaignsHeading => 'Your campaigns';
+
+  @override
+  String get homeCanJoinLabel => 'Available to join';
+
+  @override
+  String get homeProgressUnavailable => 'No progress yet';
+
+  @override
+  String get meAnonymousName => 'Member';
+
+  @override
+  String get dashboardProgressStatusExceeded => 'Exceeded';
+
+  @override
+  String get dashboardProgressStatusAchieved => 'Achieved';
+
+  @override
+  String get dashboardProgressStatusNotStarted => 'Not started';
+
+  @override
+  String get dashboardProgressStatusInProgress => 'In progress';
 }

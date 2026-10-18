@@ -12,39 +12,57 @@ bool looksLikeIdentifier(String value) {
 }
 
 String localizeApiError(AppLocalizations l10n, Object error) {
-  if (error is! ApiException) {
-    return l10n.errorUnexpected;
+  if (error is ApiException) {
+    switch (apiErrorMessageKey(error.code)) {
+      case 'errorInvalidCredentials':
+        return l10n.errorInvalidCredentials;
+      case 'errorTokenInvalid':
+        return l10n.errorTokenInvalid;
+      case 'errorTokenReused':
+        return l10n.errorTokenReused;
+      case 'errorTokenExpired':
+        return l10n.errorTokenExpired;
+      case 'errorIdentityExists':
+        return l10n.errorIdentityExists;
+      case 'errorWeakPassword':
+        return l10n.errorWeakPassword;
+      case 'errorSocialTokenInvalid':
+        return l10n.errorSocialTokenInvalid;
+      case 'errorUnauthorized':
+        return l10n.errorUnauthorized;
+      case 'errorForbidden':
+        return l10n.errorForbidden;
+      case 'errorNotFound':
+        return l10n.errorNotFound;
+      case 'errorConflict':
+        return l10n.errorConflict;
+      case 'errorRateLimited':
+        return l10n.errorRateLimited;
+      case 'errorValidation':
+        return l10n.errorValidation;
+      default:
+        if (error.code == 'ACCOUNT_INACTIVE' ||
+            error.code == 'USER_INACTIVE') {
+          return l10n.errorAccountInactive;
+        }
+        return error.message.isEmpty ? l10n.errorUnexpected : error.message;
+    }
   }
-  switch (apiErrorMessageKey(error.code)) {
-    case 'errorInvalidCredentials':
-      return l10n.errorInvalidCredentials;
-    case 'errorTokenInvalid':
-      return l10n.errorTokenInvalid;
-    case 'errorTokenReused':
-      return l10n.errorTokenReused;
-    case 'errorTokenExpired':
-      return l10n.errorTokenExpired;
-    case 'errorIdentityExists':
-      return l10n.errorIdentityExists;
-    case 'errorWeakPassword':
-      return l10n.errorWeakPassword;
-    case 'errorSocialTokenInvalid':
-      return l10n.errorSocialTokenInvalid;
-    case 'errorUnauthorized':
-      return l10n.errorUnauthorized;
-    case 'errorForbidden':
-      return l10n.errorForbidden;
-    case 'errorNotFound':
-      return l10n.errorNotFound;
-    case 'errorConflict':
-      return l10n.errorConflict;
-    case 'errorRateLimited':
-      return l10n.errorRateLimited;
-    case 'errorValidation':
-      return l10n.errorValidation;
-    default:
-      return error.message.isEmpty ? l10n.errorUnexpected : error.message;
+
+  if (_looksLikeNetworkError(error)) {
+    return l10n.errorNetwork;
   }
+  return l10n.errorUnexpected;
+}
+
+bool _looksLikeNetworkError(Object error) {
+  final text = error.toString().toLowerCase();
+  return text.contains('socketexception') ||
+      text.contains('network') ||
+      text.contains('connection refused') ||
+      text.contains('failed host lookup') ||
+      text.contains('timed out') ||
+      text.contains('clientexception');
 }
 
 String formatNumber(num value) {

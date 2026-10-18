@@ -33,7 +33,8 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Campaigns'), findsOneWidget);
+    expect(find.text('Campaigns'), findsWidgets);
+    expect(find.text('Home'), findsWidgets);
     expect(store.accessToken, 'access');
 
     final secondApi = FakeCampaignApiClient(tokenStore: store);
@@ -50,7 +51,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Campaigns'), findsOneWidget);
+    expect(find.text('Campaigns'), findsWidgets);
     expect(store.accessToken, 'access');
   });
 
@@ -75,7 +76,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Campaigns'), findsOneWidget);
+    expect(find.text('Campaigns'), findsWidgets);
 
     api.tokenReused = true;
     await session.restore();
@@ -85,5 +86,9 @@ void main() {
     expect(store.refreshToken, isNull);
     expect(session.isAuthenticated, isFalse);
     expect(find.text('Sign in'), findsWidgets);
+    expect(
+      find.text('Your session was reused. Please sign in again.'),
+      findsOneWidget,
+    );
   });
 }

@@ -19,6 +19,7 @@ class CampaignApp extends StatefulWidget {
     this.apiClient,
     this.tokenStore,
     this.session,
+    this.initialLocation,
     super.key,
   });
 
@@ -27,6 +28,9 @@ class CampaignApp extends StatefulWidget {
   final CampaignApiClient? apiClient;
   final TokenStore? tokenStore;
   final SessionController? session;
+
+  /// Override for widget tests (e.g. skip welcome and open `/login`).
+  final String? initialLocation;
 
   @override
   State<CampaignApp> createState() => _CampaignAppState();
@@ -48,21 +52,26 @@ class _CampaignAppState extends State<CampaignApp> {
         HttpCampaignApiClient(
           baseUrl: widget.config.apiBaseUrl,
           tokenStore: store,
-          localeProvider: () => AppLocales.toApi(_override ?? widget.locale ?? AppLocales.en),
+          localeProvider: () => AppLocales.toApi(
+            _override ?? widget.locale ?? AppLocales.zhHans,
+          ),
           onSessionExpired: () {
-            _session.expireLocalSession();
+            _session.expireLocalSession(code: 'TOKEN_REUSED');
           },
         );
     final client = _client;
     if (client is FakeCampaignApiClient) {
       client.tokenStore ??= store;
       client.onSessionExpired ??= () {
-        _session.expireLocalSession();
+        _session.expireLocalSession(code: 'TOKEN_REUSED');
       };
     }
     _session = widget.session ?? SessionController(api: _client);
     _ownsSession = widget.session == null;
-    _router = createRouter(session: _session);
+    _router = createRouter(
+      session: _session,
+      initialLocation: widget.initialLocation,
+    );
     _session.restore();
   }
 
@@ -85,7 +94,7 @@ class _CampaignAppState extends State<CampaignApp> {
 
   @override
   Widget build(BuildContext context) {
-    final locale = _override ?? widget.locale ?? AppLocales.en;
+    final locale = _override ?? widget.locale ?? AppLocales.zhHans;
     return AppConfigScope(
       config: widget.config,
       child: ApiScope(

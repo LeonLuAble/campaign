@@ -17,6 +17,7 @@ void main() {
         locale: AppLocales.en,
         apiClient: FakeCampaignApiClient(),
         tokenStore: MemoryTokenStore(),
+        initialLocation: '/login',
       ),
     );
     await tester.pumpAndSettle();
@@ -34,6 +35,7 @@ void main() {
         locale: AppLocales.zhHans,
         apiClient: FakeCampaignApiClient(),
         tokenStore: MemoryTokenStore(),
+        initialLocation: '/login',
       ),
     );
     await tester.pumpAndSettle();
@@ -56,6 +58,7 @@ void main() {
         locale: AppLocales.en,
         apiClient: FakeCampaignApiClient(),
         tokenStore: MemoryTokenStore(),
+        initialLocation: '/login',
       ),
     );
     await tester.pumpAndSettle();

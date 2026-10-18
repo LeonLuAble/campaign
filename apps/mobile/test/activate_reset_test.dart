@@ -20,6 +20,7 @@ void main() {
         locale: AppLocales.en,
         apiClient: FakeCampaignApiClient(),
         tokenStore: MemoryTokenStore(),
+        initialLocation: '/login',
       ),
     );
     await tester.pumpAndSettle();
