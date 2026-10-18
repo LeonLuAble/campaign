@@ -35,6 +35,10 @@ String localizeApiError(AppLocalizations l10n, Object error) {
       case 'errorNotFound':
         return l10n.errorNotFound;
       case 'errorConflict':
+        if (error.message.toLowerCase().contains('already recorded') ||
+            error.message.toLowerCase().contains('already')) {
+          return l10n.errorAlreadyRecorded;
+        }
         return l10n.errorConflict;
       case 'errorRateLimited':
         return l10n.errorRateLimited;

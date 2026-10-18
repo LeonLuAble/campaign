@@ -233,6 +233,17 @@ class _ParticipationPageState extends State<ParticipationPage> {
                             width: double.infinity,
                             child: OutlinedButton(
                               onPressed: () => context.push(
+                                '/campaigns/${widget.campaignId}/progress',
+                              ),
+                              child: Text(l10n.openProgress),
+                            ),
+                          ),
+                          SizedBox(height: tokens.spaceMd),
+                          SizedBox(
+                            height: 48,
+                            width: double.infinity,
+                            child: OutlinedButton(
+                              onPressed: () => context.push(
                                 '/campaigns/${widget.campaignId}/join?change=1',
                               ),
                               child: Text(l10n.changePledgeTitle),

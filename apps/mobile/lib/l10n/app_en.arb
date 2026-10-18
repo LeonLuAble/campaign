@@ -219,5 +219,49 @@
   "sectionPast": "Past",
   "emptyJoinedCampaigns": "You have not joined a campaign yet.",
   "emptyOpenCampaigns": "No campaigns are open to join right now.",
-  "emptyPastCampaigns": "No past campaigns yet."
+  "emptyPastCampaigns": "No past campaigns yet.",
+  "errorAlreadyRecorded": "Already recorded for this day.",
+  "checkInDidItToday": "I did it today",
+  "checkInSaveMeals": "Save meals",
+  "checkInSaving": "Saving…",
+  "checkInUndo": "Undo today's record",
+  "checkInPickDay": "Choose a day",
+  "checkInOptionalNote": "Note (optional)",
+  "checkInNoteLabel": "Note: {note}",
+  "@checkInNoteLabel": {
+    "placeholders": { "note": { "type": "String" } }
+  },
+  "checkInStatusDone": "Recorded",
+  "checkInStatusPending": "Pending review",
+  "checkInStatusRejected": "Not counted",
+  "checkInStatusNotYet": "Not yet recorded",
+  "checkInStatusNotApplicable": "Not available",
+  "checkInRejectedReason": "Reason: {reason}",
+  "@checkInRejectedReason": {
+    "placeholders": { "reason": { "type": "String" } }
+  },
+  "checkInFutureDisabled": "Future days cannot be recorded.",
+  "checkInNoDefinition": "No action type is configured for this campaign yet.",
+  "checkInMealsPrompt": "How many vegetarian meals?",
+  "checkInPledgeSummary": "Pledge: {choice} · {target} {unit}",
+  "@checkInPledgeSummary": {
+    "placeholders": {
+      "choice": { "type": "String" },
+      "target": { "type": "String" },
+      "unit": { "type": "String" }
+    }
+  },
+  "checkInHistoryHeading": "Check-in history",
+  "checkInHistoryEmpty": "No check-ins yet. Record your first day when you are ready.",
+  "checkInQuantityLabel": "Quantity: {quantity}",
+  "@checkInQuantityLabel": {
+    "placeholders": { "quantity": { "type": "String" } }
+  },
+  "myImpactHeading": "My impact",
+  "todayCardHeading": "Today",
+  "todayRecordEarlier": "Record an earlier day",
+  "todayStartsOn": "Starts on {date}",
+  "@todayStartsOn": {
+    "placeholders": { "date": { "type": "String" } }
+  }
 }

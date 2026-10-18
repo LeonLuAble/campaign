@@ -286,6 +286,13 @@ class _HomePageState extends State<HomePage> {
         ],
         SizedBox(height: tokens.spaceLg),
         Text(
+          l10n.todayCardHeading,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        SizedBox(height: tokens.spaceSm),
+        ..._todaySection(l10n, tokens),
+        SizedBox(height: tokens.spaceLg),
+        Text(
           l10n.homeCampaignsHeading,
           style: Theme.of(context).textTheme.titleMedium,
         ),
@@ -307,6 +314,82 @@ class _HomePageState extends State<HomePage> {
           ],
       ],
     );
+  }
+
+  List<Widget> _todaySection(AppLocalizations l10n, AppTokens tokens) {
+    final todayRows = _rows
+        .where((row) => row.enrolled && row.campaign.status == 'started')
+        .toList();
+    final upcoming = _rows
+        .where((row) => row.enrolled && row.campaign.status == 'published')
+        .toList();
+    if (todayRows.isEmpty && upcoming.isEmpty) {
+      return [EmptyState(message: l10n.emptyJoinedCampaigns)];
+    }
+    final widgets = <Widget>[];
+    for (final row in todayRows) {
+      widgets.add(
+        Card(
+          child: Padding(
+            padding: EdgeInsets.all(tokens.spaceLg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  row.campaign.name,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                SizedBox(height: tokens.spaceSm),
+                if (row.progress != null)
+                  Text(_progressLabel(l10n, row.progress)),
+                SizedBox(height: tokens.spaceMd),
+                SizedBox(
+                  height: 48,
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: () => context.push(
+                      '/campaigns/${row.campaign.id}/check-in',
+                    ),
+                    child: Text(l10n.checkInDidItToday),
+                  ),
+                ),
+                SizedBox(height: tokens.spaceSm),
+                SizedBox(
+                  height: 48,
+                  width: double.infinity,
+                  child: TextButton(
+                    onPressed: () => context.push(
+                      '/campaigns/${row.campaign.id}/check-in',
+                    ),
+                    child: Text(l10n.todayRecordEarlier),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      widgets.add(SizedBox(height: tokens.spaceMd));
+    }
+    for (final row in upcoming) {
+      widgets.add(
+        Card(
+          child: ListTile(
+            contentPadding: EdgeInsets.all(tokens.spaceMd),
+            title: Text(row.campaign.name),
+            subtitle: Text(
+              l10n.todayStartsOn(row.campaign.startsOn ?? '—'),
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () =>
+                context.push('/campaigns/${row.campaign.id}/participation'),
+            minVerticalPadding: 16,
+          ),
+        ),
+      );
+      widgets.add(SizedBox(height: tokens.spaceMd));
+    }
+    return widgets;
   }
 }
 

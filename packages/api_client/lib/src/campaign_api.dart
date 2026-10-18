@@ -214,6 +214,7 @@ abstract class CampaignApiClient {
     String? occurredOn,
     num? quantity,
     String? idempotencyKey,
+    Map<String, dynamic>? payload,
   });
   Future<RecordedAction> cancelAction(String actionId);
   Future<Submission> rejectSubmission(String submissionId, {String? note});
@@ -1124,6 +1125,7 @@ class HttpCampaignApiClient implements CampaignApiClient {
     String? occurredOn,
     num? quantity,
     String? idempotencyKey,
+    Map<String, dynamic>? payload,
   }) {
     return _post(
       '/actions',
@@ -1133,6 +1135,7 @@ class HttpCampaignApiClient implements CampaignApiClient {
         if (occurredOn != null) 'occurredOn': occurredOn,
         if (quantity != null) 'quantity': quantity,
         if (idempotencyKey != null) 'idempotencyKey': idempotencyKey,
+        if (payload != null) 'payload': payload,
       },
       parser: RecordedAction.fromJson,
     );

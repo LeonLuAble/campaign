@@ -1052,6 +1052,8 @@ class RecordedAction {
     required this.quantity,
     required this.status,
     this.submission,
+    this.payload = const {},
+    this.idempotencyKey,
   });
 
   final String id;
@@ -1063,8 +1065,12 @@ class RecordedAction {
   final num quantity;
   final String status;
   final Submission? submission;
+  final Map<String, dynamic> payload;
+  final String? idempotencyKey;
 
   bool get isCancelled => status == 'cancelled';
+
+  String? get note => payload['note']?.toString();
 
   factory RecordedAction.fromJson(Map<String, dynamic> json) {
     final submissionJson = json['submission'];
@@ -1080,6 +1086,8 @@ class RecordedAction {
       submission: submissionJson == null
           ? null
           : Submission.fromJson(_map(submissionJson)),
+      payload: _map(json['payload']),
+      idempotencyKey: _string(json['idempotencyKey']),
     );
   }
 }

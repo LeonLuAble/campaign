@@ -6,11 +6,10 @@ import '../auth/password_reset_page.dart';
 import '../auth/welcome_page.dart';
 import '../campaigns/campaign_detail_page.dart';
 import '../campaigns/campaigns_tab_page.dart';
-import '../campaigns/check_in_placeholder_page.dart';
+import '../campaigns/check_in_page.dart';
 import '../campaigns/join_flow_page.dart';
 import '../campaigns/participation_page.dart';
 import '../campaigns/progress_page.dart';
-import '../campaigns/record_action_page.dart';
 import '../dashboards/participant_dashboard_page.dart';
 import '../home/home_page.dart';
 import '../me/me_page.dart';
@@ -131,14 +130,14 @@ GoRouter createRouter({
                       GoRoute(
                         path: 'check-in',
                         name: 'checkIn',
-                        builder: (context, state) => CheckInPlaceholderPage(
+                        builder: (context, state) => CheckInPage(
                           campaignId: state.pathParameters['campaignId']!,
                         ),
                       ),
                       GoRoute(
                         path: 'record',
                         name: 'record',
-                        builder: (context, state) => RecordActionPage(
+                        builder: (context, state) => CheckInPage(
                           campaignId: state.pathParameters['campaignId']!,
                         ),
                       ),

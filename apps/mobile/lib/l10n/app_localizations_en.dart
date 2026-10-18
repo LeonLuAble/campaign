@@ -546,4 +546,91 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get emptyPastCampaigns => 'No past campaigns yet.';
+
+  @override
+  String get errorAlreadyRecorded => 'Already recorded for this day.';
+
+  @override
+  String get checkInDidItToday => 'I did it today';
+
+  @override
+  String get checkInSaveMeals => 'Save meals';
+
+  @override
+  String get checkInSaving => 'Saving…';
+
+  @override
+  String get checkInUndo => 'Undo today\'s record';
+
+  @override
+  String get checkInPickDay => 'Choose a day';
+
+  @override
+  String get checkInOptionalNote => 'Note (optional)';
+
+  @override
+  String checkInNoteLabel(String note) {
+    return 'Note: $note';
+  }
+
+  @override
+  String get checkInStatusDone => 'Recorded';
+
+  @override
+  String get checkInStatusPending => 'Pending review';
+
+  @override
+  String get checkInStatusRejected => 'Not counted';
+
+  @override
+  String get checkInStatusNotYet => 'Not yet recorded';
+
+  @override
+  String get checkInStatusNotApplicable => 'Not available';
+
+  @override
+  String checkInRejectedReason(String reason) {
+    return 'Reason: $reason';
+  }
+
+  @override
+  String get checkInFutureDisabled => 'Future days cannot be recorded.';
+
+  @override
+  String get checkInNoDefinition =>
+      'No action type is configured for this campaign yet.';
+
+  @override
+  String get checkInMealsPrompt => 'How many vegetarian meals?';
+
+  @override
+  String checkInPledgeSummary(String choice, String target, String unit) {
+    return 'Pledge: $choice · $target $unit';
+  }
+
+  @override
+  String get checkInHistoryHeading => 'Check-in history';
+
+  @override
+  String get checkInHistoryEmpty =>
+      'No check-ins yet. Record your first day when you are ready.';
+
+  @override
+  String checkInQuantityLabel(String quantity) {
+    return 'Quantity: $quantity';
+  }
+
+  @override
+  String get myImpactHeading => 'My impact';
+
+  @override
+  String get todayCardHeading => 'Today';
+
+  @override
+  String get todayRecordEarlier => 'Record an earlier day';
+
+  @override
+  String todayStartsOn(String date) {
+    return 'Starts on $date';
+  }
 }

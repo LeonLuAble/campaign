@@ -460,6 +460,13 @@ class FakeCampaignApiClient implements CampaignApiClient {
   String? joinFailureMessage;
   /// Forces the not-eligible BAD_REQUEST path used by membership targeting.
   bool failJoinNotEligible = false;
+  /// When true, [recordAction] throws a network-style error.
+  bool failRecordNetwork = false;
+  /// Override "today" (YYYY-MM-DD) for check-in tests.
+  String? fakeToday;
+  /// Force submission status on new recordings (`approved`|`submitted`|`rejected`).
+  String? forceSubmissionStatus;
+  String? forceReviewNote;
   String lastAcceptLanguage = 'en';
   TokenStore? tokenStore;
   void Function()? onSessionExpired;
@@ -1953,20 +1960,63 @@ class FakeCampaignApiClient implements CampaignApiClient {
     String? occurredOn,
     num? quantity,
     String? idempotencyKey,
+    Map<String, dynamic>? payload,
   }) async {
+    if (failRecordNetwork) {
+      throw Exception('SocketException: Failed host lookup');
+    }
+    final day = occurredOn ?? fakeToday ?? '2026-10-14';
+    final body = payload ?? const <String, dynamic>{};
+    if (idempotencyKey != null && idempotencyKey.isNotEmpty) {
+      final replay = actions.where(
+        (row) => row.idempotencyKey == idempotencyKey && !row.isCancelled,
+      );
+      if (replay.isNotEmpty) {
+        return replay.first;
+      }
+    }
+    final duplicate = actions.where(
+      (row) =>
+          row.participationId == participationId &&
+          row.actionDefinitionId == actionDefinitionId &&
+          row.occurredOn == day &&
+          !row.isCancelled,
+    );
+    if (duplicate.isNotEmpty) {
+      _throw(
+        'CONFLICT',
+        status: 409,
+        message: 'Action already recorded for this day',
+      );
+    }
+    final participation = participations.where((row) => row.id == participationId);
+    final campaignId = participation.isEmpty
+        ? 'camp-1'
+        : participation.first.campaignId;
+    final campaignMatch = campaigns.where((row) => row.id == campaignId);
+    final reviewMode = campaignMatch.isEmpty
+        ? 'auto'
+        : campaignMatch.first.configuration['submissionReview']?.toString() ??
+            'auto';
+    final submissionStatus = forceSubmissionStatus ??
+        (reviewMode == 'manual' ? 'submitted' : 'approved');
+    final actionId = 'act-${actions.length + 1}';
     final created = RecordedAction(
-      id: 'act-${actions.length + 1}',
-      campaignId: 'camp-1',
+      id: actionId,
+      campaignId: campaignId,
       participationId: participationId,
       userId: profile.id,
       actionDefinitionId: actionDefinitionId,
-      occurredOn: occurredOn ?? '2026-10-14',
+      occurredOn: day,
       quantity: quantity ?? 1,
       status: 'recorded',
+      payload: body,
+      idempotencyKey: idempotencyKey,
       submission: Submission(
         id: 'sub-${actions.length + 1}',
-        actionId: 'act-${actions.length + 1}',
-        status: 'approved',
+        actionId: actionId,
+        status: submissionStatus,
+        reviewNote: submissionStatus == 'rejected' ? forceReviewNote : null,
       ),
     );
     actions = [...actions, created];
@@ -1986,6 +2036,8 @@ class FakeCampaignApiClient implements CampaignApiClient {
       quantity: current.quantity,
       status: 'cancelled',
       submission: current.submission,
+      payload: current.payload,
+      idempotencyKey: current.idempotencyKey,
     );
     actions = [
       for (final row in actions)

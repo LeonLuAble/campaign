@@ -527,6 +527,91 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get emptyPastCampaigns => '暂无往期活动。';
+
+  @override
+  String get errorAlreadyRecorded => '这一天已经记录过了。';
+
+  @override
+  String get checkInDidItToday => '我今天做到了';
+
+  @override
+  String get checkInSaveMeals => '保存餐次';
+
+  @override
+  String get checkInSaving => '保存中…';
+
+  @override
+  String get checkInUndo => '撤销今日记录';
+
+  @override
+  String get checkInPickDay => '选择日期';
+
+  @override
+  String get checkInOptionalNote => '备注（可选）';
+
+  @override
+  String checkInNoteLabel(String note) {
+    return '备注：$note';
+  }
+
+  @override
+  String get checkInStatusDone => '已记录';
+
+  @override
+  String get checkInStatusPending => '待审核';
+
+  @override
+  String get checkInStatusRejected => '未计入';
+
+  @override
+  String get checkInStatusNotYet => '尚未记录';
+
+  @override
+  String get checkInStatusNotApplicable => '不可用';
+
+  @override
+  String checkInRejectedReason(String reason) {
+    return '原因：$reason';
+  }
+
+  @override
+  String get checkInFutureDisabled => '不能记录未来的日期。';
+
+  @override
+  String get checkInNoDefinition => '此活动尚未配置可记录的行动类型。';
+
+  @override
+  String get checkInMealsPrompt => '今天吃了几餐素？';
+
+  @override
+  String checkInPledgeSummary(String choice, String target, String unit) {
+    return '承诺：$choice · $target $unit';
+  }
+
+  @override
+  String get checkInHistoryHeading => '打卡记录';
+
+  @override
+  String get checkInHistoryEmpty => '还没有打卡。准备好时再记录第一天即可。';
+
+  @override
+  String checkInQuantityLabel(String quantity) {
+    return '数量：$quantity';
+  }
+
+  @override
+  String get myImpactHeading => '我的影响';
+
+  @override
+  String get todayCardHeading => '今日';
+
+  @override
+  String get todayRecordEarlier => '补记更早的一天';
+
+  @override
+  String todayStartsOn(String date) {
+    return '开始于 $date';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -1051,4 +1136,89 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get emptyPastCampaigns => '暂无往期活动。';
+
+  @override
+  String get errorAlreadyRecorded => '这一天已经记录过了。';
+
+  @override
+  String get checkInDidItToday => '我今天做到了';
+
+  @override
+  String get checkInSaveMeals => '保存餐次';
+
+  @override
+  String get checkInSaving => '保存中…';
+
+  @override
+  String get checkInUndo => '撤销今日记录';
+
+  @override
+  String get checkInPickDay => '选择日期';
+
+  @override
+  String get checkInOptionalNote => '备注（可选）';
+
+  @override
+  String checkInNoteLabel(String note) {
+    return '备注：$note';
+  }
+
+  @override
+  String get checkInStatusDone => '已记录';
+
+  @override
+  String get checkInStatusPending => '待审核';
+
+  @override
+  String get checkInStatusRejected => '未计入';
+
+  @override
+  String get checkInStatusNotYet => '尚未记录';
+
+  @override
+  String get checkInStatusNotApplicable => '不可用';
+
+  @override
+  String checkInRejectedReason(String reason) {
+    return '原因：$reason';
+  }
+
+  @override
+  String get checkInFutureDisabled => '不能记录未来的日期。';
+
+  @override
+  String get checkInNoDefinition => '此活动尚未配置可记录的行动类型。';
+
+  @override
+  String get checkInMealsPrompt => '今天吃了几餐素？';
+
+  @override
+  String checkInPledgeSummary(String choice, String target, String unit) {
+    return '承诺：$choice · $target $unit';
+  }
+
+  @override
+  String get checkInHistoryHeading => '打卡记录';
+
+  @override
+  String get checkInHistoryEmpty => '还没有打卡。准备好时再记录第一天即可。';
+
+  @override
+  String checkInQuantityLabel(String quantity) {
+    return '数量：$quantity';
+  }
+
+  @override
+  String get myImpactHeading => '我的影响';
+
+  @override
+  String get todayCardHeading => '今日';
+
+  @override
+  String get todayRecordEarlier => '补记更早的一天';
+
+  @override
+  String todayStartsOn(String date) {
+    return '开始于 $date';
+  }
 }

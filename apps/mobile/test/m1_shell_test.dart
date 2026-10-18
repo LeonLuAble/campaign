@@ -202,7 +202,7 @@ void main() {
     await _pumpApp(tester, api: api, initialLocation: '/login');
     await _signIn(tester);
 
-    expect(find.byType(EmptyState), findsOneWidget);
+    expect(find.byType(EmptyState), findsWidgets);
     expect(find.text('No campaigns yet.'), findsOneWidget);
   });
 

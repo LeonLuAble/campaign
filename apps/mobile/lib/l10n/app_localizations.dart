@@ -1088,6 +1088,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No past campaigns yet.'**
   String get emptyPastCampaigns;
+
+  /// No description provided for @errorAlreadyRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Already recorded for this day.'**
+  String get errorAlreadyRecorded;
+
+  /// No description provided for @checkInDidItToday.
+  ///
+  /// In en, this message translates to:
+  /// **'I did it today'**
+  String get checkInDidItToday;
+
+  /// No description provided for @checkInSaveMeals.
+  ///
+  /// In en, this message translates to:
+  /// **'Save meals'**
+  String get checkInSaveMeals;
+
+  /// No description provided for @checkInSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving…'**
+  String get checkInSaving;
+
+  /// No description provided for @checkInUndo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo today\'s record'**
+  String get checkInUndo;
+
+  /// No description provided for @checkInPickDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a day'**
+  String get checkInPickDay;
+
+  /// No description provided for @checkInOptionalNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note (optional)'**
+  String get checkInOptionalNote;
+
+  /// No description provided for @checkInNoteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Note: {note}'**
+  String checkInNoteLabel(String note);
+
+  /// No description provided for @checkInStatusDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded'**
+  String get checkInStatusDone;
+
+  /// No description provided for @checkInStatusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending review'**
+  String get checkInStatusPending;
+
+  /// No description provided for @checkInStatusRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Not counted'**
+  String get checkInStatusRejected;
+
+  /// No description provided for @checkInStatusNotYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not yet recorded'**
+  String get checkInStatusNotYet;
+
+  /// No description provided for @checkInStatusNotApplicable.
+  ///
+  /// In en, this message translates to:
+  /// **'Not available'**
+  String get checkInStatusNotApplicable;
+
+  /// No description provided for @checkInRejectedReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason: {reason}'**
+  String checkInRejectedReason(String reason);
+
+  /// No description provided for @checkInFutureDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Future days cannot be recorded.'**
+  String get checkInFutureDisabled;
+
+  /// No description provided for @checkInNoDefinition.
+  ///
+  /// In en, this message translates to:
+  /// **'No action type is configured for this campaign yet.'**
+  String get checkInNoDefinition;
+
+  /// No description provided for @checkInMealsPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'How many vegetarian meals?'**
+  String get checkInMealsPrompt;
+
+  /// No description provided for @checkInPledgeSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Pledge: {choice} · {target} {unit}'**
+  String checkInPledgeSummary(String choice, String target, String unit);
+
+  /// No description provided for @checkInHistoryHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Check-in history'**
+  String get checkInHistoryHeading;
+
+  /// No description provided for @checkInHistoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No check-ins yet. Record your first day when you are ready.'**
+  String get checkInHistoryEmpty;
+
+  /// No description provided for @checkInQuantityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity: {quantity}'**
+  String checkInQuantityLabel(String quantity);
+
+  /// No description provided for @myImpactHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'My impact'**
+  String get myImpactHeading;
+
+  /// No description provided for @todayCardHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get todayCardHeading;
+
+  /// No description provided for @todayRecordEarlier.
+  ///
+  /// In en, this message translates to:
+  /// **'Record an earlier day'**
+  String get todayRecordEarlier;
+
+  /// No description provided for @todayStartsOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts on {date}'**
+  String todayStartsOn(String date);
 }
 
 class _AppLocalizationsDelegate

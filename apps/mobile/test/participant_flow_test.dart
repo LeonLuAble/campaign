@@ -60,7 +60,7 @@ void main() {
 
     await tester.tap(find.widgetWithText(FilledButton, 'Daily check-in'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('later update'), findsOneWidget);
+    expect(find.text('I did it today'), findsOneWidget);
   });
 
   testWidgets('shows API error copy for invalid credentials', (tester) async {
