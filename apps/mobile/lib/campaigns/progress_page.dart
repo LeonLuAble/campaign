@@ -274,32 +274,50 @@ class _ProgressPageState extends State<ProgressPage> {
                               ),
                               SizedBox(height: tokens.spaceSm),
                             ],
-                          if (_dashboard != null &&
-                              _dashboard!.outcomes.isNotEmpty) ...[
+                          if (_dashboard != null) ...[
                             SizedBox(height: tokens.spaceLg),
                             Text(
-                              l10n.myImpactHeading,
+                              l10n.visualizationSection,
                               style: Theme.of(context).textTheme.titleMedium,
                             ),
                             SizedBox(height: tokens.spaceSm),
-                            for (final outcome in _dashboard!.outcomes)
-                              Padding(
-                                padding:
-                                    EdgeInsets.only(bottom: tokens.spaceSm),
-                                child: MetricTile(
-                                  label: outcome.outcomeMetric,
-                                  value: l10n.outcomeValueLabel(
-                                    formatNumber(outcome.value),
-                                    outcome.outcomeUnit,
-                                  ),
-                                  caption: outcome.contributions.isEmpty
-                                      ? null
-                                      : l10n.factorSourceLabel(
-                                          outcome.contributions.first.source,
-                                        ),
-                                  icon: Icons.eco_outlined,
-                                ),
+                            TreeVisualization(
+                              displayName: _dashboard!.visualization.displayName,
+                              completionLabel: l10n.completionLabel(
+                                '${_dashboard!.visualization.completionPercent ?? 0}%',
                               ),
+                              completionPercent:
+                                  _dashboard!.visualization.completionPercent,
+                              isActive: _dashboard!.visualization.isActive,
+                              inactiveLabel: l10n.treeInactive,
+                              axis: Axis.vertical,
+                            ),
+                            if (_dashboard!.outcomes.isNotEmpty) ...[
+                              SizedBox(height: tokens.spaceLg),
+                              Text(
+                                l10n.myImpactHeading,
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              SizedBox(height: tokens.spaceSm),
+                              for (final outcome in _dashboard!.outcomes)
+                                Padding(
+                                  padding:
+                                      EdgeInsets.only(bottom: tokens.spaceSm),
+                                  child: MetricTile(
+                                    label: outcome.outcomeMetric,
+                                    value: l10n.outcomeValueLabel(
+                                      formatNumber(outcome.value),
+                                      outcome.outcomeUnit,
+                                    ),
+                                    caption: outcome.contributions.isEmpty
+                                        ? null
+                                        : l10n.factorSourceLabel(
+                                            outcome.contributions.first.source,
+                                          ),
+                                    icon: Icons.eco_outlined,
+                                  ),
+                                ),
+                            ],
                           ],
                           if (_community != null) ...[
                             SizedBox(height: tokens.spaceLg),
@@ -333,6 +351,17 @@ class _ProgressPageState extends State<ProgressPage> {
                                 '/campaigns/${widget.campaignId}/check-in',
                               ),
                               child: Text(l10n.openCheckIn),
+                            ),
+                          ),
+                          SizedBox(height: tokens.spaceMd),
+                          SizedBox(
+                            height: 48,
+                            width: double.infinity,
+                            child: OutlinedButton(
+                              onPressed: () => context.push(
+                                '/campaigns/${widget.campaignId}/community',
+                              ),
+                              child: Text(l10n.openCommunityView),
                             ),
                           ),
                         ],

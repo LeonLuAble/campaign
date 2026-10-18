@@ -1238,6 +1238,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Starts on {date}'**
   String todayStartsOn(String date);
+
+  /// No description provided for @communityViewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get communityViewTitle;
+
+  /// No description provided for @openCommunityView.
+  ///
+  /// In en, this message translates to:
+  /// **'Community progress'**
+  String get openCommunityView;
+
+  /// No description provided for @communityTreeHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Communities'**
+  String get communityTreeHeading;
+
+  /// No description provided for @communityTreeEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No communities are linked yet.'**
+  String get communityTreeEmpty;
+
+  /// No description provided for @communityNodeSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Community {name}'**
+  String communityNodeSemantics(String name);
+
+  /// No description provided for @expandCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand community'**
+  String get expandCommunity;
+
+  /// No description provided for @collapseCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse community'**
+  String get collapseCommunity;
+
+  /// No description provided for @viewCommunityProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'View progress'**
+  String get viewCommunityProgress;
+
+  /// No description provided for @campaignWideProgressHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Campaign-wide progress'**
+  String get campaignWideProgressHeading;
+
+  /// No description provided for @participantCountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} participants (anonymous total)'**
+  String participantCountLabel(String count);
+
+  /// No description provided for @granularityDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get granularityDay;
+
+  /// No description provided for @granularityWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Week'**
+  String get granularityWeek;
+
+  /// No description provided for @chartModeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Chart'**
+  String get chartModeLabel;
+
+  /// No description provided for @tableModeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Table'**
+  String get tableModeLabel;
+
+  /// No description provided for @timeSeriesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No time series data yet.'**
+  String get timeSeriesEmpty;
+
+  /// No description provided for @timeSeriesSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Community progress over time'**
+  String get timeSeriesSemantics;
+
+  /// No description provided for @milestoneReachedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Milestone reached'**
+  String get milestoneReachedTitle;
+
+  /// No description provided for @campaignCompleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Campaign complete'**
+  String get campaignCompleteTitle;
+
+  /// No description provided for @campaignCompleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} has finished. Thank you for taking part.'**
+  String campaignCompleteBody(String name);
+
+  /// No description provided for @celebrationDismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get celebrationDismiss;
+
+  /// No description provided for @homeSummaryHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Your summary'**
+  String get homeSummaryHeading;
+
+  /// No description provided for @homeMyProgressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'My progress: {status}'**
+  String homeMyProgressLabel(String status);
+
+  /// No description provided for @homeCommunityProgressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Community: {summary}'**
+  String homeCommunityProgressLabel(String summary);
+
+  /// No description provided for @homeNextActionCheckIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Next: check in today'**
+  String get homeNextActionCheckIn;
+
+  /// No description provided for @homeNextActionCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Next: see community progress'**
+  String get homeNextActionCommunity;
+
+  /// No description provided for @homeNextActionJoin.
+  ///
+  /// In en, this message translates to:
+  /// **'Next: join this campaign'**
+  String get homeNextActionJoin;
+
+  /// No description provided for @homeCommunityAggregate.
+  ///
+  /// In en, this message translates to:
+  /// **'Our community has recorded {achieved} {unit}'**
+  String homeCommunityAggregate(String achieved, String unit);
 }
 
 class _AppLocalizationsDelegate

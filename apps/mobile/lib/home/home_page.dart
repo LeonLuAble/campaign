@@ -13,11 +13,13 @@ class _HomeCampaignRow {
     required this.campaign,
     required this.enrolled,
     this.progress,
+    this.communityDashboard,
   });
 
   final Campaign campaign;
   final bool enrolled;
   final ParticipantProgress? progress;
+  final AggregateDashboard? communityDashboard;
 }
 
 class HomePage extends StatefulWidget {
@@ -74,6 +76,7 @@ class _HomePageState extends State<HomePage> {
       for (final campaign in visible) {
         var enrolled = false;
         ParticipantProgress? progress;
+        AggregateDashboard? communityDash;
         if (userId != null) {
           try {
             final parts = await client.listParticipations(campaign.id);
@@ -88,11 +91,26 @@ class _HomePageState extends State<HomePage> {
             }
           } catch (_) {}
         }
+        if (enrolled &&
+            (campaign.status == 'started' || campaign.status == 'completed')) {
+          final communityId = session.selectedCommunityId;
+          try {
+            if (communityId != null) {
+              communityDash = await client.getCommunityDashboard(
+                campaignId: campaign.id,
+                communityId: communityId,
+              );
+            } else {
+              communityDash = await client.getCampaignDashboard(campaign.id);
+            }
+          } catch (_) {}
+        }
         rows.add(
           _HomeCampaignRow(
             campaign: campaign,
             enrolled: enrolled,
             progress: progress,
+            communityDashboard: communityDash,
           ),
         );
       }
@@ -157,6 +175,30 @@ class _HomePageState extends State<HomePage> {
       return l10n.dashboardProgressStatusNotStarted;
     }
     return l10n.dashboardProgressStatusInProgress;
+  }
+
+  String _communitySummary(
+    AppLocalizations l10n,
+    AggregateDashboard? dashboard,
+  ) {
+    if (dashboard == null) {
+      return l10n.homeProgressUnavailable;
+    }
+    return l10n.achievedOfTarget(
+      formatNumber(dashboard.progress.achievedValue),
+      formatNumber(dashboard.progress.targetValue),
+      dashboard.progress.unit ?? '',
+    );
+  }
+
+  String _nextAction(AppLocalizations l10n, _HomeCampaignRow row) {
+    if (!row.enrolled) {
+      return l10n.homeNextActionJoin;
+    }
+    if (row.campaign.status == 'started') {
+      return l10n.homeNextActionCheckIn;
+    }
+    return l10n.homeNextActionCommunity;
   }
 
   @override
@@ -279,8 +321,9 @@ class _HomePageState extends State<HomePage> {
               for (final row in session.selectableCommunities)
                 DropdownMenuItem(value: row.id, child: Text(row.name)),
             ],
-            onChanged: (id) {
+            onChanged: (id) async {
               session.selectCommunity(id);
+              await _load();
             },
           ),
         ],
@@ -306,6 +349,15 @@ class _HomePageState extends State<HomePage> {
               statusLabel: _statusLabel(l10n, row.campaign.status),
               statusIcon: _statusIcon(row.campaign.status),
               progressLabel: _progressLabel(l10n, row.progress),
+              myProgressLine: l10n.homeMyProgressLabel(
+                _progressLabel(l10n, row.progress),
+              ),
+              communityLine: row.communityDashboard == null
+                  ? null
+                  : l10n.homeCommunityProgressLabel(
+                      _communitySummary(l10n, row.communityDashboard),
+                    ),
+              nextAction: _nextAction(l10n, row),
               enrolledLabel: l10n.enrolledLabel,
               canJoinLabel: l10n.homeCanJoinLabel,
               onTap: () => context.push('/campaigns/${row.campaign.id}'),
@@ -328,6 +380,7 @@ class _HomePageState extends State<HomePage> {
     }
     final widgets = <Widget>[];
     for (final row in todayRows) {
+      final dash = row.communityDashboard;
       widgets.add(
         Card(
           child: Padding(
@@ -340,8 +393,30 @@ class _HomePageState extends State<HomePage> {
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 SizedBox(height: tokens.spaceSm),
-                if (row.progress != null)
-                  Text(_progressLabel(l10n, row.progress)),
+                Text(
+                  l10n.homeMyProgressLabel(_progressLabel(l10n, row.progress)),
+                ),
+                if (dash != null) ...[
+                  SizedBox(height: tokens.spaceXs),
+                  Text(
+                    l10n.homeCommunityAggregate(
+                      formatNumber(dash.progress.achievedValue),
+                      dash.progress.unit ?? '',
+                    ),
+                  ),
+                  SizedBox(height: tokens.spaceSm),
+                  TreeVisualization(
+                    displayName: dash.visualization.displayName,
+                    completionLabel: l10n.completionLabel(
+                      '${dash.visualization.completionPercent ?? 0}%',
+                    ),
+                    completionPercent: dash.visualization.completionPercent,
+                    isActive: dash.visualization.isActive,
+                    inactiveLabel: l10n.treeInactive,
+                  ),
+                ],
+                SizedBox(height: tokens.spaceXs),
+                Text(_nextAction(l10n, row)),
                 SizedBox(height: tokens.spaceMd),
                 SizedBox(
                   height: 48,
@@ -351,6 +426,17 @@ class _HomePageState extends State<HomePage> {
                       '/campaigns/${row.campaign.id}/check-in',
                     ),
                     child: Text(l10n.checkInDidItToday),
+                  ),
+                ),
+                SizedBox(height: tokens.spaceSm),
+                SizedBox(
+                  height: 48,
+                  width: double.infinity,
+                  child: TextButton(
+                    onPressed: () => context.push(
+                      '/campaigns/${row.campaign.id}/community',
+                    ),
+                    child: Text(l10n.openCommunityView),
                   ),
                 ),
                 SizedBox(height: tokens.spaceSm),
@@ -399,15 +485,21 @@ class _CampaignCard extends StatelessWidget {
     required this.statusLabel,
     required this.statusIcon,
     required this.progressLabel,
+    required this.myProgressLine,
+    required this.nextAction,
     required this.enrolledLabel,
     required this.canJoinLabel,
     required this.onTap,
+    this.communityLine,
   });
 
   final _HomeCampaignRow row;
   final String statusLabel;
   final IconData statusIcon;
   final String progressLabel;
+  final String myProgressLine;
+  final String? communityLine;
+  final String nextAction;
   final String enrolledLabel;
   final String canJoinLabel;
   final VoidCallback onTap;
@@ -451,6 +543,12 @@ class _CampaignCard extends StatelessWidget {
                     StatusChip(label: statusLabel, icon: statusIcon),
                     SizedBox(height: tokens.spaceXs),
                     Text(row.enrolled ? enrolledLabel : canJoinLabel),
+                    if (row.enrolled) ...[
+                      SizedBox(height: tokens.spaceXs),
+                      Text(myProgressLine),
+                      if (communityLine != null) Text(communityLine!),
+                      Text(nextAction),
+                    ],
                   ],
                 ),
               ),

@@ -7,6 +7,7 @@ import '../auth/welcome_page.dart';
 import '../campaigns/campaign_detail_page.dart';
 import '../campaigns/campaigns_tab_page.dart';
 import '../campaigns/check_in_page.dart';
+import '../campaigns/community_page.dart';
 import '../campaigns/join_flow_page.dart';
 import '../campaigns/participation_page.dart';
 import '../campaigns/progress_page.dart';
@@ -145,6 +146,13 @@ GoRouter createRouter({
                         path: 'progress',
                         name: 'progress',
                         builder: (context, state) => ProgressPage(
+                          campaignId: state.pathParameters['campaignId']!,
+                        ),
+                      ),
+                      GoRoute(
+                        path: 'community',
+                        name: 'community',
+                        builder: (context, state) => CommunityPage(
                           campaignId: state.pathParameters['campaignId']!,
                         ),
                       ),

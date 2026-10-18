@@ -263,5 +263,53 @@
   "todayStartsOn": "Starts on {date}",
   "@todayStartsOn": {
     "placeholders": { "date": { "type": "String" } }
+  },
+  "communityViewTitle": "Community",
+  "openCommunityView": "Community progress",
+  "communityTreeHeading": "Communities",
+  "communityTreeEmpty": "No communities are linked yet.",
+  "communityNodeSemantics": "Community {name}",
+  "@communityNodeSemantics": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "expandCommunity": "Expand community",
+  "collapseCommunity": "Collapse community",
+  "viewCommunityProgress": "View progress",
+  "campaignWideProgressHeading": "Campaign-wide progress",
+  "participantCountLabel": "{count} participants (anonymous total)",
+  "@participantCountLabel": {
+    "placeholders": { "count": { "type": "String" } }
+  },
+  "granularityDay": "Day",
+  "granularityWeek": "Week",
+  "chartModeLabel": "Chart",
+  "tableModeLabel": "Table",
+  "timeSeriesEmpty": "No time series data yet.",
+  "timeSeriesSemantics": "Community progress over time",
+  "milestoneReachedTitle": "Milestone reached",
+  "campaignCompleteTitle": "Campaign complete",
+  "campaignCompleteBody": "{name} has finished. Thank you for taking part.",
+  "@campaignCompleteBody": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "celebrationDismiss": "OK",
+  "homeSummaryHeading": "Your summary",
+  "homeMyProgressLabel": "My progress: {status}",
+  "@homeMyProgressLabel": {
+    "placeholders": { "status": { "type": "String" } }
+  },
+  "homeCommunityProgressLabel": "Community: {summary}",
+  "@homeCommunityProgressLabel": {
+    "placeholders": { "summary": { "type": "String" } }
+  },
+  "homeNextActionCheckIn": "Next: check in today",
+  "homeNextActionCommunity": "Next: see community progress",
+  "homeNextActionJoin": "Next: join this campaign",
+  "homeCommunityAggregate": "Our community has recorded {achieved} {unit}",
+  "@homeCommunityAggregate": {
+    "placeholders": {
+      "achieved": { "type": "String" },
+      "unit": { "type": "String" }
+    }
   }
 }

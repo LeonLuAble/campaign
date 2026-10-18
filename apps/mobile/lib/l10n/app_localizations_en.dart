@@ -633,4 +633,97 @@ class AppLocalizationsEn extends AppLocalizations {
   String todayStartsOn(String date) {
     return 'Starts on $date';
   }
+
+  @override
+  String get communityViewTitle => 'Community';
+
+  @override
+  String get openCommunityView => 'Community progress';
+
+  @override
+  String get communityTreeHeading => 'Communities';
+
+  @override
+  String get communityTreeEmpty => 'No communities are linked yet.';
+
+  @override
+  String communityNodeSemantics(String name) {
+    return 'Community $name';
+  }
+
+  @override
+  String get expandCommunity => 'Expand community';
+
+  @override
+  String get collapseCommunity => 'Collapse community';
+
+  @override
+  String get viewCommunityProgress => 'View progress';
+
+  @override
+  String get campaignWideProgressHeading => 'Campaign-wide progress';
+
+  @override
+  String participantCountLabel(String count) {
+    return '$count participants (anonymous total)';
+  }
+
+  @override
+  String get granularityDay => 'Day';
+
+  @override
+  String get granularityWeek => 'Week';
+
+  @override
+  String get chartModeLabel => 'Chart';
+
+  @override
+  String get tableModeLabel => 'Table';
+
+  @override
+  String get timeSeriesEmpty => 'No time series data yet.';
+
+  @override
+  String get timeSeriesSemantics => 'Community progress over time';
+
+  @override
+  String get milestoneReachedTitle => 'Milestone reached';
+
+  @override
+  String get campaignCompleteTitle => 'Campaign complete';
+
+  @override
+  String campaignCompleteBody(String name) {
+    return '$name has finished. Thank you for taking part.';
+  }
+
+  @override
+  String get celebrationDismiss => 'OK';
+
+  @override
+  String get homeSummaryHeading => 'Your summary';
+
+  @override
+  String homeMyProgressLabel(String status) {
+    return 'My progress: $status';
+  }
+
+  @override
+  String homeCommunityProgressLabel(String summary) {
+    return 'Community: $summary';
+  }
+
+  @override
+  String get homeNextActionCheckIn => 'Next: check in today';
+
+  @override
+  String get homeNextActionCommunity => 'Next: see community progress';
+
+  @override
+  String get homeNextActionJoin => 'Next: join this campaign';
+
+  @override
+  String homeCommunityAggregate(String achieved, String unit) {
+    return 'Our community has recorded $achieved $unit';
+  }
 }

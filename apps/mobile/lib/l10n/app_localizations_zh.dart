@@ -612,6 +612,99 @@ class AppLocalizationsZh extends AppLocalizations {
   String todayStartsOn(String date) {
     return '开始于 $date';
   }
+
+  @override
+  String get communityViewTitle => '社区';
+
+  @override
+  String get openCommunityView => '社区进度';
+
+  @override
+  String get communityTreeHeading => '社区结构';
+
+  @override
+  String get communityTreeEmpty => '尚未关联社区。';
+
+  @override
+  String communityNodeSemantics(String name) {
+    return '社区 $name';
+  }
+
+  @override
+  String get expandCommunity => '展开社区';
+
+  @override
+  String get collapseCommunity => '收起社区';
+
+  @override
+  String get viewCommunityProgress => '查看进度';
+
+  @override
+  String get campaignWideProgressHeading => '全活动进度';
+
+  @override
+  String participantCountLabel(String count) {
+    return '$count 位参与者（匿名合计）';
+  }
+
+  @override
+  String get granularityDay => '按日';
+
+  @override
+  String get granularityWeek => '按周';
+
+  @override
+  String get chartModeLabel => '图表';
+
+  @override
+  String get tableModeLabel => '表格';
+
+  @override
+  String get timeSeriesEmpty => '暂无时间序列数据。';
+
+  @override
+  String get timeSeriesSemantics => '社区随时间的进度';
+
+  @override
+  String get milestoneReachedTitle => '达成里程碑';
+
+  @override
+  String get campaignCompleteTitle => '活动已完成';
+
+  @override
+  String campaignCompleteBody(String name) {
+    return '「$name」已结束。感谢你的参与。';
+  }
+
+  @override
+  String get celebrationDismiss => '好的';
+
+  @override
+  String get homeSummaryHeading => '你的摘要';
+
+  @override
+  String homeMyProgressLabel(String status) {
+    return '我的进度：$status';
+  }
+
+  @override
+  String homeCommunityProgressLabel(String summary) {
+    return '社区：$summary';
+  }
+
+  @override
+  String get homeNextActionCheckIn => '下一步：今日打卡';
+
+  @override
+  String get homeNextActionCommunity => '下一步：查看社区进度';
+
+  @override
+  String get homeNextActionJoin => '下一步：参加此活动';
+
+  @override
+  String homeCommunityAggregate(String achieved, String unit) {
+    return '我们社区已记录 $achieved $unit';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -1220,5 +1313,98 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   @override
   String todayStartsOn(String date) {
     return '开始于 $date';
+  }
+
+  @override
+  String get communityViewTitle => '社区';
+
+  @override
+  String get openCommunityView => '社区进度';
+
+  @override
+  String get communityTreeHeading => '社区结构';
+
+  @override
+  String get communityTreeEmpty => '尚未关联社区。';
+
+  @override
+  String communityNodeSemantics(String name) {
+    return '社区 $name';
+  }
+
+  @override
+  String get expandCommunity => '展开社区';
+
+  @override
+  String get collapseCommunity => '收起社区';
+
+  @override
+  String get viewCommunityProgress => '查看进度';
+
+  @override
+  String get campaignWideProgressHeading => '全活动进度';
+
+  @override
+  String participantCountLabel(String count) {
+    return '$count 位参与者（匿名合计）';
+  }
+
+  @override
+  String get granularityDay => '按日';
+
+  @override
+  String get granularityWeek => '按周';
+
+  @override
+  String get chartModeLabel => '图表';
+
+  @override
+  String get tableModeLabel => '表格';
+
+  @override
+  String get timeSeriesEmpty => '暂无时间序列数据。';
+
+  @override
+  String get timeSeriesSemantics => '社区随时间的进度';
+
+  @override
+  String get milestoneReachedTitle => '达成里程碑';
+
+  @override
+  String get campaignCompleteTitle => '活动已完成';
+
+  @override
+  String campaignCompleteBody(String name) {
+    return '「$name」已结束。感谢你的参与。';
+  }
+
+  @override
+  String get celebrationDismiss => '好的';
+
+  @override
+  String get homeSummaryHeading => '你的摘要';
+
+  @override
+  String homeMyProgressLabel(String status) {
+    return '我的进度：$status';
+  }
+
+  @override
+  String homeCommunityProgressLabel(String summary) {
+    return '社区：$summary';
+  }
+
+  @override
+  String get homeNextActionCheckIn => '下一步：今日打卡';
+
+  @override
+  String get homeNextActionCommunity => '下一步：查看社区进度';
+
+  @override
+  String get homeNextActionJoin => '下一步：参加此活动';
+
+  @override
+  String homeCommunityAggregate(String achieved, String unit) {
+    return '我们社区已记录 $achieved $unit';
   }
 }
