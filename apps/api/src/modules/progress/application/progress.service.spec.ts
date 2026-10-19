@@ -24,6 +24,7 @@ import {
 } from '../../commitments/domain/commitment.entity.js';
 import { Participation } from '../../participation/domain/participation.entity.js';
 import { ParticipationStatus } from '../../participation/domain/participation.entity.js';
+import { MilestoneService } from '../../milestones/application/milestone.service.js';
 import { ParticipationService } from '../../participation/application/participation.service.js';
 import { VegetarianRuleStrategy } from '../../vegetarian/application/vegetarian-rules.js';
 import { ProgressService } from './progress.service.js';
@@ -107,6 +108,9 @@ function commitment(overrides: Partial<Commitment> = {}): Commitment {
     target_value: 10,
     unit: 'days',
     payload: {},
+    valid_from: null,
+    valid_to: null,
+    period_milestone_id: null,
     created_at: new Date('2026-01-01T00:00:00.000Z'),
     updated_at: new Date('2026-01-01T00:00:00.000Z'),
     ...overrides,
@@ -250,6 +254,10 @@ describe('ProgressService', () => {
         { provide: CampaignService, useValue: campaigns },
         { provide: ParticipationService, useValue: participations },
         { provide: CommunityService, useValue: communities },
+        {
+          provide: MilestoneService,
+          useValue: { periodsForCampaign: vi.fn().mockResolvedValue([]) },
+        },
         {
           provide: CAMPAIGN_RULE_STRATEGIES,
           useValue: [new VegetarianRuleStrategy()],

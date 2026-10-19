@@ -1,6 +1,6 @@
 import { Inject, Injectable, Optional, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { ResourceNotFoundException } from '../../../shared/errors/domain-http.exceptions.js';
 import { ActionDefinition } from '../../actions/domain/action-definition.entity.js';
 import { Action, ActionStatus } from '../../actions/domain/action.entity.js';
@@ -17,9 +17,15 @@ import {
   type CampaignRuleStrategy,
 } from '../../campaigns/application/campaign-rule-strategy.js';
 import { CampaignService } from '../../campaigns/application/campaign.service.js';
-import { toIsoDate } from '../../campaigns/application/timezone.js';
+import {
+  calendarDateInTimeZone,
+  toIsoDate,
+} from '../../campaigns/application/timezone.js';
+import type { SupportedLocale } from '../../localization/application/locale-catalog.js';
+import { MilestoneService } from '../../milestones/application/milestone.service.js';
 import { CommunityService } from '../../communities/application/community.service.js';
 import { Commitment } from '../../commitments/domain/commitment.entity.js';
+import { representativeCommitments } from '../../commitments/domain/commitment-periods.js';
 import {
   Participation,
   ParticipationStatus,
@@ -31,6 +37,11 @@ import {
 } from '../../participation/domain/participation-engagement.js';
 import { ParticipationService } from '../../participation/application/participation.service.js';
 import type { CompletionStatus } from './completion.js';
+import {
+  computeParticipationPeriods,
+  type ParticipationPeriod,
+  type PeriodEntry,
+} from './participation-periods.js';
 import {
   aggregateUnitProgress,
   computeParticipantProgress,
@@ -110,6 +121,8 @@ export class ProgressService {
     private readonly participations: ParticipationService,
     @Inject(forwardRef(() => CommunityService))
     private readonly communities: CommunityService,
+    @Inject(forwardRef(() => MilestoneService))
+    private readonly milestones: MilestoneService,
     @Optional()
     @Inject(CAMPAIGN_RULE_STRATEGIES)
     private readonly strategies: CampaignRuleStrategy[] | null,
@@ -139,6 +152,96 @@ export class ProgressService {
       throw new ResourceNotFoundException('Progress not found');
     }
     return this.toParticipantResponse(tenant.tenantId, campaign, snapshot);
+  }
+
+  /** Own participation, or any in the tenant for participation managers. */
+  async listParticipationPeriods(
+    tenant: TenantContext,
+    participationId: string,
+    locale: SupportedLocale = 'en',
+    now: Date = new Date(),
+  ): Promise<ParticipationPeriod[]> {
+    const participation = await this.participations.getParticipationRecord(
+      tenant,
+      participationId,
+    );
+    const campaign = await this.campaigns.getCampaignRecord(
+      tenant,
+      participation.campaignId,
+    );
+    const [periods, commitments, actions, definitions] = await Promise.all([
+      this.milestones.periodsForCampaign(campaign, locale),
+      this.commitmentRepository.find({
+        where: {
+          tenant_id: tenant.tenantId,
+          participation_id: participation.id,
+        },
+      }),
+      this.actionRepository.find({
+        where: {
+          tenant_id: tenant.tenantId,
+          participation_id: participation.id,
+          status: ActionStatus.RECORDED,
+        },
+      }),
+      this.definitionRepository.find({
+        where: { tenant_id: tenant.tenantId, campaign_id: campaign.id },
+      }),
+    ]);
+    const submissions =
+      actions.length === 0
+        ? []
+        : await this.submissionRepository.find({
+            where: {
+              tenant_id: tenant.tenantId,
+              action_id: In(actions.map((action) => action.id)),
+            },
+          });
+    const submissionByAction = new Map(
+      submissions.map((row) => [row.action_id, row.status]),
+    );
+    const unitByDefinition = new Map(
+      definitions.map((definition) => [definition.id, definition.unit]),
+    );
+    const entries: PeriodEntry[] = actions.flatMap((action) => {
+      const unit = unitByDefinition.get(action.action_definition_id);
+      const submissionStatus = submissionByAction.get(action.id);
+      if (!unit || !submissionStatus) {
+        return [];
+      }
+      return [
+        {
+          occurredOn: toIsoDate(action.occurred_on) ?? action.occurred_on,
+          unit,
+          quantity: action.quantity,
+          submissionStatus,
+        },
+      ];
+    });
+    const rules = resolveCampaignRules(
+      campaign.configuration,
+      this.strategyList(),
+      this.genericRules,
+    );
+    return computeParticipationPeriods(
+      periods,
+      commitments.map((row) => ({
+        id: row.id,
+        decision: row.decision,
+        typeKey: row.type_key,
+        targetValue: row.target_value,
+        unit: row.unit,
+        payload: row.payload,
+        validFrom: toIsoDate(row.valid_from),
+        validTo: toIsoDate(row.valid_to),
+      })),
+      entries,
+      rules,
+      {
+        timezone: campaign.timezone,
+        today: calendarDateInTimeZone(now, campaign.timezone),
+      },
+    );
   }
 
   async getParticipantAchievement(
@@ -301,9 +404,7 @@ export class ProgressService {
       })
       .filter((action) => action.unit.length > 0);
 
-    const commitmentByParticipation = new Map(
-      commitments.map((row) => [row.participation_id, row]),
-    );
+    const commitmentByParticipation = representativeCommitments(commitments);
     const rules = resolveCampaignRules(
       campaign.configuration,
       this.strategyList(),

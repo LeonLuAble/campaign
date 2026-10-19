@@ -119,6 +119,7 @@ describe('ParticipationService', () => {
     identities.isUserActive.mockResolvedValue(true);
     communities.listAncestorIds.mockResolvedValue([]);
     commitmentRepository.findOne.mockResolvedValue(null);
+    commitmentRepository.find.mockResolvedValue([]);
     campaigns.getCampaignRecord.mockResolvedValue({
       id: campaignId,
       tenantId: tenantA,

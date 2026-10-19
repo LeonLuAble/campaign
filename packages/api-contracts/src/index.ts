@@ -30,7 +30,9 @@ export type ErrorCode =
   | 'ENROLMENT_AUTO_MANAGED'
   | 'MILESTONE_LOCKED'
   | 'MILESTONE_DATE_OUT_OF_WINDOW'
-  | 'MILESTONE_DATE_DUPLICATE';
+  | 'MILESTONE_DATE_DUPLICATE'
+  | 'PERIOD_CLOSED'
+  | 'COMMITMENT_TARGET_EXCEEDS_PERIOD';
 
 export interface ApiErrorResponse {
   statusCode: number;
@@ -632,6 +634,12 @@ export interface CommitmentResponse {
   /** null when `decision` is `not_taking_part`. */
   unit: string | null;
   payload: Record<string, unknown>;
+  /** Commitment window; null for whole-campaign commitments (no dated milestones). */
+  validFrom: string | null;
+  validTo: string | null;
+  /** The period end date; null for whole-campaign commitments. */
+  periodKey: string | null;
+  periodMilestoneId: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -639,6 +647,10 @@ export interface CommitmentResponse {
 /**
  * `decision` defaults to `committed`, which requires `targetValue` and `unit`.
  * `not_taking_part` ignores `typeKey`, `targetValue`, `unit` and `payload`.
+ * Create-or-replace per (participation, period). `periodKey` defaults to the
+ * period containing today (campaign timezone), or the first period before the
+ * campaign starts. `restOfCampaign: true` records `not_taking_part` for that
+ * period and every later open period.
  */
 export interface CreateCommitmentRequest {
   decision?: CommitmentDecision;
@@ -646,6 +658,8 @@ export interface CreateCommitmentRequest {
   targetValue?: number;
   unit?: string;
   payload?: Record<string, unknown>;
+  periodKey?: string;
+  restOfCampaign?: boolean;
 }
 
 export interface ParticipationSummaryResponse {
@@ -669,11 +683,23 @@ export interface CommitmentChoiceOption {
   usesCampaignDuration: boolean;
 }
 
+export type PeriodStatus = 'upcoming' | 'open' | 'closed';
+
+/**
+ * `GET /campaigns/:id/commitment-options?periodKey=`. The window is what a
+ * commitment chosen now would cover; `suggestedTarget` of
+ * `usesCampaignDuration` choices is resolved for that window.
+ */
 export interface CommitmentOptionsResponse {
   campaignId: string;
   customerId: string;
   strategy: string;
   units: string[];
+  periodKey: string | null;
+  periodStatus: PeriodStatus | null;
+  validFrom: string | null;
+  validTo: string | null;
+  dayCount: number | null;
   choices: CommitmentChoiceOption[];
 }
 
@@ -914,6 +940,34 @@ export interface CampaignPeriodResponse {
   name: string | null;
   isFinal: boolean;
   dayCount: number;
+}
+
+export type PeriodResultStatus =
+  | 'awaiting'
+  | 'submitted'
+  | 'pending_review'
+  | 'not_submitted'
+  | 'not_applicable';
+
+/** `GET /participations/:id/periods`, one row per campaign period. */
+export interface ParticipationPeriodResponse extends CampaignPeriodResponse {
+  status: PeriodStatus;
+  decision: CommitmentDecision | null;
+  commitment: {
+    id: string;
+    typeKey: string | null;
+    targetValue: number;
+    unit: string | null;
+    validFrom: string | null;
+    validTo: string | null;
+  } | null;
+  /** `not_submitted` is display-only: closed and no entries; backfill flips it. */
+  resultStatus: PeriodResultStatus;
+  coveredDays: number;
+  approvedDays: number;
+  achieved: number;
+  target: number;
+  unit: string | null;
 }
 
 export type TimeSeriesGranularity = 'day' | 'week';

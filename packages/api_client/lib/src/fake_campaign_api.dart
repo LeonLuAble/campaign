@@ -1997,13 +1997,125 @@ class FakeCampaignApiClient implements CampaignApiClient {
     );
   }
 
+  String _fakeDay() => fakeToday ?? '2026-10-14';
+
+  List<CampaignPeriod> _periodsFor(Campaign campaign) => computeCampaignPeriods(
+        startsOn: campaign.startsOn,
+        endsOn: campaign.endsOn,
+        milestones: milestones
+            .where(
+              (row) =>
+                  row.campaignId == campaign.id &&
+                  row.isActive &&
+                  row.dueOn != null,
+            )
+            .map((row) => (id: row.id, dueOn: row.dueOn!, name: row.name))
+            .toList(),
+      );
+
+  bool _isPeriodised(List<CampaignPeriod> periods) =>
+      periods.any((period) => period.milestoneId != null);
+
+  String _periodStatus(CampaignPeriod period, String today) {
+    if (period.endsOn.compareTo(today) < 0) {
+      return PeriodStatus.closed;
+    }
+    if (period.startsOn.compareTo(today) > 0) {
+      return PeriodStatus.upcoming;
+    }
+    return PeriodStatus.open;
+  }
+
+  CampaignPeriod? _resolvePeriod(
+    List<CampaignPeriod> periods,
+    String? periodKey,
+    String today,
+  ) {
+    if (periods.isEmpty) {
+      return null;
+    }
+    if (periodKey != null) {
+      final match = periods.where((period) => period.key == periodKey);
+      if (match.isEmpty) {
+        _throw('BAD_REQUEST', message: 'Unknown periodKey for this campaign');
+      }
+      return match.first;
+    }
+    for (final period in periods) {
+      if (period.startsOn.compareTo(today) <= 0 &&
+          today.compareTo(period.endsOn) <= 0) {
+        return period;
+      }
+    }
+    return today.compareTo(periods.first.startsOn) < 0
+        ? periods.first
+        : periods.last;
+  }
+
+  ({String validFrom, String validTo, int dayCount}) _window(
+    List<CampaignPeriod> periods,
+    CampaignPeriod period,
+    String today,
+  ) {
+    final from = _isPeriodised(periods) &&
+            today.compareTo(period.startsOn) > 0 &&
+            today.compareTo(period.endsOn) <= 0
+        ? today
+        : period.startsOn;
+    final days =
+        DateTime.parse(period.endsOn).difference(DateTime.parse(from)).inDays +
+            1;
+    return (validFrom: from, validTo: period.endsOn, dayCount: days);
+  }
+
   @override
-  Future<CommitmentOptions> getCommitmentOptions(String campaignId) async =>
-      commitmentOptions;
+  Future<CommitmentOptions> getCommitmentOptions(
+    String campaignId, {
+    String? periodKey,
+  }) async {
+    final matches = campaigns.where((row) => row.id == campaignId);
+    if (matches.isEmpty) {
+      return commitmentOptions;
+    }
+    final periods = _periodsFor(matches.first);
+    final today = _fakeDay();
+    final period = _resolvePeriod(periods, periodKey, today);
+    if (period == null) {
+      return commitmentOptions;
+    }
+    final window = _window(periods, period, today);
+    return CommitmentOptions(
+      campaignId: commitmentOptions.campaignId,
+      customerId: commitmentOptions.customerId,
+      strategy: commitmentOptions.strategy,
+      units: commitmentOptions.units,
+      choices: [
+        for (final choice in commitmentOptions.choices)
+          choice.usesCampaignDuration
+              ? CommitmentChoice(
+                  key: choice.key,
+                  name: choice.name,
+                  label: choice.label,
+                  description: choice.description,
+                  canonicalUnit: choice.canonicalUnit,
+                  suggestedTarget: window.dayCount,
+                  usesCampaignDuration: true,
+                )
+              : choice,
+      ],
+      periodKey: period.key,
+      periodStatus: _periodStatus(period, today),
+      validFrom: window.validFrom,
+      validTo: window.validTo,
+      dayCount: window.dayCount,
+    );
+  }
 
   @override
   Future<List<Commitment>> listCommitments(String participationId) async =>
-      commitments.where((row) => row.participationId == participationId).toList();
+      commitments
+          .where((row) => row.participationId == participationId)
+          .toList();
 
   @override
   Future<Commitment> createCommitment({
@@ -2012,8 +2124,13 @@ class FakeCampaignApiClient implements CampaignApiClient {
     num? targetValue,
     String? unit,
     String decision = CommitmentDecision.committed,
+    String? periodKey,
+    bool restOfCampaign = false,
   }) async {
-    final notTakingPart = decision == CommitmentDecision.notTakingPart;
+    final notTakingPart =
+        restOfCampaign || decision == CommitmentDecision.notTakingPart;
+    final effectiveDecision =
+        notTakingPart ? CommitmentDecision.notTakingPart : decision;
     if (!notTakingPart &&
         (targetValue == null || unit == null || unit.trim().isEmpty)) {
       _throw(
@@ -2022,23 +2139,125 @@ class FakeCampaignApiClient implements CampaignApiClient {
         message: 'targetValue and unit are required for a commitment',
       );
     }
-    final existing = commitments
-        .where((row) => row.participationId == participationId)
-        .firstOrNull;
-    final created = Commitment(
-      id: existing?.id ?? 'commit-${commitments.length + 1}',
-      participationId: participationId,
-      typeKey: notTakingPart ? null : typeKey,
-      targetValue: notTakingPart ? 0 : targetValue!,
-      unit: notTakingPart ? '' : unit!,
-      decision: decision,
-    );
-    // Create-or-replace: one commitment per participation.
-    commitments = [
-      for (final row in commitments)
-        if (row.participationId != participationId) row,
-      created,
-    ];
+    final participation =
+        participations.where((row) => row.id == participationId).firstOrNull;
+    final campaign = participation == null
+        ? null
+        : campaigns
+            .where((row) => row.id == participation.campaignId)
+            .firstOrNull;
+    final periods =
+        campaign == null ? <CampaignPeriod>[] : _periodsFor(campaign);
+    final today = _fakeDay();
+
+    Commitment build({
+      String? id,
+      num? target,
+      String? validFrom,
+      String? validTo,
+      String? milestoneId,
+    }) =>
+        Commitment(
+          id: id ?? 'commit-${commitments.length + 1}',
+          participationId: participationId,
+          typeKey: notTakingPart ? null : typeKey,
+          targetValue: notTakingPart ? 0 : target ?? targetValue!,
+          unit: notTakingPart ? '' : unit!,
+          decision: effectiveDecision,
+          validFrom: validFrom,
+          validTo: validTo,
+          periodKey: validTo,
+          periodMilestoneId: milestoneId,
+        );
+
+    Commitment result;
+    if (!_isPeriodised(periods)) {
+      if (periodKey != null &&
+          (periods.isEmpty || periodKey != periods.first.key)) {
+        _throw('BAD_REQUEST', message: 'Unknown periodKey for this campaign');
+      }
+      final existing = commitments
+          .where(
+            (row) =>
+                row.participationId == participationId && row.isWholeCampaign,
+          )
+          .firstOrNull;
+      result = build(id: existing?.id);
+      commitments = [
+        for (final row in commitments)
+          if (row.id != existing?.id) row,
+        result,
+      ];
+    } else {
+      final target = _resolvePeriod(periods, periodKey, today)!;
+      if (_periodStatus(target, today) == PeriodStatus.closed) {
+        _throw(
+          'PERIOD_CLOSED',
+          status: 409,
+          message: 'This period has closed; commitments can no longer change',
+        );
+      }
+      final writes = restOfCampaign
+          ? periods
+              .where(
+                (period) =>
+                    period.endsOn.compareTo(target.endsOn) >= 0 &&
+                    _periodStatus(period, today) != PeriodStatus.closed,
+              )
+              .toList()
+          : [target];
+      final written = <Commitment>[];
+      for (final period in writes) {
+        final window = _window(periods, period, today);
+        num? stored = targetValue;
+        if (!notTakingPart) {
+          final usesDuration = commitmentOptions.choices.any(
+            (choice) => choice.key == typeKey && choice.usesCampaignDuration,
+          );
+          if (usesDuration) {
+            stored = window.dayCount;
+          }
+          final cap = unit == 'days'
+              ? window.dayCount
+              : unit == 'meals'
+                  ? window.dayCount * 3
+                  : null;
+          if (cap != null && stored! > cap) {
+            _throw(
+              'COMMITMENT_TARGET_EXCEEDS_PERIOD',
+              message:
+                  'The target is larger than this period allows (${window.dayCount} days)',
+            );
+          }
+        }
+        final existing = commitments
+            .where(
+              (row) =>
+                  row.participationId == participationId &&
+                  row.validTo != null &&
+                  row.validTo!.compareTo(period.startsOn) >= 0 &&
+                  row.validTo!.compareTo(period.endsOn) <= 0,
+            )
+            .firstOrNull;
+        final row = build(
+          id: existing?.id ??
+              'commit-${commitments.length + written.length + 1}',
+          target: stored,
+          validFrom: existing?.validFrom ?? window.validFrom,
+          validTo: period.endsOn,
+          milestoneId: period.milestoneId,
+        );
+        written.add(row);
+      }
+      final replaced = written.map((row) => row.id).toSet();
+      commitments = [
+        for (final row in commitments)
+          if (!replaced.contains(row.id)) row,
+        ...written,
+      ];
+      result = written.first;
+    }
+
     participations = [
       for (final row in participations)
         if (row.id == participationId && row.isEnrolled)
@@ -2055,7 +2274,93 @@ class FakeCampaignApiClient implements CampaignApiClient {
         else
           row,
     ];
-    return created;
+    return result;
+  }
+
+  @override
+  Future<List<ParticipationPeriod>> listParticipationPeriods(
+    String participationId,
+  ) async {
+    final participation =
+        participations.where((row) => row.id == participationId).firstOrNull;
+    if (participation == null) {
+      _throw('NOT_FOUND', status: 404, message: 'Participation not found');
+    }
+    final campaign = await getCampaign(participation.campaignId);
+    final periods = _periodsFor(campaign);
+    final periodised = _isPeriodised(periods);
+    final today = _fakeDay();
+    final own = commitments.where(
+      (row) => row.participationId == participationId,
+    );
+    final entries = actions.where(
+      (row) => row.participationId == participationId && !row.isCancelled,
+    );
+    return [
+      for (final period in periods)
+        () {
+          final commitment = own.where((row) {
+            if (!periodised) {
+              return row.isWholeCampaign;
+            }
+            final validTo = row.validTo;
+            return validTo != null &&
+                validTo.compareTo(period.startsOn) >= 0 &&
+                validTo.compareTo(period.endsOn) <= 0;
+          }).firstOrNull;
+          final status = _periodStatus(period, today);
+          final committed = commitment != null && !commitment.isNotTakingPart;
+          final from =
+              (committed ? commitment.validFrom : null) ?? period.startsOn;
+          final to = (committed ? commitment.validTo : null) ?? period.endsOn;
+          final inWindow = entries.where(
+            (row) =>
+                row.occurredOn.compareTo(from) >= 0 &&
+                row.occurredOn.compareTo(to) <= 0,
+          );
+          final live = inWindow.where(
+            (row) => row.submission?.status != 'rejected',
+          );
+          final approved = inWindow.where(
+            (row) => row.submission?.status == 'approved',
+          );
+          final String resultStatus;
+          if (commitment?.isNotTakingPart ?? false) {
+            resultStatus = PeriodResultStatus.notApplicable;
+          } else if (live.isEmpty) {
+            resultStatus = status == PeriodStatus.closed
+                ? PeriodResultStatus.notSubmitted
+                : PeriodResultStatus.awaiting;
+          } else if (live.any((row) => row.submission?.status == 'submitted')) {
+            resultStatus = PeriodResultStatus.pendingReview;
+          } else {
+            resultStatus = PeriodResultStatus.submitted;
+          }
+          return ParticipationPeriod(
+            period: period,
+            status: status,
+            decision: commitment?.decision,
+            commitment: commitment == null
+                ? null
+                : PeriodCommitment(
+                    id: commitment.id,
+                    typeKey: commitment.typeKey,
+                    targetValue: commitment.targetValue,
+                    unit: commitment.unit.isEmpty ? null : commitment.unit,
+                    validFrom: commitment.validFrom,
+                    validTo: commitment.validTo,
+                  ),
+            resultStatus: resultStatus,
+            coveredDays: live.map((row) => row.occurredOn).toSet().length,
+            approvedDays: approved.map((row) => row.occurredOn).toSet().length,
+            achieved: committed
+                ? approved.fold<num>(0, (sum, row) => sum + row.quantity)
+                : 0,
+            target: committed ? commitment.targetValue : 0,
+            unit: committed ? commitment.unit : null,
+          );
+        }(),
+    ];
   }
 
   Milestone _localizedMilestone(Milestone row) {

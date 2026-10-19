@@ -167,9 +167,25 @@ export class MilestoneService {
     locale: SupportedLocale = 'en',
   ): Promise<CampaignPeriodResponse[]> {
     const campaign = await this.campaigns.getCampaignRecord(tenant, campaignId);
+    return this.periodsForCampaign(campaign, locale);
+  }
+
+  /**
+   * Periods for a campaign the caller has already been authorised to see.
+   * Callers outside this module must pass a record from getCampaignRecord.
+   */
+  async periodsForCampaign(
+    campaign: {
+      id: string;
+      tenantId: string;
+      startsOn: string | null;
+      endsOn: string | null;
+    },
+    locale: SupportedLocale = 'en',
+  ): Promise<CampaignPeriodResponse[]> {
     const rows = await this.milestoneRepository.find({
       where: {
-        tenant_id: tenant.tenantId,
+        tenant_id: campaign.tenantId,
         campaign_id: campaign.id,
         is_active: true,
         due_on: Not(IsNull()),

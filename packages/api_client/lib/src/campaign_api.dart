@@ -194,18 +194,33 @@ abstract class CampaignApiClient {
     String? communityId,
   });
 
-  Future<CommitmentOptions> getCommitmentOptions(String campaignId);
+  /// [periodKey] defaults to the period containing today.
+  Future<CommitmentOptions> getCommitmentOptions(
+    String campaignId, {
+    String? periodKey,
+  });
   Future<List<Commitment>> listCommitments(String participationId);
 
   /// Create-or-replace the participant's decision. [targetValue] and [unit]
   /// are required unless [decision] is [CommitmentDecision.notTakingPart].
+  ///
+  /// Create-or-replace per (participation, period). [periodKey] defaults to
+  /// the period containing today (or the first one before the campaign
+  /// starts). [restOfCampaign] records not taking part for that period and
+  /// every later open period. A closed period fails with `PERIOD_CLOSED`;
+  /// a target above the window fails with `COMMITMENT_TARGET_EXCEEDS_PERIOD`.
   Future<Commitment> createCommitment({
     required String participationId,
     String? typeKey,
     num? targetValue,
     String? unit,
     String decision = CommitmentDecision.committed,
+    String? periodKey,
+    bool restOfCampaign = false,
   });
+  Future<List<ParticipationPeriod>> listParticipationPeriods(
+    String participationId,
+  );
 
   Future<List<Milestone>> listMilestones(String campaignId);
 
@@ -1105,9 +1120,13 @@ class HttpCampaignApiClient implements CampaignApiClient {
   }
 
   @override
-  Future<CommitmentOptions> getCommitmentOptions(String campaignId) {
+  Future<CommitmentOptions> getCommitmentOptions(
+    String campaignId, {
+    String? periodKey,
+  }) {
     return _get(
       '/campaigns/$campaignId/commitment-options',
+      query: {if (periodKey != null) 'periodKey': periodKey},
       parser: CommitmentOptions.fromJson,
     );
   }
@@ -1127,17 +1146,32 @@ class HttpCampaignApiClient implements CampaignApiClient {
     num? targetValue,
     String? unit,
     String decision = CommitmentDecision.committed,
+    String? periodKey,
+    bool restOfCampaign = false,
   }) {
-    final notTakingPart = decision == CommitmentDecision.notTakingPart;
+    final notTakingPart =
+        restOfCampaign || decision == CommitmentDecision.notTakingPart;
     return _post(
       '/participations/$participationId/commitments',
       data: {
-        'decision': decision,
+        'decision': notTakingPart ? CommitmentDecision.notTakingPart : decision,
         if (!notTakingPart && typeKey != null) 'typeKey': typeKey,
         if (!notTakingPart && targetValue != null) 'targetValue': targetValue,
         if (!notTakingPart && unit != null) 'unit': unit,
+        if (periodKey != null) 'periodKey': periodKey,
+        if (restOfCampaign) 'restOfCampaign': true,
       },
       parser: Commitment.fromJson,
+    );
+  }
+
+  @override
+  Future<List<ParticipationPeriod>> listParticipationPeriods(
+    String participationId,
+  ) {
+    return _getList(
+      '/participations/$participationId/periods',
+      parser: ParticipationPeriod.fromJson,
     );
   }
 

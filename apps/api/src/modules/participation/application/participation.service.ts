@@ -19,6 +19,7 @@ import {
 import { canEnrollInCampaign } from '../../campaigns/application/campaign-lifecycle.js';
 import { enrollmentCommunityId } from '../../campaigns/application/campaign-visibility.js';
 import { Commitment } from '../../commitments/domain/commitment.entity.js';
+import { representativeCommitments } from '../../commitments/domain/commitment-periods.js';
 import { CommunityService } from '../../communities/application/community.service.js';
 import { CustomerService } from '../../customers/application/customer.service.js';
 import { IdentityAccountService } from '../../identity/application/identity-account.service.js';
@@ -457,12 +458,15 @@ export class ParticipationService {
     if (participation.status === ParticipationStatus.WITHDRAWN) {
       return 'withdrawn';
     }
-    const commitment = await this.commitmentRepository.findOne({
+    const commitments = await this.commitmentRepository.find({
       where: {
         tenant_id: participation.tenant_id,
         participation_id: participation.id,
       },
     });
+    const commitment = representativeCommitments(commitments).get(
+      participation.id,
+    );
     return deriveEngagement(participation.status, commitment?.decision ?? null);
   }
 
@@ -480,15 +484,13 @@ export class ParticipationService {
         participation_id: In(participations.map((row) => row.id)),
       },
     });
-    const decisions = new Map(
-      commitments.map((row) => [row.participation_id, row.decision]),
-    );
+    const representative = representativeCommitments(commitments);
     for (const participation of participations) {
       result.set(
         participation.id,
         deriveEngagement(
           participation.status,
-          decisions.get(participation.id) ?? null,
+          representative.get(participation.id)?.decision ?? null,
         ),
       );
     }

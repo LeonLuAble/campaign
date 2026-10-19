@@ -971,6 +971,11 @@ class CommitmentOptions {
     required this.strategy,
     required this.units,
     required this.choices,
+    this.periodKey,
+    this.periodStatus,
+    this.validFrom,
+    this.validTo,
+    this.dayCount,
   });
 
   final String campaignId;
@@ -978,6 +983,17 @@ class CommitmentOptions {
   final String strategy;
   final List<String> units;
   final List<CommitmentChoice> choices;
+
+  /// The period the window belongs to; null while campaign dates are unset.
+  final String? periodKey;
+
+  /// `upcoming`, `open` or `closed`.
+  final String? periodStatus;
+
+  /// What a commitment chosen now would cover.
+  final String? validFrom;
+  final String? validTo;
+  final int? dayCount;
 
   factory CommitmentOptions.fromJson(Map<String, dynamic> json) {
     return CommitmentOptions(
@@ -988,6 +1004,11 @@ class CommitmentOptions {
       choices: _list(json['choices'])
           .map((row) => CommitmentChoice.fromJson(_map(row)))
           .toList(),
+      periodKey: _string(json['periodKey']),
+      periodStatus: _string(json['periodStatus']),
+      validFrom: _string(json['validFrom']),
+      validTo: _string(json['validTo']),
+      dayCount: (json['dayCount'] as num?)?.toInt(),
     );
   }
 }
@@ -1007,6 +1028,10 @@ class Commitment {
     required this.unit,
     this.typeKey,
     this.decision = CommitmentDecision.committed,
+    this.validFrom,
+    this.validTo,
+    this.periodKey,
+    this.periodMilestoneId,
   });
 
   final String id;
@@ -1020,7 +1045,16 @@ class Commitment {
   final String unit;
   final String decision;
 
+  /// Commitment window; null for whole-campaign commitments.
+  final String? validFrom;
+  final String? validTo;
+
+  /// The period end date; null for whole-campaign commitments.
+  final String? periodKey;
+  final String? periodMilestoneId;
+
   bool get isNotTakingPart => decision == CommitmentDecision.notTakingPart;
+  bool get isWholeCampaign => validTo == null;
 
   factory Commitment.fromJson(Map<String, dynamic> json) {
     return Commitment(
@@ -1030,6 +1064,10 @@ class Commitment {
       targetValue: _num(json['targetValue']),
       unit: _string(json['unit']) ?? '',
       decision: _string(json['decision']) ?? CommitmentDecision.committed,
+      validFrom: _string(json['validFrom']),
+      validTo: _string(json['validTo']),
+      periodKey: _string(json['periodKey']),
+      periodMilestoneId: _string(json['periodMilestoneId']),
     );
   }
 }
@@ -1858,6 +1896,100 @@ class CampaignPeriod {
       name: _string(json['name']),
       isFinal: _bool(json['isFinal']),
       dayCount: _num(json['dayCount']).toInt(),
+    );
+  }
+}
+
+abstract final class PeriodStatus {
+  static const upcoming = 'upcoming';
+  static const open = 'open';
+  static const closed = 'closed';
+}
+
+abstract final class PeriodResultStatus {
+  static const awaiting = 'awaiting';
+  static const submitted = 'submitted';
+  static const pendingReview = 'pending_review';
+
+  /// Display-only: the period is closed and has no entries.
+  static const notSubmitted = 'not_submitted';
+  static const notApplicable = 'not_applicable';
+}
+
+class PeriodCommitment {
+  const PeriodCommitment({
+    required this.id,
+    required this.targetValue,
+    this.typeKey,
+    this.unit,
+    this.validFrom,
+    this.validTo,
+  });
+
+  final String id;
+  final String? typeKey;
+  final num targetValue;
+  final String? unit;
+  final String? validFrom;
+  final String? validTo;
+
+  factory PeriodCommitment.fromJson(Map<String, dynamic> json) {
+    return PeriodCommitment(
+      id: json['id'] as String,
+      typeKey: _string(json['typeKey']),
+      targetValue: _num(json['targetValue']),
+      unit: _string(json['unit']),
+      validFrom: _string(json['validFrom']),
+      validTo: _string(json['validTo']),
+    );
+  }
+}
+
+/// One campaign period seen from a participation
+/// (`GET /participations/:id/periods`).
+class ParticipationPeriod {
+  const ParticipationPeriod({
+    required this.period,
+    required this.status,
+    required this.resultStatus,
+    required this.coveredDays,
+    required this.approvedDays,
+    required this.achieved,
+    required this.target,
+    this.decision,
+    this.commitment,
+    this.unit,
+  });
+
+  final CampaignPeriod period;
+  final String status;
+  final String? decision;
+  final PeriodCommitment? commitment;
+  final String resultStatus;
+  final int coveredDays;
+  final int approvedDays;
+  final num achieved;
+  final num target;
+  final String? unit;
+
+  String get key => period.key;
+
+  factory ParticipationPeriod.fromJson(Map<String, dynamic> json) {
+    final commitment = json['commitment'];
+    return ParticipationPeriod(
+      period: CampaignPeriod.fromJson(json),
+      status: json['status'] as String? ?? PeriodStatus.open,
+      decision: _string(json['decision']),
+      commitment: commitment == null
+          ? null
+          : PeriodCommitment.fromJson(_map(commitment)),
+      resultStatus:
+          json['resultStatus'] as String? ?? PeriodResultStatus.awaiting,
+      coveredDays: _num(json['coveredDays']).toInt(),
+      approvedDays: _num(json['approvedDays']).toInt(),
+      achieved: _num(json['achieved']),
+      target: _num(json['target']),
+      unit: _string(json['unit']),
     );
   }
 }

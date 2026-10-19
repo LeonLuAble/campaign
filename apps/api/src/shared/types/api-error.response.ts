@@ -24,6 +24,8 @@ export const ERROR_CODES = [
   'MILESTONE_DATE_DUPLICATE',
   'MILESTONE_DATE_OUT_OF_WINDOW',
   'MILESTONE_LOCKED',
+  'PERIOD_CLOSED',
+  'COMMITMENT_TARGET_EXCEEDS_PERIOD',
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

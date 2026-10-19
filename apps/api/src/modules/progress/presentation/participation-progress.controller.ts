@@ -12,6 +12,8 @@ import { CurrentTenant } from '../../authorization/presentation/current-tenant.d
 import { PermissionsGuard } from '../../authorization/presentation/permissions.guard.js';
 import { RequirePermission } from '../../authorization/presentation/require-permission.decorator.js';
 import { TenantScopeGuard } from '../../authorization/presentation/tenant-scope.guard.js';
+import type { SupportedLocale } from '../../localization/application/locale-catalog.js';
+import { AcceptLanguage } from '../../localization/presentation/accept-language.decorator.js';
 import { ProgressService } from '../application/progress.service.js';
 
 @Controller('participations/:participationId')
@@ -35,5 +37,19 @@ export class ParticipationProgressController {
     @Param('participationId', ParseUUIDPipe) participationId: string,
   ) {
     return this.progress.getParticipantAchievement(tenant, participationId);
+  }
+
+  @Get('periods')
+  @RequirePermission(PERMISSIONS.PARTICIPATIONS_READ)
+  listPeriods(
+    @CurrentTenant() tenant: TenantContext,
+    @Param('participationId', ParseUUIDPipe) participationId: string,
+    @AcceptLanguage() locale: SupportedLocale,
+  ) {
+    return this.progress.listParticipationPeriods(
+      tenant,
+      participationId,
+      locale,
+    );
   }
 }

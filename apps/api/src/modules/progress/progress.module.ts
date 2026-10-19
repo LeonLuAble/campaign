@@ -8,6 +8,7 @@ import { AuthorizationModule } from '../authorization/authorization.module.js';
 import { CampaignsModule } from '../campaigns/campaigns.module.js';
 import { Commitment } from '../commitments/domain/commitment.entity.js';
 import { CommunitiesModule } from '../communities/communities.module.js';
+import { MilestonesModule } from '../milestones/milestones.module.js';
 import { Participation } from '../participation/domain/participation.entity.js';
 import { ParticipationModule } from '../participation/participation.module.js';
 import { VegetarianModule } from '../vegetarian/vegetarian.module.js';
@@ -30,6 +31,7 @@ import { ParticipationProgressController } from './presentation/participation-pr
     forwardRef(() => CampaignsModule),
     forwardRef(() => CommunitiesModule),
     forwardRef(() => ParticipationModule),
+    forwardRef(() => MilestonesModule),
   ],
   controllers: [CampaignProgressController, ParticipationProgressController],
   providers: [ProgressService],
