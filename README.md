@@ -156,12 +156,28 @@ npm run migration:show
 npm run migration:run
 ```
 
-### 5. Run admin web (Chrome)
+### 5. Run everything (API + admin + member in Chrome)
+
+With Docker available and `.env` configured (`CORS_ORIGINS` must include both web origins):
+
+```sh
+chmod +x infrastructure/scripts/run-local.sh   # once
+./infrastructure/scripts/run-local.sh          # or: --seed  /  --no-docker
+```
+
+Opens:
+- API: http://localhost:3000/api/v1
+- Admin: http://localhost:8080
+- Member app: http://localhost:9000
+
+Ctrl+C stops the processes this script started. Logs: `$TMPDIR/campaign-local/`.
+
+### 5b. Run admin web alone (Chrome)
 
 ```sh
 cd apps/admin
 flutter pub get
-flutter run -d chrome --dart-define=APP_ENV=development --dart-define=API_BASE_URL=http://localhost:3000/api/v1
+flutter run -d chrome --web-port=8080 --dart-define=APP_ENV=development --dart-define=API_BASE_URL=http://localhost:3000/api/v1
 ```
 
 Sign in with `demo.admin@example.test` / `DemoPassw0rd!`.
