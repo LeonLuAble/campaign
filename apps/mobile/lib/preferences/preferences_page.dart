@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:ui_kit/ui_kit.dart';
 
 import '../l10n/app_localizations.dart';
-import '../locale/app_locales.dart';
-import '../locale/locale_scope.dart';
 import '../session/api_scope.dart';
 import '../util/format.dart';
 
+/// Reminder and timezone preferences (language lives on Settings).
 class PreferencesPage extends StatefulWidget {
   const PreferencesPage({super.key});
 
@@ -38,7 +38,8 @@ class _PreferencesPageState extends State<PreferencesPage> {
   Future<void> _load() async {
     final session = ApiScope.of(context).session;
     try {
-      final prefs = await ApiScope.of(context).client.getNotificationPreferences();
+      final prefs =
+          await ApiScope.of(context).client.getNotificationPreferences();
       setState(() {
         _timezone.text = session.profile?.timezone ?? '';
         _reminderTime.text = prefs.reminderLocalTime;
@@ -55,13 +56,8 @@ class _PreferencesPageState extends State<PreferencesPage> {
 
   Future<void> _save() async {
     final l10n = AppLocalizations.of(context);
-    final locale = AppLocales.toApi(LocaleScope.of(context).locale);
     setState(() => _message = null);
     try {
-      await ApiScope.of(context).session.applyLocale(locale);
-      if (!mounted) {
-        return;
-      }
       if (_timezone.text.trim().isNotEmpty) {
         await ApiScope.of(context).client.updateMe(
           timezone: _timezone.text.trim(),
@@ -85,51 +81,47 @@ class _PreferencesPageState extends State<PreferencesPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final localeScope = LocaleScope.of(context);
+    final tokens = AppTokens.of(context);
     return Scaffold(
       appBar: AppBar(title: Text(l10n.preferencesTitle)),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(tokens.spaceLg),
               children: [
-                Text(l10n.languageLabel),
-                Wrap(
-                  spacing: 8,
-                  children: [
-                    OutlinedButton(
-                      onPressed: () =>
-                          localeScope.onLocaleChanged(AppLocales.en),
-                      child: Text(l10n.languageEnglish),
-                    ),
-                    OutlinedButton(
-                      onPressed: () =>
-                          localeScope.onLocaleChanged(AppLocales.zhHans),
-                      child: Text(l10n.languageChinese),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
                 TextField(
                   controller: _timezone,
-                  decoration: InputDecoration(labelText: l10n.timezoneLabel),
+                  decoration: InputDecoration(
+                    labelText: l10n.timezoneLabel,
+                    border: const OutlineInputBorder(),
+                  ),
                 ),
+                SizedBox(height: tokens.spaceMd),
                 SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
                   title: Text(l10n.remindersEnabled),
                   value: _remindersEnabled,
-                  onChanged: (value) => setState(() => _remindersEnabled = value),
+                  onChanged: (value) =>
+                      setState(() => _remindersEnabled = value),
                 ),
                 TextField(
                   controller: _reminderTime,
-                  decoration: InputDecoration(labelText: l10n.reminderTime),
+                  decoration: InputDecoration(
+                    labelText: l10n.reminderTime,
+                    border: const OutlineInputBorder(),
+                  ),
                 ),
-                const SizedBox(height: 16),
-                FilledButton(
-                  onPressed: _save,
-                  child: Text(l10n.savePreferences),
+                SizedBox(height: tokens.spaceLg),
+                SizedBox(
+                  height: 48,
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: _save,
+                    child: Text(l10n.savePreferences),
+                  ),
                 ),
                 if (_message != null) ...[
-                  const SizedBox(height: 12),
+                  SizedBox(height: tokens.spaceMd),
                   Text(_message!),
                 ],
               ],

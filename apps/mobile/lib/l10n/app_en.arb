@@ -311,5 +311,14 @@
       "achieved": { "type": "String" },
       "unit": { "type": "String" }
     }
+  },
+  "settingsTitle": "Settings",
+  "openSettings": "Settings",
+  "settingsLanguageSection": "Language",
+  "settingsLanguageHint": "Choose the language for this device.",
+  "meAccountSection": "Account",
+  "languageShortcutSemantics": "Language, currently {language}",
+  "@languageShortcutSemantics": {
+    "placeholders": { "language": { "type": "String" } }
   }
 }

@@ -6,6 +6,8 @@ import 'package:community_campaign/session/session_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'support/test_preferences.dart';
+
 const _config = AppConfig(
   environment: 'test',
   apiBaseUrl: 'http://localhost:3000/api/v1',
@@ -78,9 +80,14 @@ Future<void> _pumpCheckIn(
     tester.platformDispatcher.textScaleFactorTestValue = textScale;
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
   }
+  final preferences = await testPreferences(
+    onboardingComplete: true,
+    locale: locale,
+  );
   await tester.pumpWidget(
     CampaignApp(
       config: _config,
+      preferences: preferences,
       locale: locale,
       apiClient: api,
       tokenStore: store,

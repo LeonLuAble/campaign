@@ -726,4 +726,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String homeCommunityAggregate(String achieved, String unit) {
     return 'Our community has recorded $achieved $unit';
   }
+
+  @override
+  String get settingsTitle => 'Settings';
+
+  @override
+  String get openSettings => 'Settings';
+
+  @override
+  String get settingsLanguageSection => 'Language';
+
+  @override
+  String get settingsLanguageHint => 'Choose the language for this device.';
+
+  @override
+  String get meAccountSection => 'Account';
+
+  @override
+  String languageShortcutSemantics(String language) {
+    return 'Language, currently $language';
+  }
 }

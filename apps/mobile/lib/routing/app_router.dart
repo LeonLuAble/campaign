@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 
 import '../auth/activate_page.dart';
@@ -15,17 +16,20 @@ import '../dashboards/participant_dashboard_page.dart';
 import '../home/home_page.dart';
 import '../me/me_page.dart';
 import '../notifications/notifications_page.dart';
+import '../preferences/preferences_controller.dart';
 import '../preferences/preferences_page.dart';
 import '../session/session_controller.dart';
+import '../settings/settings_page.dart';
 import '../shell/mobile_shell.dart';
 
 GoRouter createRouter({
   required SessionController session,
+  required PreferencesController preferences,
   String? initialLocation,
 }) {
   return GoRouter(
     initialLocation: initialLocation ?? '/',
-    refreshListenable: session,
+    refreshListenable: Listenable.merge([session, preferences]),
     redirect: (context, state) {
       if (!session.ready) {
         return null;
@@ -44,7 +48,13 @@ GoRouter createRouter({
         if (session.sessionEndedCode == 'TOKEN_REUSED') {
           return '/login';
         }
-        return '/welcome';
+        return preferences.onboardingComplete ? '/login' : '/welcome';
+      }
+      // Welcome is first-launch only; later visits go to sign-in.
+      if (!loggedIn &&
+          location == '/welcome' &&
+          preferences.onboardingComplete) {
+        return '/login';
       }
       if (loggedIn && isPublic) {
         return '/';
@@ -184,6 +194,11 @@ GoRouter createRouter({
         path: '/notifications',
         name: 'notifications',
         builder: (context, state) => const NotificationsPage(),
+      ),
+      GoRoute(
+        path: '/settings',
+        name: 'settings',
+        builder: (context, state) => const SettingsPage(),
       ),
       GoRoute(
         path: '/preferences',

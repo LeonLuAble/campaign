@@ -705,6 +705,26 @@ class AppLocalizationsZh extends AppLocalizations {
   String homeCommunityAggregate(String achieved, String unit) {
     return '我们社区已记录 $achieved $unit';
   }
+
+  @override
+  String get settingsTitle => '设置';
+
+  @override
+  String get openSettings => '设置';
+
+  @override
+  String get settingsLanguageSection => '语言';
+
+  @override
+  String get settingsLanguageHint => '选择本机显示语言。';
+
+  @override
+  String get meAccountSection => '账户';
+
+  @override
+  String languageShortcutSemantics(String language) {
+    return '语言，当前为 $language';
+  }
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -1406,5 +1426,25 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   @override
   String homeCommunityAggregate(String achieved, String unit) {
     return '我们社区已记录 $achieved $unit';
+  }
+
+  @override
+  String get settingsTitle => '设置';
+
+  @override
+  String get openSettings => '设置';
+
+  @override
+  String get settingsLanguageSection => '语言';
+
+  @override
+  String get settingsLanguageHint => '选择本机显示语言。';
+
+  @override
+  String get meAccountSection => '账户';
+
+  @override
+  String languageShortcutSemantics(String language) {
+    return '语言，当前为 $language';
   }
 }

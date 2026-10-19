@@ -4,6 +4,8 @@ import 'package:community_campaign/config/app_config.dart';
 import 'package:community_campaign/locale/app_locales.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'support/test_preferences.dart';
+
 void main() {
   const config = AppConfig(
     environment: 'test',
@@ -11,9 +13,14 @@ void main() {
   );
 
   testWidgets('shows the English login screen when signed out', (tester) async {
+    final preferences = await testPreferences(
+      onboardingComplete: true,
+      locale: AppLocales.en,
+    );
     await tester.pumpWidget(
       CampaignApp(
         config: config,
+        preferences: preferences,
         locale: AppLocales.en,
         apiClient: FakeCampaignApiClient(),
         tokenStore: MemoryTokenStore(),
@@ -29,9 +36,14 @@ void main() {
   });
 
   testWidgets('shows the Simplified Chinese login screen', (tester) async {
+    final preferences = await testPreferences(
+      onboardingComplete: true,
+      locale: AppLocales.zhHans,
+    );
     await tester.pumpWidget(
       CampaignApp(
         config: config,
+        preferences: preferences,
         locale: AppLocales.zhHans,
         apiClient: FakeCampaignApiClient(),
         tokenStore: MemoryTokenStore(),
@@ -47,6 +59,7 @@ void main() {
   testWidgets('shows social buttons only when client IDs are configured', (
     tester,
   ) async {
+    final preferences = await testPreferences(onboardingComplete: true);
     await tester.pumpWidget(
       CampaignApp(
         config: const AppConfig(
@@ -55,6 +68,7 @@ void main() {
           googleClientId: 'google-id',
           appleClientId: 'apple-id',
         ),
+        preferences: preferences,
         locale: AppLocales.en,
         apiClient: FakeCampaignApiClient(),
         tokenStore: MemoryTokenStore(),

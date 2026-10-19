@@ -277,5 +277,14 @@
       "achieved": { "type": "String" },
       "unit": { "type": "String" }
     }
+  },
+  "settingsTitle": "设置",
+  "openSettings": "设置",
+  "settingsLanguageSection": "语言",
+  "settingsLanguageHint": "选择本机显示语言。",
+  "meAccountSection": "账户",
+  "languageShortcutSemantics": "语言，当前为 {language}",
+  "@languageShortcutSemantics": {
+    "placeholders": { "language": { "type": "String" } }
   }
 }

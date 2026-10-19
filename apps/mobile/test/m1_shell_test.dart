@@ -6,6 +6,8 @@ import 'package:community_campaign/locale/app_locales.dart';
 import 'package:community_campaign/session/session_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'support/test_preferences.dart';
 import 'package:ui_kit/ui_kit.dart';
 
 const _config = AppConfig(
@@ -31,10 +33,16 @@ Future<void> _pumpApp(
   SessionController? session,
   Locale locale = AppLocales.en,
   String? initialLocation,
+  bool onboardingComplete = false,
 }) async {
+  final preferences = await testPreferences(
+    onboardingComplete: onboardingComplete,
+    locale: locale,
+  );
   await tester.pumpWidget(
     CampaignApp(
       config: _config,
+      preferences: preferences,
       locale: locale,
       apiClient: api,
       tokenStore: tokenStore ?? MemoryTokenStore(),
@@ -182,19 +190,26 @@ void main() {
     expect(find.byType(NavigationBar), findsNothing);
   });
 
-  testWidgets('language switch on Me updates UI strings', (tester) async {
-    await _pumpApp(tester, api: FakeCampaignApiClient(), initialLocation: '/login');
+  testWidgets('language switch on Settings updates UI strings', (tester) async {
+    await _pumpApp(
+      tester,
+      api: FakeCampaignApiClient(),
+      initialLocation: '/login',
+      onboardingComplete: true,
+    );
     await _signIn(tester);
 
     await tester.tap(find.text('Me'));
     await tester.pumpAndSettle();
     expect(find.text('Sign out'), findsOneWidget);
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.text('简体中文'));
     await tester.pumpAndSettle();
 
-    expect(find.text('退出登录'), findsOneWidget);
-    expect(find.text('我的'), findsWidgets);
+    expect(find.text('设置'), findsWidgets);
+    expect(find.text('语言'), findsOneWidget);
   });
 
   testWidgets('Home empty state when there are no campaigns', (tester) async {

@@ -216,5 +216,11 @@
   "homeNextActionCheckIn": "下一步：今日打卡",
   "homeNextActionCommunity": "下一步：查看社区进度",
   "homeNextActionJoin": "下一步：参加此活动",
-  "homeCommunityAggregate": "我们社区已记录 {achieved} {unit}"
+  "homeCommunityAggregate": "我们社区已记录 {achieved} {unit}",
+  "settingsTitle": "设置",
+  "openSettings": "设置",
+  "settingsLanguageSection": "语言",
+  "settingsLanguageHint": "选择本机显示语言。",
+  "meAccountSection": "账户",
+  "languageShortcutSemantics": "语言，当前为 {language}"
 }

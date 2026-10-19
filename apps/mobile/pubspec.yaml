@@ -17,6 +17,7 @@ dependencies:
     path: ../../packages/api_client
   ui_kit:
     path: ../../packages/ui_kit
+  shared_preferences: ^2.5.6
 
 dev_dependencies:
   flutter_test:

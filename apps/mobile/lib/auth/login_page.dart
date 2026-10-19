@@ -4,6 +4,9 @@ import 'package:ui_kit/ui_kit.dart';
 
 import '../config/app_config_scope.dart';
 import '../l10n/app_localizations.dart';
+import '../locale/locale_scope.dart';
+import '../preferences/language_control.dart';
+import '../preferences/preferences_scope.dart';
 import '../session/api_scope.dart';
 import '../util/format.dart';
 
@@ -30,6 +33,7 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _submit() async {
     final l10n = AppLocalizations.of(context);
     final session = ApiScope.of(context).session;
+    final prefs = PreferencesScope.of(context);
     final identifier = _identifier.text.trim();
     final password = _password.text;
     if (!looksLikeIdentifier(identifier)) {
@@ -50,6 +54,8 @@ class _LoginPageState extends State<LoginPage> {
         identifier: identifier,
         password: password,
       );
+      // Sync device language to the profile after sign-in.
+      await session.applyLocale(prefs.settings.localeTag);
     } catch (error) {
       setState(() => _error = localizeApiError(l10n, error));
     } finally {
@@ -72,13 +78,24 @@ class _LoginPageState extends State<LoginPage> {
     final config = AppConfigScope.of(context);
     final tokens = AppTokens.of(context);
     final session = ApiScope.of(context).session;
+    final localeScope = LocaleScope.of(context);
     final displayError = _error ??
         (session.sessionEndedCode == 'TOKEN_REUSED'
             ? l10n.errorTokenReused
             : null);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.loginTitle)),
+      appBar: AppBar(
+        title: Text(l10n.loginTitle),
+        actions: [
+          LanguageShortcutButton(
+            value: localeScope.locale,
+            onChanged: (next) {
+              localeScope.onLocaleChanged(next);
+            },
+          ),
+        ],
+      ),
       body: ListView(
         padding: EdgeInsets.all(tokens.spaceXl),
         children: [
@@ -150,13 +167,6 @@ class _LoginPageState extends State<LoginPage> {
             child: TextButton(
               onPressed: () => context.go('/reset-password'),
               child: Text(l10n.forgotPassword),
-            ),
-          ),
-          SizedBox(
-            height: 48,
-            child: TextButton(
-              onPressed: () => context.go('/welcome'),
-              child: Text(l10n.welcomeBackLink),
             ),
           ),
         ],

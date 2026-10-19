@@ -1400,6 +1400,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Our community has recorded {achieved} {unit}'**
   String homeCommunityAggregate(String achieved, String unit);
+
+  /// No description provided for @settingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsTitle;
+
+  /// No description provided for @openSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get openSettings;
+
+  /// No description provided for @settingsLanguageSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get settingsLanguageSection;
+
+  /// No description provided for @settingsLanguageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the language for this device.'**
+  String get settingsLanguageHint;
+
+  /// No description provided for @meAccountSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get meAccountSection;
+
+  /// No description provided for @languageShortcutSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Language, currently {language}'**
+  String languageShortcutSemantics(String language);
 }
 
 class _AppLocalizationsDelegate

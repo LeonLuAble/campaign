@@ -6,6 +6,8 @@ import 'package:community_campaign/locale/app_locales.dart';
 import 'package:community_campaign/session/session_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'support/test_preferences.dart';
 import 'package:ui_kit/ui_kit.dart';
 
 const _config = AppConfig(
@@ -225,9 +227,14 @@ Future<void> _pumpCommunity(
       tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
     );
   }
+  final preferences = await testPreferences(
+    onboardingComplete: true,
+    locale: locale,
+  );
   await tester.pumpWidget(
     CampaignApp(
       config: _config,
+      preferences: preferences,
       locale: locale,
       apiClient: api,
       tokenStore: store,

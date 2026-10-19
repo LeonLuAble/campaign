@@ -5,6 +5,8 @@ import 'package:community_campaign/locale/app_locales.dart';
 import 'package:community_campaign/session/session_controller.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'support/test_preferences.dart';
+
 void main() {
   const config = AppConfig(
     environment: 'test',
@@ -23,9 +25,11 @@ void main() {
     final firstSession = SessionController(api: firstApi);
     await firstSession.restore();
 
+    final preferences = await testPreferences(onboardingComplete: true);
     await tester.pumpWidget(
       CampaignApp(
         config: config,
+        preferences: preferences,
         locale: AppLocales.en,
         apiClient: firstApi,
         tokenStore: store,
@@ -44,6 +48,7 @@ void main() {
     await tester.pumpWidget(
       CampaignApp(
         config: config,
+        preferences: preferences,
         locale: AppLocales.en,
         apiClient: secondApi,
         tokenStore: store,
@@ -66,9 +71,11 @@ void main() {
     final session = SessionController(api: api);
     await session.restore();
 
+    final preferences = await testPreferences(onboardingComplete: true);
     await tester.pumpWidget(
       CampaignApp(
         config: config,
+        preferences: preferences,
         locale: AppLocales.en,
         apiClient: api,
         tokenStore: store,

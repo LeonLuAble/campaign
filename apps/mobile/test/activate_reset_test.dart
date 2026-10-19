@@ -5,6 +5,8 @@ import 'package:community_campaign/locale/app_locales.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'support/test_preferences.dart';
+
 void main() {
   const config = AppConfig(
     environment: 'test',
@@ -14,9 +16,11 @@ void main() {
   testWidgets('activation and password reset screens accept a token', (
     tester,
   ) async {
+    final preferences = await testPreferences(onboardingComplete: true);
     await tester.pumpWidget(
       CampaignApp(
         config: config,
+        preferences: preferences,
         locale: AppLocales.en,
         apiClient: FakeCampaignApiClient(),
         tokenStore: MemoryTokenStore(),

@@ -3,12 +3,22 @@ import 'package:go_router/go_router.dart';
 import 'package:ui_kit/ui_kit.dart';
 
 import '../l10n/app_localizations.dart';
-import '../locale/app_locales.dart';
 import '../locale/locale_scope.dart';
+import '../preferences/language_control.dart';
+import '../preferences/preferences_scope.dart';
 
 /// First-run welcome + language picker (no self-registration).
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
+
+  Future<void> _finish(BuildContext context, {required String next}) async {
+    final prefs = PreferencesScope.of(context);
+    await prefs.completeOnboarding();
+    if (!context.mounted) {
+      return;
+    }
+    context.go(next);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,31 +54,15 @@ class WelcomePage extends StatelessWidget {
             SizedBox(height: tokens.spaceXl),
             Text(l10n.languageLabel, style: theme.textTheme.titleMedium),
             SizedBox(height: tokens.spaceSm),
-            SegmentedButton<Locale>(
-              segments: [
-                ButtonSegment(
-                  value: AppLocales.zhHans,
-                  label: Text(l10n.languageChinese),
-                ),
-                ButtonSegment(
-                  value: AppLocales.en,
-                  label: Text(l10n.languageEnglish),
-                ),
-              ],
-              selected: {
-                localeScope.locale.languageCode == 'zh'
-                    ? AppLocales.zhHans
-                    : AppLocales.en,
-              },
-              onSelectionChanged: (value) {
-                localeScope.onLocaleChanged(value.first);
-              },
+            LanguageSegmentedControl(
+              value: localeScope.locale,
+              onChanged: localeScope.onLocaleChanged,
             ),
             SizedBox(height: tokens.spaceXxl),
             SizedBox(
               height: 48,
               child: FilledButton(
-                onPressed: () => context.go('/login'),
+                onPressed: () => _finish(context, next: '/login'),
                 child: Text(l10n.welcomeContinue),
               ),
             ),
@@ -76,7 +70,7 @@ class WelcomePage extends StatelessWidget {
             SizedBox(
               height: 48,
               child: TextButton(
-                onPressed: () => context.go('/activate'),
+                onPressed: () => _finish(context, next: '/activate'),
                 child: Text(l10n.activateLink),
               ),
             ),

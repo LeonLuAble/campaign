@@ -3,8 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:ui_kit/ui_kit.dart';
 
 import '../l10n/app_localizations.dart';
-import '../locale/app_locales.dart';
-import '../locale/locale_scope.dart';
 import '../session/api_scope.dart';
 
 class MePage extends StatelessWidget {
@@ -14,7 +12,6 @@ class MePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final session = ApiScope.of(context).session;
-    final localeScope = LocaleScope.of(context);
     final tokens = AppTokens.of(context);
 
     return Scaffold(
@@ -43,39 +40,16 @@ class MePage extends StatelessWidget {
               ],
               SizedBox(height: tokens.spaceXl),
               Text(
-                l10n.languageLabel,
+                l10n.meAccountSection,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               SizedBox(height: tokens.spaceSm),
-              SegmentedButton<Locale>(
-                segments: [
-                  ButtonSegment(
-                    value: AppLocales.zhHans,
-                    label: Text(l10n.languageChinese),
-                  ),
-                  ButtonSegment(
-                    value: AppLocales.en,
-                    label: Text(l10n.languageEnglish),
-                  ),
-                ],
-                selected: {
-                  localeScope.locale.languageCode == 'zh'
-                      ? AppLocales.zhHans
-                      : AppLocales.en,
-                },
-                onSelectionChanged: (value) async {
-                  final next = value.first;
-                  localeScope.onLocaleChanged(next);
-                  await session.applyLocale(AppLocales.toApi(next));
-                },
-              ),
-              SizedBox(height: tokens.spaceXl),
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.settings_outlined),
-                title: Text(l10n.openPreferences),
+                title: Text(l10n.openSettings),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () => context.push('/preferences'),
+                onTap: () => context.push('/settings'),
                 minVerticalPadding: 16,
               ),
               ListTile(
@@ -84,6 +58,14 @@ class MePage extends StatelessWidget {
                 title: Text(l10n.openNotifications),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.push('/notifications'),
+                minVerticalPadding: 16,
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.alarm_outlined),
+                title: Text(l10n.openPreferences),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.push('/preferences'),
                 minVerticalPadding: 16,
               ),
               SizedBox(height: tokens.spaceXl),
