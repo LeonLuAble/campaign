@@ -15,6 +15,7 @@ import { AUTO_ENROLMENT_SERVICE } from './application/auto-enrolment.tokens.js';
 import { ParticipationService } from './application/participation.service.js';
 import { Participation } from './domain/participation.entity.js';
 import { CampaignAutoEnrolController } from './presentation/campaign-auto-enrol.controller.js';
+import { CampaignParticipationSummaryController } from './presentation/campaign-participation-summary.controller.js';
 import { CampaignParticipationsController } from './presentation/campaign-participations.controller.js';
 import { ParticipationsController } from './presentation/participations.controller.js';
 
@@ -32,6 +33,7 @@ import { ParticipationsController } from './presentation/participations.controll
   controllers: [
     CampaignParticipationsController,
     CampaignAutoEnrolController,
+    CampaignParticipationSummaryController,
     ParticipationsController,
   ],
   providers: [

@@ -612,24 +612,45 @@ export interface UpdateActionDefinitionRequest {
   settings?: Record<string, unknown>;
 }
 
+export type CommitmentDecision = 'committed' | 'not_taking_part';
+
 export interface CommitmentResponse {
   id: string;
   customerId: string;
   campaignId: string;
   participationId: string;
+  decision: CommitmentDecision;
   typeKey: string | null;
+  /** 0 when `decision` is `not_taking_part`. */
   targetValue: number;
-  unit: string;
+  /** null when `decision` is `not_taking_part`. */
+  unit: string | null;
   payload: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }
 
+/**
+ * `decision` defaults to `committed`, which requires `targetValue` and `unit`.
+ * `not_taking_part` ignores `typeKey`, `targetValue`, `unit` and `payload`.
+ */
 export interface CreateCommitmentRequest {
+  decision?: CommitmentDecision;
   typeKey?: string;
-  targetValue: number;
-  unit: string;
+  targetValue?: number;
+  unit?: string;
   payload?: Record<string, unknown>;
+}
+
+export interface ParticipationSummaryResponse {
+  customerId: string;
+  campaignId: string;
+  communityId: string | null;
+  enrolled: number;
+  awaitingCommitment: number;
+  takingPart: number;
+  notTakingPart: number;
+  withdrawn: number;
 }
 
 export interface CommitmentChoiceOption {
@@ -741,6 +762,7 @@ export interface ParticipantProgressResponse {
   participationId: string;
   userId: string;
   communityId: string | null;
+  engagement: ParticipationEngagement;
   timezone: string;
   commitment: {
     id: string;
@@ -775,8 +797,12 @@ export interface AggregateProgressResponse {
   campaignId: string;
   communityId: string | null;
   timezone: string;
+  /** Enrolled (non-withdrawn) participations. */
   participantCount: number;
+  /** Enrolled participations that committed to a target. */
   committedParticipantCount: number;
+  notTakingPartCount: number;
+  awaitingCommitmentCount: number;
   units: ProgressUnit[];
 }
 
@@ -1130,6 +1156,8 @@ export interface AggregateReportResponse {
   progress: {
     participantCount: number;
     committedParticipantCount: number;
+    notTakingPartCount: number;
+    awaitingCommitmentCount: number;
     units: ReportUnit[];
   };
   measurements: ReportMeasurement[];

@@ -82,6 +82,7 @@ Participation:
 - GET /campaigns/:campaignId/participations → requires `participations.read`. Members see only their own row; tenant admins see all. Response includes `enrolmentSource` (`self|auto|admin`) and `engagement` (`awaiting_commitment|taking_part|not_taking_part|withdrawn`).
 - GET /participations/:participationId → requires `participations.read`
 - POST /participations/:participationId/withdraw → self-withdraw is allowed for the participant in `opt_in` campaigns. In `auto` campaigns, member self-withdraw returns 409 `ENROLMENT_AUTO_MANAGED`; admins with `participations.update` may still withdraw. Idempotent if already withdrawn. Re-enroll restores the same row (`opt_in` only resurrects withdrawn).
+- GET /campaigns/:campaignId/participation-summary?communityId= → requires `progress.read`. Aggregate counts only (no user or participation ids): `{ customerId, campaignId, communityId, enrolled, awaitingCommitment, takingPart, notTakingPart, withdrawn }`. `enrolled` = awaitingCommitment + takingPart + notTakingPart (withdrawn is counted separately). Optional `communityId` scopes to the node plus descendants and requires visibility of that community; tenant-level participations with a null community are omitted from a scoped summary.
 - POST /campaigns/:campaignId/auto-enrol/sync → requires `participations.create`. Idempotent reconcile for `enrolmentMode=auto` campaigns; returns `{ created, alreadyEnrolled, skipped }`. Auto-enrol also runs on publish/start, membership create/reactivate/invite/import (member role), and member campaign list/get self-heal. Never reactivates withdrawn rows; only users with the system `member` role are auto-enrolled.
 
 Actions (tenant-scoped via campaign/participation/action ids; generic recording, no vegetarian schema in this module):
@@ -100,10 +101,10 @@ Actions (tenant-scoped via campaign/participation/action ids; generic recording,
 
 Commitments:
 - GET `/campaigns/:campaignId/commitment-options` → requires `commitments.read`. Returns the campaign rule strategy’s pledge choices, units, suggested targets, and whether the target uses campaign duration. Each choice includes `name` (primary), plus localized `label` and `description` from the `translations` catalog (vegetarian namespace) per `Accept-Language`. Vegetarian campaigns (`rulesStrategy = "vegetarian"`) return the seven 速素数数 choices. Generic campaigns return empty `choices`. Flutter must not hardcode choice catalogs.
-- POST /participations/:participationId/commitments `{ typeKey?, targetValue, unit, payload? }` → 201 create-or-replace (one commitment per participation). Members may pledge only on their own enrolled participation (`commitments.create`). Acting on another user requires `commitments.update`. Allowed while the campaign is published or started.
+- POST /participations/:participationId/commitments `{ decision?, typeKey?, targetValue?, unit?, payload? }` → 201 create-or-replace (one commitment per participation). `decision` is `committed` (default; `targetValue` and `unit` required, validated by the rule strategy) or `not_taking_part` (no option needed; `typeKey`, `targetValue`, `unit` and `payload` are ignored and stored as no option, `targetValue` 0 and `unit` null). The participant may switch between the two on the same row while the campaign is published or started. Members may decide only on their own enrolled participation (`commitments.create`). Acting on another user requires `commitments.update`. Response includes `decision`; `unit` is null for `not_taking_part`. The participation `engagement` follows the decision (`taking_part` / `not_taking_part`).
 - GET /participations/:participationId/commitments → requires `commitments.read`. Members see only their own.
 - GET /commitments/:commitmentId → requires `commitments.read`
-- PATCH /commitments/:commitmentId → admin correction; requires `commitments.update`
+- PATCH /commitments/:commitmentId → admin correction; requires `commitments.update`. A `not_taking_part` decision has no target to correct (400); record a `committed` decision via POST instead.
 
 Vegetarian campaign rules (速素数数) are not hardcoded in commitments/actions. Campaigns with `configuration.rulesStrategy = "vegetarian"` are validated by the vegetarian module (seven choices, days/meals units). Choice-to-target mapping for progress (including 已全素 campaign-duration days) also lives in that module.
 
@@ -113,6 +114,8 @@ Progress (computed from source on read; counts only `approved` submissions on no
 - GET `/campaigns/:campaignId/progress` → requires `progress.read`. Aggregate totals by unit only; never includes user or participation ids.
 - GET `/campaigns/:campaignId/communities/:communityId/progress` → requires `progress.read` and visibility of that community. Subtree = the node plus descendants. Tenant-level participations with a null community are omitted from community aggregates.
 - GET `/campaigns/:campaignId/achievements` → requires `achievements.read`. Members receive only their own row; callers with `actions.update` or `participations.update` receive all rows in the tenant campaign.
+
+Only enrolled participations count. Withdrawn participations are excluded from every aggregate, achievement list and milestone/dashboard/report total; a withdrawn participant can still read their own `/participations/:id/progress`. A `not_taking_part` participant contributes 0 target and 0 achieved (their recorded actions are not counted), so opting out never lowers a community percentage. Participant progress includes `engagement`. Aggregates (`/progress`, dashboards, reports) return `participantCount` (enrolled), `committedParticipantCount` (taking part), `notTakingPartCount` and `awaitingCommitmentCount`.
 
 Completion is `achieved / target * 100` and is not capped. Status: `none` (no target), `not_started`, `in_progress`, `achieved` (exactly 100%), `exceeded` (>100%).
 
@@ -159,7 +162,7 @@ Notifications (in-app inbox plus reminder scheduling; SMS/push stay behind env-s
 - GET `/notifications/:notificationId?customerId=` → requires `notifications.read`
 - POST `/notifications/:notificationId/read?customerId=` → requires `notifications.update`. Own row only.
 - GET/PUT `/me/notification-preferences` `{ inAppEnabled?, emailEnabled?, smsEnabled?, pushEnabled?, remindersEnabled?, reminderLocalTime? }` — user-level opt-out. SMS and push default off. Daily action reminders default on at `09:00` in the user timezone (campaign timezone if unset).
-- Campaign events that notify enrolled participants: `campaign_started` on start, `milestone_achieved` on the first evaluation that crosses, `action_reminder` once per campaign-local day when no approved action exists after the local reminder time. Activation and password-reset messages are unchanged transactional auth mail and ignore campaign opt-out.
+- Campaign events that notify enrolled participants: `campaign_started` on start, `milestone_achieved` on the first evaluation that crosses, `action_reminder` once per campaign-local day when no approved action exists after the local reminder time (never sent to `not_taking_part` or withdrawn participants; members still awaiting a decision are reminded). Activation and password-reset messages are unchanged transactional auth mail and ignore campaign opt-out.
 
 Localization (MVP languages are `en` and `zh-Hans`; Malay is not in the MVP):
 - PATCH `/me` `{ locale?: 'en' | 'zh-Hans', timezone?: IANA }` — user locale preference used for notification templates.
@@ -168,6 +171,6 @@ Localization (MVP languages are `en` and `zh-Hans`; Malay is not in the MVP):
 Reporting (reuses Phase 6/7 aggregate privacy: no private individual rows in campaign/community reports, no rankings; contact PII is never exported):
 - GET `/participations/:participationId/report` → requires `reports.read`. Members see only their own.
 - GET `/campaigns/:campaignId/report` and `/campaigns/:campaignId/communities/:communityId/report` → anonymous aggregates.
-- GET `.../report/export` → `text/csv`; requires `reports.export`. Structured log `report_exported`. Campaign/community CSV omit `userId` and `participationId`.
+- GET `.../report/export` → `text/csv`; requires `reports.export`. Structured log `report_exported`. Campaign/community CSV omit `userId` and `participationId`. Aggregate report `progress` and the CSV include `participantCount`, `committedParticipantCount`, `notTakingPartCount` and `awaitingCommitmentCount` (columns follow `committedParticipantCount`).
 
 Authorization must enforce authentication, tenant scope, permission, community scope, privacy and ownership where applicable. Never trust client-supplied tenantId.

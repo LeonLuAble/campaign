@@ -2,6 +2,7 @@ import {
   calendarDateInTimeZone,
   isAtOrAfterLocalTime,
 } from '../../campaigns/application/timezone.js';
+import type { ParticipationEngagement } from '../../participation/domain/participation-engagement.js';
 import type { NotificationPreferenceSnapshot } from './notification-preferences.js';
 
 export interface ReminderCandidate {
@@ -14,6 +15,7 @@ export interface ReminderCandidate {
   participationId: string;
   userId: string;
   userTimezone: string | null;
+  engagement: ParticipationEngagement;
 }
 
 export function reminderTimeZone(candidate: ReminderCandidate): string {
@@ -28,6 +30,12 @@ export function shouldSendActionReminder(input: {
 }): { eligible: boolean; occurredOn: string; reason?: string } {
   const { now, candidate, preferences, hasApprovedActionToday } = input;
   const occurredOn = calendarDateInTimeZone(now, candidate.campaignTimezone);
+  if (candidate.engagement === 'withdrawn') {
+    return { eligible: false, occurredOn, reason: 'withdrawn' };
+  }
+  if (candidate.engagement === 'not_taking_part') {
+    return { eligible: false, occurredOn, reason: 'not_taking_part' };
+  }
   if (!preferences.remindersEnabled) {
     return { eligible: false, occurredOn, reason: 'reminders_disabled' };
   }

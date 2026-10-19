@@ -189,14 +189,22 @@ abstract class CampaignApiClient {
   Future<Participation> joinCampaign(String campaignId);
   Future<Participation> withdrawParticipation(String participationId);
   Future<AutoEnrolSyncResult> syncAutoEnrolment(String campaignId);
+  Future<ParticipationSummary> getParticipationSummary(
+    String campaignId, {
+    String? communityId,
+  });
 
   Future<CommitmentOptions> getCommitmentOptions(String campaignId);
   Future<List<Commitment>> listCommitments(String participationId);
+
+  /// Create-or-replace the participant's decision. [targetValue] and [unit]
+  /// are required unless [decision] is [CommitmentDecision.notTakingPart].
   Future<Commitment> createCommitment({
     required String participationId,
     String? typeKey,
-    required num targetValue,
-    required String unit,
+    num? targetValue,
+    String? unit,
+    String decision = CommitmentDecision.committed,
   });
 
   Future<List<ActionDefinition>> listActionDefinitions(String campaignId);
@@ -1050,6 +1058,18 @@ class HttpCampaignApiClient implements CampaignApiClient {
   }
 
   @override
+  Future<ParticipationSummary> getParticipationSummary(
+    String campaignId, {
+    String? communityId,
+  }) {
+    return _get(
+      '/campaigns/$campaignId/participation-summary',
+      query: {if (communityId != null) 'communityId': communityId},
+      parser: ParticipationSummary.fromJson,
+    );
+  }
+
+  @override
   Future<CommitmentOptions> getCommitmentOptions(String campaignId) {
     return _get(
       '/campaigns/$campaignId/commitment-options',
@@ -1069,15 +1089,18 @@ class HttpCampaignApiClient implements CampaignApiClient {
   Future<Commitment> createCommitment({
     required String participationId,
     String? typeKey,
-    required num targetValue,
-    required String unit,
+    num? targetValue,
+    String? unit,
+    String decision = CommitmentDecision.committed,
   }) {
+    final notTakingPart = decision == CommitmentDecision.notTakingPart;
     return _post(
       '/participations/$participationId/commitments',
       data: {
-        if (typeKey != null) 'typeKey': typeKey,
-        'targetValue': targetValue,
-        'unit': unit,
+        'decision': decision,
+        if (!notTakingPart && typeKey != null) 'typeKey': typeKey,
+        if (!notTakingPart && targetValue != null) 'targetValue': targetValue,
+        if (!notTakingPart && unit != null) 'unit': unit,
       },
       parser: Commitment.fromJson,
     );

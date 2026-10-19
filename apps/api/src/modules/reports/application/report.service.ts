@@ -49,6 +49,8 @@ export interface AggregateReportResponse {
   progress: {
     participantCount: number;
     committedParticipantCount: number;
+    notTakingPartCount: number;
+    awaitingCommitmentCount: number;
     units: Array<{
       unit: string;
       achievedValue: number;
@@ -193,6 +195,8 @@ export class ReportService {
         participantCount: dashboard.progress.participantCount,
         committedParticipantCount:
           dashboard.progress.committedParticipantCount,
+        notTakingPartCount: dashboard.progress.notTakingPartCount,
+        awaitingCommitmentCount: dashboard.progress.awaitingCommitmentCount,
         units: dashboard.progress.units.map((unit) => ({
           unit: unit.unit,
           achievedValue: unit.achievedValue,
@@ -239,6 +243,10 @@ export class ReportService {
       participantCount: String(report.progress.participantCount),
       committedParticipantCount: String(
         report.progress.committedParticipantCount,
+      ),
+      notTakingPartCount: String(report.progress.notTakingPartCount),
+      awaitingCommitmentCount: String(
+        report.progress.awaitingCommitmentCount,
       ),
     });
     return this.flattenRows(base, report);

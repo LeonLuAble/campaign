@@ -1910,6 +1910,45 @@ class FakeCampaignApiClient implements CampaignApiClient {
   }
 
   @override
+  Future<ParticipationSummary> getParticipationSummary(
+    String campaignId, {
+    String? communityId,
+  }) async {
+    Set<String>? subtree;
+    if (communityId != null) {
+      subtree = {communityId};
+      var grew = true;
+      while (grew) {
+        grew = false;
+        for (final community in communities) {
+          if (community.parentId != null &&
+              subtree.contains(community.parentId) &&
+              subtree.add(community.id)) {
+            grew = true;
+          }
+        }
+      }
+    }
+    final rows = participations.where(
+      (row) =>
+          row.campaignId == campaignId &&
+          (subtree == null ||
+              (row.communityId != null && subtree.contains(row.communityId))),
+    );
+    int count(String engagement) =>
+        rows.where((row) => row.engagement == engagement).length;
+    return ParticipationSummary(
+      campaignId: campaignId,
+      communityId: communityId,
+      enrolled: rows.where((row) => row.isEnrolled).length,
+      awaitingCommitment: count('awaiting_commitment'),
+      takingPart: count('taking_part'),
+      notTakingPart: count('not_taking_part'),
+      withdrawn: count('withdrawn'),
+    );
+  }
+
+  @override
   Future<AutoEnrolSyncResult> syncAutoEnrolment(String campaignId) async {
     final matches = campaigns.where((row) => row.id == campaignId);
     if (matches.isEmpty) {
@@ -1964,21 +2003,51 @@ class FakeCampaignApiClient implements CampaignApiClient {
   Future<Commitment> createCommitment({
     required String participationId,
     String? typeKey,
-    required num targetValue,
-    required String unit,
+    num? targetValue,
+    String? unit,
+    String decision = CommitmentDecision.committed,
   }) async {
+    final notTakingPart = decision == CommitmentDecision.notTakingPart;
+    if (!notTakingPart &&
+        (targetValue == null || unit == null || unit.trim().isEmpty)) {
+      _throw(
+        'VALIDATION_ERROR',
+        status: 400,
+        message: 'targetValue and unit are required for a commitment',
+      );
+    }
+    final existing = commitments
+        .where((row) => row.participationId == participationId)
+        .firstOrNull;
     final created = Commitment(
-      id: 'commit-${commitments.length + 1}',
+      id: existing?.id ?? 'commit-${commitments.length + 1}',
       participationId: participationId,
-      typeKey: typeKey,
-      targetValue: targetValue,
-      unit: unit,
+      typeKey: notTakingPart ? null : typeKey,
+      targetValue: notTakingPart ? 0 : targetValue!,
+      unit: notTakingPart ? '' : unit!,
+      decision: decision,
     );
     // Create-or-replace: one commitment per participation.
     commitments = [
       for (final row in commitments)
         if (row.participationId != participationId) row,
       created,
+    ];
+    participations = [
+      for (final row in participations)
+        if (row.id == participationId && row.isEnrolled)
+          Participation(
+            id: row.id,
+            customerId: row.customerId,
+            campaignId: row.campaignId,
+            userId: row.userId,
+            communityId: row.communityId,
+            status: row.status,
+            enrolmentSource: row.enrolmentSource,
+            engagement: notTakingPart ? 'not_taking_part' : 'taking_part',
+          )
+        else
+          row,
     ];
     return created;
   }

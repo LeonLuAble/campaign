@@ -16,7 +16,10 @@ import { CustomerService } from '../../customers/application/customer.service.js
 import { ParticipationStatus } from '../../participation/domain/participation.entity.js';
 import { ParticipationService } from '../../participation/application/participation.service.js';
 import { VegetarianRuleStrategy } from '../../vegetarian/application/vegetarian-rules.js';
-import { Commitment } from '../domain/commitment.entity.js';
+import {
+  Commitment,
+  CommitmentDecision,
+} from '../domain/commitment.entity.js';
 import { CommitmentService } from './commitment.service.js';
 
 const tenantA = '11111111-1111-4111-8111-111111111111';
@@ -71,6 +74,7 @@ function commitment(overrides: Partial<Commitment> = {}): Commitment {
     tenant_id: tenantA,
     campaign_id: campaignId,
     participation_id: participationId,
+    decision: CommitmentDecision.COMMITTED,
     type_key: 'fa_yuan_su',
     target_value: 30,
     unit: 'days',
@@ -240,5 +244,107 @@ describe('CommitmentService', () => {
       { targetValue: 40 },
     );
     expect(updated.targetValue).toBe(40);
+  });
+
+  it('records not taking part with a zero target and no option', async () => {
+    commitmentRepository.findOne.mockResolvedValue(null);
+    const declined = await service.createOrReplace(
+      memberContext(),
+      participationId,
+      userId,
+      { decision: CommitmentDecision.NOT_TAKING_PART },
+    );
+    expect(declined).toMatchObject({
+      decision: 'not_taking_part',
+      typeKey: null,
+      targetValue: 0,
+      unit: null,
+    });
+    expect(commitmentRepository.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        decision: CommitmentDecision.NOT_TAKING_PART,
+        target_value: 0,
+        unit: null,
+        type_key: null,
+      }),
+    );
+  });
+
+  it('switches an existing commitment to not taking part and back on the same row', async () => {
+    const row = commitment();
+    commitmentRepository.findOne.mockResolvedValue(row);
+    const declined = await service.createOrReplace(
+      memberContext(),
+      participationId,
+      userId,
+      { decision: CommitmentDecision.NOT_TAKING_PART },
+    );
+    expect(declined).toMatchObject({
+      id: 'commitment-1',
+      decision: 'not_taking_part',
+      targetValue: 0,
+    });
+
+    const recommitted = await service.createOrReplace(
+      memberContext(),
+      participationId,
+      userId,
+      {
+        decision: CommitmentDecision.COMMITTED,
+        typeKey: 'yi_zhou_su',
+        targetValue: 7,
+        unit: 'days',
+      },
+    );
+    expect(recommitted).toMatchObject({
+      id: 'commitment-1',
+      decision: 'committed',
+      typeKey: 'yi_zhou_su',
+      targetValue: 7,
+      unit: 'days',
+    });
+  });
+
+  it('requires a target and unit when committing', async () => {
+    commitmentRepository.findOne.mockResolvedValue(null);
+    await expect(
+      service.createOrReplace(memberContext(), participationId, userId, {
+        decision: CommitmentDecision.COMMITTED,
+      }),
+    ).rejects.toBeInstanceOf(InvalidRequestException);
+  });
+
+  it('rejects a decision once the campaign no longer allows edits', async () => {
+    campaigns.getCampaignRecord.mockResolvedValue({
+      id: campaignId,
+      tenantId: tenantA,
+      status: CampaignStatus.COMPLETED,
+      timezone: 'Asia/Kuala_Lumpur',
+      startsOn: '2026-01-01',
+      endsOn: '2026-12-31',
+      configuration: { rulesStrategy: 'vegetarian' },
+      communityIds: [],
+    });
+    await expect(
+      service.createOrReplace(memberContext(), participationId, userId, {
+        decision: CommitmentDecision.NOT_TAKING_PART,
+      }),
+    ).rejects.toBeInstanceOf(InvalidRequestException);
+  });
+
+  it('refuses an admin target correction on a not-taking-part decision', async () => {
+    commitmentRepository.findOne.mockResolvedValue(
+      commitment({
+        decision: CommitmentDecision.NOT_TAKING_PART,
+        type_key: null,
+        target_value: 0,
+        unit: null,
+      }),
+    );
+    await expect(
+      service.update(adminContext(), 'commitment-1', 'admin-user', {
+        targetValue: 5,
+      }),
+    ).rejects.toBeInstanceOf(InvalidRequestException);
   });
 });

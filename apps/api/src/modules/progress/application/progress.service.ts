@@ -20,7 +20,15 @@ import { CampaignService } from '../../campaigns/application/campaign.service.js
 import { toIsoDate } from '../../campaigns/application/timezone.js';
 import { CommunityService } from '../../communities/application/community.service.js';
 import { Commitment } from '../../commitments/domain/commitment.entity.js';
-import { Participation } from '../../participation/domain/participation.entity.js';
+import {
+  Participation,
+  ParticipationStatus,
+} from '../../participation/domain/participation.entity.js';
+import {
+  countEngagements,
+  deriveEngagement,
+  type ParticipationEngagement,
+} from '../../participation/domain/participation-engagement.js';
 import { ParticipationService } from '../../participation/application/participation.service.js';
 import type { CompletionStatus } from './completion.js';
 import {
@@ -40,6 +48,7 @@ export interface ParticipantProgressResponse {
   participationId: string;
   userId: string;
   communityId: string | null;
+  engagement: ParticipationEngagement;
   timezone: string;
   commitment: ParticipantProgressSnapshot['commitment'];
   unit: string | null;
@@ -71,8 +80,14 @@ export interface AggregateProgressResponse {
   timezone: string;
   participantCount: number;
   committedParticipantCount: number;
+  notTakingPartCount: number;
+  awaitingCommitmentCount: number;
   units: UnitProgress[];
 }
+
+export type CampaignParticipantSnapshot = ParticipantProgressSnapshot & {
+  engagement: ParticipationEngagement;
+};
 
 @Injectable()
 export class ProgressService {
@@ -115,6 +130,7 @@ export class ProgressService {
     const snapshots = await this.computeCampaignSnapshots(
       tenant.tenantId,
       campaign,
+      { includeParticipationId: participation.id },
     );
     const snapshot = snapshots.find(
       (row) => row.participationId === participation.id,
@@ -207,6 +223,11 @@ export class ProgressService {
     );
   }
 
+  /**
+   * Only enrolled participations count. `includeParticipationId` lets a single
+   * withdrawn participant still read their own history without it entering
+   * any aggregate.
+   */
   async computeCampaignSnapshots(
     tenantId: string,
     campaign: {
@@ -216,8 +237,9 @@ export class ProgressService {
       endsOn: string | null;
       configuration: Record<string, unknown>;
     },
-  ): Promise<ParticipantProgressSnapshot[]> {
-    const [participations, commitments, actions, submissions, definitions] =
+    options: { includeParticipationId?: string } = {},
+  ): Promise<CampaignParticipantSnapshot[]> {
+    const [allParticipations, commitments, actions, submissions, definitions] =
       await Promise.all([
         this.participationRepository.find({
           where: { tenant_id: tenantId, campaign_id: campaign.id },
@@ -239,6 +261,11 @@ export class ProgressService {
           where: { tenant_id: tenantId, campaign_id: campaign.id },
         }),
       ]);
+    const participations = allParticipations.filter(
+      (row) =>
+        row.status === ParticipationStatus.ENROLLED ||
+        row.id === options.includeParticipationId,
+    );
 
     const approvedActionIds = new Set(
       submissions
@@ -295,6 +322,16 @@ export class ProgressService {
         communityId: participation.community_id,
       };
       const commitmentRow = commitmentByParticipation.get(participation.id);
+      const engagement = deriveEngagement(
+        participation.status,
+        commitmentRow?.decision ?? null,
+      );
+      if (engagement === 'not_taking_part') {
+        return {
+          ...computeParticipantProgress(countable, null, [], rules, context),
+          engagement,
+        };
+      }
       const commitment: CountableCommitment | null =
         commitmentRow &&
         commitmentRow.target_value != null &&
@@ -308,13 +345,16 @@ export class ProgressService {
               payload: commitmentRow.payload,
             }
           : null;
-      return computeParticipantProgress(
-        countable,
-        commitment,
-        countableActions,
-        rules,
-        context,
-      );
+      return {
+        ...computeParticipantProgress(
+          countable,
+          commitment,
+          countableActions,
+          rules,
+          context,
+        ),
+        engagement,
+      };
     });
   }
 
@@ -348,7 +388,7 @@ export class ProgressService {
   private toParticipantResponse(
     tenantId: string,
     campaign: { id: string; timezone: string },
-    snapshot: ParticipantProgressSnapshot,
+    snapshot: CampaignParticipantSnapshot,
   ): ParticipantProgressResponse {
     return {
       scope: 'participant',
@@ -357,6 +397,7 @@ export class ProgressService {
       participationId: snapshot.participationId,
       userId: snapshot.userId,
       communityId: snapshot.communityId,
+      engagement: snapshot.engagement,
       timezone: campaign.timezone,
       commitment: snapshot.commitment,
       unit: snapshot.unit,
@@ -375,19 +416,22 @@ export class ProgressService {
     campaign: { id: string; timezone: string },
     scope: 'campaign' | 'community',
     communityId: string | null,
-    snapshots: ParticipantProgressSnapshot[],
+    snapshots: CampaignParticipantSnapshot[],
   ): AggregateProgressResponse {
     const units = aggregateUnitProgress(snapshots);
+    const counts = countEngagements(
+      snapshots.map((snapshot) => snapshot.engagement),
+    );
     return {
       scope,
       customerId: tenantId,
       campaignId: campaign.id,
       communityId,
       timezone: campaign.timezone,
-      participantCount: snapshots.length,
-      committedParticipantCount: snapshots.filter(
-        (snapshot) => snapshot.commitment != null,
-      ).length,
+      participantCount: counts.enrolled,
+      committedParticipantCount: counts.takingPart,
+      notTakingPartCount: counts.notTakingPart,
+      awaitingCommitmentCount: counts.awaitingCommitment,
       units,
     };
   }

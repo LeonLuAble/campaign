@@ -10,6 +10,8 @@ const REPORT_COLUMNS = [
   'generatedAt',
   'participantCount',
   'committedParticipantCount',
+  'notTakingPartCount',
+  'awaitingCommitmentCount',
   'unit',
   'achievedValue',
   'targetValue',

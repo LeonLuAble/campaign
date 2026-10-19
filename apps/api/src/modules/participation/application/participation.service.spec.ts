@@ -11,7 +11,10 @@ import type { TenantContext } from '../../authorization/application/tenant-conte
 import { PERMISSIONS } from '../../authorization/domain/permission-keys.js';
 import { CampaignService } from '../../campaigns/application/campaign.service.js';
 import { CampaignStatus } from '../../campaigns/domain/campaign.entity.js';
-import { Commitment } from '../../commitments/domain/commitment.entity.js';
+import {
+  Commitment,
+  CommitmentDecision,
+} from '../../commitments/domain/commitment.entity.js';
 import { CommunityService } from '../../communities/application/community.service.js';
 import { CustomerService } from '../../customers/application/customer.service.js';
 import { IdentityAccountService } from '../../identity/application/identity-account.service.js';
@@ -93,11 +96,16 @@ describe('ParticipationService', () => {
     create: vi.fn((value: unknown) => value),
   };
   const commitmentRepository = {
+    find: vi.fn(),
     findOne: vi.fn(),
   };
   const campaigns = { getCampaignRecord: vi.fn() };
   const memberships = { listActiveForUserInTenant: vi.fn() };
-  const communities = { listAncestorIds: vi.fn() };
+  const communities = {
+    listAncestorIds: vi.fn(),
+    get: vi.fn(),
+    listDescendantIds: vi.fn(),
+  };
   const customers = { requireActive: vi.fn() };
   const identities = { isUserActive: vi.fn() };
   const autoEnrolment = {
@@ -156,6 +164,114 @@ describe('ParticipationService', () => {
       ],
     }).compile();
     service = module.get(ParticipationService);
+  });
+
+  describe('participation summary', () => {
+    const childCommunityId = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee';
+    const otherBranchId = 'ffffffff-ffff-4fff-8fff-ffffffffffff';
+
+    function seedSummary() {
+      participationRepository.find.mockResolvedValue([
+        participation({ id: 'p-taking', community_id: communityId }),
+        participation({ id: 'p-declined', community_id: childCommunityId }),
+        participation({ id: 'p-undecided', community_id: childCommunityId }),
+        participation({
+          id: 'p-withdrawn',
+          community_id: communityId,
+          status: ParticipationStatus.WITHDRAWN,
+        }),
+        participation({ id: 'p-other-branch', community_id: otherBranchId }),
+        participation({ id: 'p-tenant-level', community_id: null }),
+      ]);
+      commitmentRepository.find.mockImplementation(
+        async (options: { where: { participation_id: { value: string[] } } }) =>
+          [
+            { participation_id: 'p-taking', decision: CommitmentDecision.COMMITTED },
+            {
+              participation_id: 'p-declined',
+              decision: CommitmentDecision.NOT_TAKING_PART,
+            },
+            {
+              participation_id: 'p-withdrawn',
+              decision: CommitmentDecision.COMMITTED,
+            },
+            {
+              participation_id: 'p-other-branch',
+              decision: CommitmentDecision.COMMITTED,
+            },
+          ].filter((row) =>
+            options.where.participation_id.value.includes(row.participation_id),
+          ),
+      );
+      communities.get.mockResolvedValue({ id: communityId });
+      communities.listDescendantIds.mockResolvedValue([childCommunityId]);
+    }
+
+    it('counts every engagement state for the whole campaign', async () => {
+      seedSummary();
+      const summary = await service.getParticipationSummary(
+        memberContext(),
+        campaignId,
+      );
+      expect(summary).toEqual({
+        customerId: tenantA,
+        campaignId,
+        communityId: null,
+        enrolled: 5,
+        takingPart: 2,
+        notTakingPart: 1,
+        awaitingCommitment: 2,
+        withdrawn: 1,
+      });
+      expect(participationRepository.find).toHaveBeenCalledWith({
+        where: { tenant_id: tenantA, campaign_id: campaignId },
+      });
+    });
+
+    it('limits counts to the community subtree', async () => {
+      seedSummary();
+      const summary = await service.getParticipationSummary(
+        memberContext(),
+        campaignId,
+        communityId,
+      );
+      expect(communities.get).toHaveBeenCalledWith(
+        expect.objectContaining({ tenantId: tenantA }),
+        communityId,
+      );
+      expect(summary).toMatchObject({
+        communityId,
+        enrolled: 3,
+        takingPart: 1,
+        notTakingPart: 1,
+        awaitingCommitment: 1,
+        withdrawn: 1,
+      });
+    });
+
+    it('returns only aggregate counts', async () => {
+      seedSummary();
+      const summary = await service.getParticipationSummary(
+        memberContext(),
+        campaignId,
+      );
+      const serialized = JSON.stringify(summary);
+      expect(serialized).not.toContain(userId);
+      expect(serialized).not.toContain('p-taking');
+    });
+
+    it('exposes engagement to the reminder scheduler', async () => {
+      seedSummary();
+      participationRepository.find.mockResolvedValue([
+        participation({ id: 'p-taking' }),
+        participation({ id: 'p-declined' }),
+      ]);
+      const enrolled = await service.listEnrolledByCampaign(tenantA, campaignId);
+      expect(enrolled.map((row) => row.engagement)).toEqual([
+        'taking_part',
+        'not_taking_part',
+      ]);
+    });
   });
 
   it('enrolls an eligible tenant member in a published campaign', async () => {

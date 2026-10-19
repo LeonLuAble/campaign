@@ -18,7 +18,10 @@ import { CAMPAIGN_RULE_STRATEGIES } from '../../campaigns/application/campaign-r
 import { CampaignService } from '../../campaigns/application/campaign.service.js';
 import { CampaignStatus } from '../../campaigns/domain/campaign.entity.js';
 import { CommunityService } from '../../communities/application/community.service.js';
-import { Commitment } from '../../commitments/domain/commitment.entity.js';
+import {
+  Commitment,
+  CommitmentDecision,
+} from '../../commitments/domain/commitment.entity.js';
 import { Participation } from '../../participation/domain/participation.entity.js';
 import { ParticipationStatus } from '../../participation/domain/participation.entity.js';
 import { ParticipationService } from '../../participation/application/participation.service.js';
@@ -99,6 +102,7 @@ function commitment(overrides: Partial<Commitment> = {}): Commitment {
     tenant_id: tenantA,
     campaign_id: campaignId,
     participation_id: participationId,
+    decision: CommitmentDecision.COMMITTED,
     type_key: 'fa_yuan_su',
     target_value: 10,
     unit: 'days',
@@ -342,6 +346,163 @@ describe('ProgressService', () => {
     expect(progress.communityId).toBe(communityId);
     expect(progress.participantCount).toBe(2);
     expect(progress.units[0].achievedValue).toBe(3);
+  });
+
+  it('reports the new engagement counts on aggregates', async () => {
+    const aggregate = await service.getCampaignProgress(
+      memberContext(),
+      campaignId,
+    );
+    expect(aggregate).toMatchObject({
+      participantCount: 2,
+      committedParticipantCount: 2,
+      notTakingPartCount: 0,
+      awaitingCommitmentCount: 0,
+    });
+  });
+
+  it('excludes withdrawn participations from participantCount and progress', async () => {
+    participationRepository.find.mockResolvedValue([
+      participation(),
+      participation({
+        id: otherParticipationId,
+        user_id: otherUserId,
+        community_id: childCommunityId,
+        status: ParticipationStatus.WITHDRAWN,
+        withdrawn_at: new Date('2026-01-05T00:00:00.000Z'),
+      }),
+    ]);
+    const aggregate = await service.getCampaignProgress(
+      memberContext(),
+      campaignId,
+    );
+    expect(aggregate.participantCount).toBe(1);
+    expect(aggregate.committedParticipantCount).toBe(1);
+    expect(aggregate.units[0]).toMatchObject({
+      achievedValue: 2,
+      targetValue: 10,
+      completionPercent: 20,
+    });
+
+    const community = await service.getCommunityProgress(
+      memberContext(),
+      campaignId,
+      communityId,
+    );
+    expect(community.participantCount).toBe(1);
+    expect(community.units[0].achievedValue).toBe(2);
+
+    const achievements = await service.listCampaignAchievements(
+      adminContext(),
+      campaignId,
+    );
+    expect(achievements.map((row) => row.participationId)).toEqual([
+      participationId,
+    ]);
+  });
+
+  it('still shows a withdrawn participant their own history', async () => {
+    participations.getParticipationRecord.mockResolvedValue({
+      id: participationId,
+      tenantId: tenantA,
+      campaignId,
+      userId,
+      communityId,
+      status: ParticipationStatus.WITHDRAWN,
+    });
+    participationRepository.find.mockResolvedValue([
+      participation({
+        status: ParticipationStatus.WITHDRAWN,
+        withdrawn_at: new Date('2026-01-05T00:00:00.000Z'),
+      }),
+    ]);
+    const progress = await service.getParticipantProgress(
+      memberContext(),
+      participationId,
+    );
+    expect(progress).toMatchObject({
+      engagement: 'withdrawn',
+      achievedValue: 2,
+    });
+  });
+
+  it('never lowers the community percentage when a member is not taking part', async () => {
+    const before = await service.getCommunityProgress(
+      memberContext(),
+      campaignId,
+      communityId,
+    );
+    commitmentRepository.find.mockResolvedValue([
+      commitment(),
+      commitment({
+        id: 'commitment-2',
+        participation_id: otherParticipationId,
+        decision: CommitmentDecision.NOT_TAKING_PART,
+        type_key: null,
+        target_value: 0,
+        unit: null,
+      }),
+    ]);
+    const after = await service.getCommunityProgress(
+      memberContext(),
+      campaignId,
+      communityId,
+    );
+    expect(before.units[0]).toMatchObject({
+      achievedValue: 3,
+      targetValue: 20,
+      completionPercent: 15,
+    });
+    expect(after.units[0]).toMatchObject({
+      achievedValue: 2,
+      targetValue: 10,
+      completionPercent: 20,
+    });
+    expect(after.units[0].completionPercent).toBeGreaterThanOrEqual(
+      before.units[0].completionPercent ?? 0,
+    );
+    expect(after).toMatchObject({
+      participantCount: 2,
+      committedParticipantCount: 1,
+      notTakingPartCount: 1,
+      awaitingCommitmentCount: 0,
+    });
+  });
+
+  it('gives a not-taking-part participant zero target and zero achieved', async () => {
+    commitmentRepository.find.mockResolvedValue([
+      commitment({
+        decision: CommitmentDecision.NOT_TAKING_PART,
+        type_key: null,
+        target_value: 0,
+        unit: null,
+      }),
+    ]);
+    const progress = await service.getParticipantProgress(
+      memberContext(),
+      participationId,
+    );
+    expect(progress).toMatchObject({
+      engagement: 'not_taking_part',
+      commitment: null,
+      achievedValue: 0,
+      targetValue: 0,
+      byUnit: [],
+    });
+  });
+
+  it('counts enrolled members without a commitment as awaiting', async () => {
+    commitmentRepository.find.mockResolvedValue([commitment()]);
+    const aggregate = await service.getCampaignProgress(
+      memberContext(),
+      campaignId,
+    );
+    expect(aggregate).toMatchObject({
+      participantCount: 2,
+      committedParticipantCount: 1,
+      notTakingPartCount: 0,
+      awaitingCommitmentCount: 1,
+    });
   });
 
   it('does not treat a missing participation as visible progress', async () => {

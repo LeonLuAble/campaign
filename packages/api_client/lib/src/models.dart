@@ -992,6 +992,13 @@ class CommitmentOptions {
   }
 }
 
+class CommitmentDecision {
+  const CommitmentDecision._();
+
+  static const committed = 'committed';
+  static const notTakingPart = 'not_taking_part';
+}
+
 class Commitment {
   const Commitment({
     required this.id,
@@ -999,13 +1006,21 @@ class Commitment {
     required this.targetValue,
     required this.unit,
     this.typeKey,
+    this.decision = CommitmentDecision.committed,
   });
 
   final String id;
   final String participationId;
   final String? typeKey;
+
+  /// 0 when [isNotTakingPart].
   final num targetValue;
+
+  /// Empty when [isNotTakingPart].
   final String unit;
+  final String decision;
+
+  bool get isNotTakingPart => decision == CommitmentDecision.notTakingPart;
 
   factory Commitment.fromJson(Map<String, dynamic> json) {
     return Commitment(
@@ -1013,7 +1028,40 @@ class Commitment {
       participationId: json['participationId'] as String,
       typeKey: _string(json['typeKey']),
       targetValue: _num(json['targetValue']),
-      unit: json['unit'] as String,
+      unit: _string(json['unit']) ?? '',
+      decision: _string(json['decision']) ?? CommitmentDecision.committed,
+    );
+  }
+}
+
+class ParticipationSummary {
+  const ParticipationSummary({
+    required this.campaignId,
+    required this.enrolled,
+    required this.awaitingCommitment,
+    required this.takingPart,
+    required this.notTakingPart,
+    required this.withdrawn,
+    this.communityId,
+  });
+
+  final String campaignId;
+  final String? communityId;
+  final int enrolled;
+  final int awaitingCommitment;
+  final int takingPart;
+  final int notTakingPart;
+  final int withdrawn;
+
+  factory ParticipationSummary.fromJson(Map<String, dynamic> json) {
+    return ParticipationSummary(
+      campaignId: json['campaignId'] as String,
+      communityId: _string(json['communityId']),
+      enrolled: _num(json['enrolled']).toInt(),
+      awaitingCommitment: _num(json['awaitingCommitment']).toInt(),
+      takingPart: _num(json['takingPart']).toInt(),
+      notTakingPart: _num(json['notTakingPart']).toInt(),
+      withdrawn: _num(json['withdrawn']).toInt(),
     );
   }
 }
@@ -1257,6 +1305,8 @@ class DashboardProgress {
     this.completionStatus,
     this.participantCount,
     this.committedParticipantCount,
+    this.notTakingPartCount,
+    this.awaitingCommitmentCount,
   });
 
   final num achievedValue;
@@ -1266,6 +1316,8 @@ class DashboardProgress {
   final String? completionStatus;
   final int? participantCount;
   final int? committedParticipantCount;
+  final int? notTakingPartCount;
+  final int? awaitingCommitmentCount;
 
   factory DashboardProgress.fromJson(Map<String, dynamic> json) {
     final units = json['units'];
@@ -1284,6 +1336,12 @@ class DashboardProgress {
       committedParticipantCount: json['committedParticipantCount'] is num
           ? (json['committedParticipantCount'] as num).toInt()
           : null,
+      notTakingPartCount: json['notTakingPartCount'] is num
+          ? (json['notTakingPartCount'] as num).toInt()
+          : null,
+      awaitingCommitmentCount: json['awaitingCommitmentCount'] is num
+          ? (json['awaitingCommitmentCount'] as num).toInt()
+          : null,
     );
   }
 }
@@ -1296,6 +1354,7 @@ class ParticipantProgress {
     this.unit,
     this.completionPercent,
     this.completionStatus,
+    this.engagement,
   });
 
   final String participationId;
@@ -1304,6 +1363,7 @@ class ParticipantProgress {
   final String? unit;
   final num? completionPercent;
   final String? completionStatus;
+  final String? engagement;
 
   factory ParticipantProgress.fromJson(Map<String, dynamic> json) {
     return ParticipantProgress(
@@ -1313,6 +1373,7 @@ class ParticipantProgress {
       unit: _string(json['unit']),
       completionPercent: json['completionPercent'] as num?,
       completionStatus: _string(json['completionStatus']),
+      engagement: _string(json['engagement']),
     );
   }
 }
@@ -1510,6 +1571,8 @@ class AggregateReport {
     this.communityId,
     this.participantCount,
     this.committedParticipantCount,
+    this.notTakingPartCount,
+    this.awaitingCommitmentCount,
   });
 
   final String scope;
@@ -1518,6 +1581,8 @@ class AggregateReport {
   final String generatedAt;
   final int? participantCount;
   final int? committedParticipantCount;
+  final int? notTakingPartCount;
+  final int? awaitingCommitmentCount;
   final List<ReportUnit> units;
 
   factory AggregateReport.fromJson(Map<String, dynamic> json) {
@@ -1532,6 +1597,12 @@ class AggregateReport {
           : null,
       committedParticipantCount: progress['committedParticipantCount'] is num
           ? (progress['committedParticipantCount'] as num).toInt()
+          : null,
+      notTakingPartCount: progress['notTakingPartCount'] is num
+          ? (progress['notTakingPartCount'] as num).toInt()
+          : null,
+      awaitingCommitmentCount: progress['awaitingCommitmentCount'] is num
+          ? (progress['awaitingCommitmentCount'] as num).toInt()
           : null,
       units: _list(progress['units'])
           .map((row) => ReportUnit.fromJson(_map(row)))

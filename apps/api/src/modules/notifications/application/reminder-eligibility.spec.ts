@@ -16,6 +16,7 @@ const candidate: ReminderCandidate = {
   participationId: 'participation-1',
   userId: 'user-1',
   userTimezone: 'Asia/Kuala_Lumpur',
+  engagement: 'taking_part',
 };
 
 describe('reminder eligibility', () => {
@@ -64,6 +65,30 @@ describe('reminder eligibility', () => {
     });
     expect(decision.eligible).toBe(false);
     expect(decision.reason).toBe('before_local_reminder_time');
+  });
+
+  it('still reminds members who have not decided yet', () => {
+    const decision = shouldSendActionReminder({
+      now: new Date('2026-10-13T01:05:00.000Z'),
+      candidate: { ...candidate, engagement: 'awaiting_commitment' },
+      preferences: defaultNotificationPreferences('user-1'),
+      hasApprovedActionToday: false,
+    });
+    expect(decision.eligible).toBe(true);
+  });
+
+  it.each([
+    ['not_taking_part', 'not_taking_part'],
+    ['withdrawn', 'withdrawn'],
+  ] as const)('skips %s participants', (engagement, reason) => {
+    const decision = shouldSendActionReminder({
+      now: new Date('2026-10-13T01:05:00.000Z'),
+      candidate: { ...candidate, engagement },
+      preferences: defaultNotificationPreferences('user-1'),
+      hasApprovedActionToday: false,
+    });
+    expect(decision.eligible).toBe(false);
+    expect(decision.reason).toBe(reason);
   });
 
   it('builds a stable per-channel dedupe key', () => {

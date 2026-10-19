@@ -33,7 +33,10 @@ import { LocalizationService } from '../../localization/application/localization
 import { ParticipationStatus } from '../../participation/domain/participation.entity.js';
 import { ParticipationService } from '../../participation/application/participation.service.js';
 import { CustomerService } from '../../customers/application/customer.service.js';
-import { Commitment } from '../domain/commitment.entity.js';
+import {
+  Commitment,
+  CommitmentDecision,
+} from '../domain/commitment.entity.js';
 import type { CreateCommitmentDto } from '../dto/create-commitment.dto.js';
 import type { UpdateCommitmentDto } from '../dto/update-commitment.dto.js';
 
@@ -42,9 +45,10 @@ export interface CommitmentResponse {
   customerId: string;
   campaignId: string;
   participationId: string;
+  decision: CommitmentDecision;
   typeKey: string | null;
   targetValue: number;
-  unit: string;
+  unit: string | null;
   payload: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
@@ -194,28 +198,15 @@ export class CommitmentService {
       );
     }
 
-    const rules = resolveCampaignRules(
-      campaign.configuration,
-      this.strategyList(),
-      this.genericRules,
-    );
-    const prepared = this.prepareCommitment(rules, {
-      typeKey: dto.typeKey?.trim() || null,
-      targetValue: dto.targetValue,
-      unit: dto.unit.trim(),
-      payload: normalizeSettings(dto.payload),
-    });
-    const { typeKey, unit, payload } = prepared;
+    const decision = dto.decision ?? CommitmentDecision.COMMITTED;
+    const values = this.commitmentValues(campaign.configuration, decision, dto);
 
     const existing = await this.commitmentRepository.findOne({
       where: { participation_id: participation.id },
     });
     try {
       if (existing) {
-        existing.type_key = typeKey;
-        existing.target_value = dto.targetValue;
-        existing.unit = unit;
-        existing.payload = payload;
+        Object.assign(existing, values);
         const saved = await this.commitmentRepository.save(existing);
         this.logger.log({
           msg: 'commitment_updated',
@@ -223,6 +214,7 @@ export class CommitmentService {
           campaignId: saved.campaign_id,
           participationId: saved.participation_id,
           commitmentId: saved.id,
+          decision: saved.decision,
         });
         return this.toResponse(saved);
       }
@@ -231,10 +223,7 @@ export class CommitmentService {
           tenant_id: tenant.tenantId,
           campaign_id: participation.campaignId,
           participation_id: participation.id,
-          type_key: typeKey,
-          target_value: dto.targetValue,
-          unit,
-          payload,
+          ...values,
         }),
       );
       this.logger.log({
@@ -243,6 +232,7 @@ export class CommitmentService {
         campaignId: saved.campaign_id,
         participationId: saved.participation_id,
         commitmentId: saved.id,
+        decision: saved.decision,
       });
       return this.toResponse(saved);
     } catch (error) {
@@ -274,6 +264,11 @@ export class CommitmentService {
       commitment.participation_id,
     );
     this.assertCanCorrect(tenant, actorUserId, participation.userId);
+    if (commitment.decision === CommitmentDecision.NOT_TAKING_PART) {
+      throw new InvalidRequestException(
+        'A not-taking-part decision has no target to correct; record a commitment instead',
+      );
+    }
     const campaign = await this.campaigns.getCampaignRecord(
       tenant,
       participation.campaignId,
@@ -392,6 +387,49 @@ export class CommitmentService {
     return Array.isArray(value) ? value : [value];
   }
 
+  private commitmentValues(
+    configuration: Record<string, unknown>,
+    decision: CommitmentDecision,
+    dto: CreateCommitmentDto,
+  ): Pick<
+    Commitment,
+    'decision' | 'type_key' | 'target_value' | 'unit' | 'payload'
+  > {
+    if (decision === CommitmentDecision.NOT_TAKING_PART) {
+      return {
+        decision,
+        type_key: null,
+        target_value: 0,
+        unit: null,
+        payload: {},
+      };
+    }
+    const unitInput = dto.unit?.trim();
+    if (dto.targetValue == null || !unitInput) {
+      throw new InvalidRequestException(
+        'targetValue and unit are required for a commitment',
+      );
+    }
+    const rules = resolveCampaignRules(
+      configuration,
+      this.strategyList(),
+      this.genericRules,
+    );
+    const prepared = this.prepareCommitment(rules, {
+      typeKey: dto.typeKey?.trim() || null,
+      targetValue: dto.targetValue,
+      unit: unitInput,
+      payload: normalizeSettings(dto.payload),
+    });
+    return {
+      decision,
+      type_key: prepared.typeKey,
+      target_value: dto.targetValue,
+      unit: prepared.unit,
+      payload: prepared.payload,
+    };
+  }
+
   private prepareCommitment(
     rules: CampaignRuleStrategy,
     input: {
@@ -414,9 +452,10 @@ export class CommitmentService {
       customerId: commitment.tenant_id,
       campaignId: commitment.campaign_id,
       participationId: commitment.participation_id,
+      decision: commitment.decision,
       typeKey: commitment.type_key,
       targetValue: commitment.target_value ?? 0,
-      unit: commitment.unit ?? '',
+      unit: commitment.unit,
       payload: commitment.payload,
       createdAt: commitment.created_at.toISOString(),
       updatedAt: commitment.updated_at.toISOString(),

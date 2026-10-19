@@ -121,6 +121,7 @@ export class ReminderScheduler implements OnModuleInit, OnModuleDestroy {
               participationId: participation.id,
               userId: participation.userId,
               userTimezone: profile.timezone,
+              engagement: participation.engagement,
             },
             preferences,
             hasApprovedActionToday,

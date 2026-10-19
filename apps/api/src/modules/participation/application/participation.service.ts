@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger, Optional, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import {
   AccessForbiddenException,
   InvalidRequestException,
@@ -18,10 +18,7 @@ import {
 } from '../../campaigns/application/campaign-settings.js';
 import { canEnrollInCampaign } from '../../campaigns/application/campaign-lifecycle.js';
 import { enrollmentCommunityId } from '../../campaigns/application/campaign-visibility.js';
-import {
-  Commitment,
-  CommitmentDecision,
-} from '../../commitments/domain/commitment.entity.js';
+import { Commitment } from '../../commitments/domain/commitment.entity.js';
 import { CommunityService } from '../../communities/application/community.service.js';
 import { CustomerService } from '../../customers/application/customer.service.js';
 import { IdentityAccountService } from '../../identity/application/identity-account.service.js';
@@ -32,15 +29,24 @@ import {
   ParticipationStatus,
 } from '../domain/participation.entity.js';
 import {
+  countEngagements,
+  deriveEngagement,
+  type ParticipationEngagement,
+  type ParticipationEngagementCounts,
+} from '../domain/participation-engagement.js';
+import {
   AUTO_ENROLMENT_SERVICE,
   type AutoEnrolmentPort,
 } from './auto-enrolment.tokens.js';
 
-export type ParticipationEngagement =
-  | 'awaiting_commitment'
-  | 'taking_part'
-  | 'not_taking_part'
-  | 'withdrawn';
+export type { ParticipationEngagement };
+
+export interface ParticipationSummaryResponse
+  extends ParticipationEngagementCounts {
+  customerId: string;
+  campaignId: string;
+  communityId: string | null;
+}
 
 export interface ParticipationResponse {
   id: string;
@@ -89,6 +95,7 @@ export class ParticipationService {
       tenantId: string;
       campaignId: string;
       userId: string;
+      engagement: ParticipationEngagement;
     }>
   > {
     const rows = await this.participationRepository.find({
@@ -99,12 +106,47 @@ export class ParticipationService {
       },
       order: { created_at: 'ASC' },
     });
+    const engagements = await this.engagementsFor(tenantId, rows);
     return rows.map((row) => ({
       id: row.id,
       tenantId: row.tenant_id,
       campaignId: row.campaign_id,
       userId: row.user_id,
+      engagement: engagements.get(row.id) ?? 'awaiting_commitment',
     }));
+  }
+
+  async getParticipationSummary(
+    tenant: TenantContext,
+    campaignId: string,
+    communityId?: string,
+  ): Promise<ParticipationSummaryResponse> {
+    await this.campaigns.getCampaignRecord(tenant, campaignId);
+    let scopeIds: Set<string> | null = null;
+    if (communityId) {
+      await this.communities.get(tenant, communityId);
+      scopeIds = new Set([
+        communityId,
+        ...(await this.communities.listDescendantIds(communityId)),
+      ]);
+    }
+    const rows = await this.participationRepository.find({
+      where: { tenant_id: tenant.tenantId, campaign_id: campaignId },
+    });
+    const scoped = scopeIds
+      ? rows.filter(
+          (row) => row.community_id !== null && scopeIds.has(row.community_id),
+        )
+      : rows;
+    const engagements = await this.engagementsFor(tenant.tenantId, scoped);
+    return {
+      customerId: tenant.tenantId,
+      campaignId,
+      communityId: communityId ?? null,
+      ...countEngagements(
+        scoped.map((row) => engagements.get(row.id) ?? 'awaiting_commitment'),
+      ),
+    };
   }
 
   async findById(id: string): Promise<CampaignAccessRecord | null> {
@@ -416,15 +458,41 @@ export class ParticipationService {
       return 'withdrawn';
     }
     const commitment = await this.commitmentRepository.findOne({
-      where: { participation_id: participation.id },
+      where: {
+        tenant_id: participation.tenant_id,
+        participation_id: participation.id,
+      },
     });
-    if (!commitment) {
-      return 'awaiting_commitment';
+    return deriveEngagement(participation.status, commitment?.decision ?? null);
+  }
+
+  private async engagementsFor(
+    tenantId: string,
+    participations: Participation[],
+  ): Promise<Map<string, ParticipationEngagement>> {
+    const result = new Map<string, ParticipationEngagement>();
+    if (participations.length === 0) {
+      return result;
     }
-    if (commitment.decision === CommitmentDecision.NOT_TAKING_PART) {
-      return 'not_taking_part';
+    const commitments = await this.commitmentRepository.find({
+      where: {
+        tenant_id: tenantId,
+        participation_id: In(participations.map((row) => row.id)),
+      },
+    });
+    const decisions = new Map(
+      commitments.map((row) => [row.participation_id, row.decision]),
+    );
+    for (const participation of participations) {
+      result.set(
+        participation.id,
+        deriveEngagement(
+          participation.status,
+          decisions.get(participation.id) ?? null,
+        ),
+      );
     }
-    return 'taking_part';
+    return result;
   }
 
   private async toResponse(
