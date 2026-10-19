@@ -18,6 +18,7 @@ import { CampaignRuleStrategiesController } from './presentation/campaign-rule-s
 import { CampaignScopesController } from './presentation/campaign-scopes.controller.js';
 import { CampaignTemplatesController } from './presentation/campaign-templates.controller.js';
 import { NotificationsModule } from '../notifications/notifications.module.js';
+import { ParticipationModule } from '../participation/participation.module.js';
 import { CampaignsController } from './presentation/campaigns.controller.js';
 
 @Module({
@@ -36,6 +37,7 @@ import { CampaignsController } from './presentation/campaigns.controller.js';
     forwardRef(() => CustomersModule),
     forwardRef(() => CommunitiesModule),
     forwardRef(() => NotificationsModule),
+    forwardRef(() => ParticipationModule),
   ],
   controllers: [
     CampaignTemplatesController,

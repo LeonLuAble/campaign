@@ -284,13 +284,20 @@ export class CommitmentService {
       this.strategyList(),
       this.genericRules,
     );
+    const nextTarget = dto.targetValue ?? commitment.target_value;
+    const nextUnit = dto.unit?.trim() ?? commitment.unit;
+    if (nextTarget == null || nextUnit == null || nextUnit.length === 0) {
+      throw new InvalidRequestException(
+        'targetValue and unit are required for a commitment',
+      );
+    }
     const prepared = this.prepareCommitment(rules, {
       typeKey:
         dto.typeKey === undefined
           ? commitment.type_key
           : dto.typeKey?.trim() || null,
-      targetValue: dto.targetValue ?? commitment.target_value,
-      unit: dto.unit?.trim() ?? commitment.unit,
+      targetValue: nextTarget,
+      unit: nextUnit,
       payload:
         dto.payload === undefined
           ? commitment.payload
@@ -408,8 +415,8 @@ export class CommitmentService {
       campaignId: commitment.campaign_id,
       participationId: commitment.participation_id,
       typeKey: commitment.type_key,
-      targetValue: commitment.target_value,
-      unit: commitment.unit,
+      targetValue: commitment.target_value ?? 0,
+      unit: commitment.unit ?? '',
       payload: commitment.payload,
       createdAt: commitment.created_at.toISOString(),
       updatedAt: commitment.updated_at.toISOString(),

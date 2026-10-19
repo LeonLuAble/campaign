@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -12,16 +12,35 @@ import type { CampaignAccessRecord } from '../../authorization/application/acces
 import type { TenantContext } from '../../authorization/application/tenant-context.js';
 import { PERMISSIONS } from '../../authorization/domain/permission-keys.js';
 import { CampaignService } from '../../campaigns/application/campaign.service.js';
+import {
+  ENROLMENT_MODE_AUTO,
+  readEnrolmentMode,
+} from '../../campaigns/application/campaign-settings.js';
 import { canEnrollInCampaign } from '../../campaigns/application/campaign-lifecycle.js';
 import { enrollmentCommunityId } from '../../campaigns/application/campaign-visibility.js';
+import {
+  Commitment,
+  CommitmentDecision,
+} from '../../commitments/domain/commitment.entity.js';
 import { CommunityService } from '../../communities/application/community.service.js';
 import { CustomerService } from '../../customers/application/customer.service.js';
 import { IdentityAccountService } from '../../identity/application/identity-account.service.js';
 import { MembershipService } from '../../memberships/application/membership.service.js';
 import {
+  EnrolmentSource,
   Participation,
   ParticipationStatus,
 } from '../domain/participation.entity.js';
+import {
+  AUTO_ENROLMENT_SERVICE,
+  type AutoEnrolmentPort,
+} from './auto-enrolment.tokens.js';
+
+export type ParticipationEngagement =
+  | 'awaiting_commitment'
+  | 'taking_part'
+  | 'not_taking_part'
+  | 'withdrawn';
 
 export interface ParticipationResponse {
   id: string;
@@ -30,6 +49,8 @@ export interface ParticipationResponse {
   userId: string;
   communityId: string | null;
   status: ParticipationStatus;
+  enrolmentSource: EnrolmentSource;
+  engagement: ParticipationEngagement;
   enrolledAt: string;
   withdrawnAt: string | null;
   createdAt: string;
@@ -43,6 +64,8 @@ export class ParticipationService {
   constructor(
     @InjectRepository(Participation)
     private readonly participationRepository: Repository<Participation>,
+    @InjectRepository(Commitment)
+    private readonly commitmentRepository: Repository<Commitment>,
     @Inject(forwardRef(() => CampaignService))
     private readonly campaigns: CampaignService,
     @Inject(forwardRef(() => MembershipService))
@@ -52,6 +75,9 @@ export class ParticipationService {
     @Inject(forwardRef(() => CustomerService))
     private readonly customers: CustomerService,
     private readonly identities: IdentityAccountService,
+    @Optional()
+    @Inject(forwardRef(() => AUTO_ENROLMENT_SERVICE))
+    private readonly autoEnrolment: AutoEnrolmentPort | null,
   ) {}
 
   async listEnrolledByCampaign(
@@ -102,7 +128,7 @@ export class ParticipationService {
     const visible = this.canManageParticipations(tenant)
       ? rows
       : rows.filter((row) => this.isOwn(tenant, row));
-    return visible.map((row) => this.toResponse(row));
+    return Promise.all(visible.map((row) => this.toResponse(row)));
   }
 
   async get(
@@ -150,8 +176,12 @@ export class ParticipationService {
     }
 
     const targetUserId = userId ?? actorUserId;
+    const isSelf = targetUserId === actorUserId;
+    const autoMode =
+      readEnrolmentMode(campaign.configuration) === ENROLMENT_MODE_AUTO;
+
     if (
-      targetUserId !== actorUserId &&
+      !isSelf &&
       !tenant.permissions.has(PERMISSIONS.PARTICIPATIONS_CREATE)
     ) {
       throw new AccessForbiddenException(
@@ -199,6 +229,26 @@ export class ParticipationService {
     const existing = await this.participationRepository.findOne({
       where: { campaign_id: campaignId, user_id: targetUserId },
     });
+
+    if (autoMode && isSelf) {
+      if (existing) {
+        return this.toResponse(existing);
+      }
+      if (this.autoEnrolment) {
+        await this.autoEnrolment.ensureCallerEnrolledIfAuto(
+          tenant,
+          campaignId,
+          targetUserId,
+        );
+        const healed = await this.participationRepository.findOne({
+          where: { campaign_id: campaignId, user_id: targetUserId },
+        });
+        if (healed) {
+          return this.toResponse(healed);
+        }
+      }
+    }
+
     if (existing) {
       if (existing.status === ParticipationStatus.ENROLLED) {
         throw new ResourceConflictException(
@@ -207,6 +257,9 @@ export class ParticipationService {
       }
       existing.status = ParticipationStatus.ENROLLED;
       existing.community_id = communityId;
+      existing.enrolment_source = isSelf
+        ? EnrolmentSource.SELF
+        : EnrolmentSource.ADMIN;
       existing.enrolled_at = new Date();
       existing.withdrawn_at = null;
       const saved = await this.participationRepository.save(existing);
@@ -220,6 +273,12 @@ export class ParticipationService {
       return this.toResponse(saved);
     }
 
+    const enrolmentSource = isSelf
+      ? autoMode
+        ? EnrolmentSource.AUTO
+        : EnrolmentSource.SELF
+      : EnrolmentSource.ADMIN;
+
     try {
       const saved = await this.participationRepository.save(
         this.participationRepository.create({
@@ -228,6 +287,7 @@ export class ParticipationService {
           user_id: targetUserId,
           community_id: communityId,
           status: ParticipationStatus.ENROLLED,
+          enrolment_source: enrolmentSource,
           enrolled_at: new Date(),
           withdrawn_at: null,
         }),
@@ -238,10 +298,19 @@ export class ParticipationService {
         campaignId,
         participationId: saved.id,
         userId: targetUserId,
+        enrolmentSource,
       });
       return this.toResponse(saved);
     } catch (error) {
       if (isUniqueViolation(error)) {
+        if (autoMode && isSelf) {
+          const race = await this.participationRepository.findOne({
+            where: { campaign_id: campaignId, user_id: targetUserId },
+          });
+          if (race) {
+            return this.toResponse(race);
+          }
+        }
         throw new ResourceConflictException(
           'User is already enrolled in this campaign',
         );
@@ -257,14 +326,29 @@ export class ParticipationService {
   ): Promise<ParticipationResponse> {
     await this.customers.requireActive(tenant.tenantId);
     const participation = await this.requireVisible(tenant, participationId);
+    const isSelf = participation.user_id === actorUserId;
     if (
-      participation.user_id !== actorUserId &&
+      !isSelf &&
       !tenant.permissions.has(PERMISSIONS.PARTICIPATIONS_UPDATE)
     ) {
       throw new AccessForbiddenException(
         'Withdrawing another user requires participations.update',
       );
     }
+
+    if (isSelf && !tenant.permissions.has(PERMISSIONS.PARTICIPATIONS_UPDATE)) {
+      const campaign = await this.campaigns.getCampaignRecord(
+        tenant,
+        participation.campaign_id,
+      );
+      if (readEnrolmentMode(campaign.configuration) === ENROLMENT_MODE_AUTO) {
+        throw new ResourceConflictException(
+          'This campaign manages enrolment automatically; choose not taking part instead of withdrawing',
+          'ENROLMENT_AUTO_MANAGED',
+        );
+      }
+    }
+
     if (participation.status === ParticipationStatus.WITHDRAWN) {
       return this.toResponse(participation);
     }
@@ -279,6 +363,16 @@ export class ParticipationService {
       userId: saved.user_id,
     });
     return this.toResponse(saved);
+  }
+
+  async syncAutoEnrolment(
+    tenant: TenantContext,
+    campaignId: string,
+  ): Promise<{ created: number; alreadyEnrolled: number; skipped: number }> {
+    if (!this.autoEnrolment) {
+      return { created: 0, alreadyEnrolled: 0, skipped: 0 };
+    }
+    return this.autoEnrolment.reconcileAutoEnrolment(tenant, campaignId);
   }
 
   private async requireVisible(
@@ -315,7 +409,27 @@ export class ParticipationService {
     );
   }
 
-  private toResponse(participation: Participation): ParticipationResponse {
+  private async engagementFor(
+    participation: Participation,
+  ): Promise<ParticipationEngagement> {
+    if (participation.status === ParticipationStatus.WITHDRAWN) {
+      return 'withdrawn';
+    }
+    const commitment = await this.commitmentRepository.findOne({
+      where: { participation_id: participation.id },
+    });
+    if (!commitment) {
+      return 'awaiting_commitment';
+    }
+    if (commitment.decision === CommitmentDecision.NOT_TAKING_PART) {
+      return 'not_taking_part';
+    }
+    return 'taking_part';
+  }
+
+  private async toResponse(
+    participation: Participation,
+  ): Promise<ParticipationResponse> {
     return {
       id: participation.id,
       customerId: participation.tenant_id,
@@ -323,6 +437,9 @@ export class ParticipationService {
       userId: participation.user_id,
       communityId: participation.community_id,
       status: participation.status,
+      enrolmentSource:
+        participation.enrolment_source ?? EnrolmentSource.SELF,
+      engagement: await this.engagementFor(participation),
       enrolledAt: participation.enrolled_at.toISOString(),
       withdrawnAt: participation.withdrawn_at?.toISOString() ?? null,
       createdAt: participation.created_at.toISOString(),

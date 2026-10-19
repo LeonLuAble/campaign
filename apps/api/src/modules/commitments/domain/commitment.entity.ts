@@ -7,6 +7,11 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+export enum CommitmentDecision {
+  COMMITTED = 'committed',
+  NOT_TAKING_PART = 'not_taking_part',
+}
+
 @Entity('commitments')
 @Index(['tenant_id'])
 @Index(['campaign_id'])
@@ -26,11 +31,19 @@ export class Commitment {
   @Column({ type: 'varchar', length: 100, nullable: true })
   type_key: string | null;
 
-  @Column({ type: 'int' })
-  target_value: number;
+  @Column({
+    type: 'enum',
+    enum: CommitmentDecision,
+    enumName: 'commitment_decision_enum',
+    default: CommitmentDecision.COMMITTED,
+  })
+  decision: CommitmentDecision;
 
-  @Column({ type: 'varchar', length: 50 })
-  unit: string;
+  @Column({ type: 'int', nullable: true })
+  target_value: number | null;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  unit: string | null;
 
   @Column({ type: 'jsonb', default: {} })
   payload: Record<string, unknown>;

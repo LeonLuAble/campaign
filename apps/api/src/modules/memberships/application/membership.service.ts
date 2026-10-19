@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, In, Repository } from 'typeorm';
 import {
@@ -21,7 +21,10 @@ import { AuthorizationService } from '../../authorization/application/authorizat
 import type { RoleSummary } from '../../authorization/application/authorization.service.js';
 import { hasTenantLevelMembership } from '../../authorization/application/membership-scope.js';
 import type { TenantContext } from '../../authorization/application/tenant-context.js';
-import { SYSTEM_ROLE_TENANT_ADMIN } from '../../authorization/domain/permission-keys.js';
+import {
+  SYSTEM_ROLE_MEMBER,
+  SYSTEM_ROLE_TENANT_ADMIN,
+} from '../../authorization/domain/permission-keys.js';
 import type { CommunityService } from '../../communities/application/community.service.js';
 import {
   IdentityAccountService,
@@ -35,6 +38,10 @@ import {
   escapeIlikePattern,
   type MembershipUserSummary,
 } from './membership-directory.js';
+import {
+  MEMBERSHIP_LIFECYCLE_LISTENER,
+  type MembershipLifecycleListener,
+} from './membership-lifecycle.js';
 
 export interface MembershipCommunitySummary {
   id: string;
@@ -83,6 +90,9 @@ export class MembershipService {
     @Inject(COMMUNITY_SERVICE)
     private readonly communities: CommunityService,
     private readonly identities: IdentityAccountService,
+    @Optional()
+    @Inject(MEMBERSHIP_LIFECYCLE_LISTENER)
+    private readonly membershipLifecycle: MembershipLifecycleListener | null,
   ) {}
 
   private async requireActiveCustomer(customerId: string): Promise<void> {
@@ -115,6 +125,14 @@ export class MembershipService {
   ): Promise<MembershipRecord[]> {
     const memberships = await this.membershipRepository.find({
       where: { user_id: userId, tenant_id: tenantId, is_active: true },
+    });
+    return memberships.map((membership) => this.toRecord(membership));
+  }
+
+  async listActiveInTenant(tenantId: string): Promise<MembershipRecord[]> {
+    const memberships = await this.membershipRepository.find({
+      where: { tenant_id: tenantId, is_active: true },
+      order: { created_at: 'ASC' },
     });
     return memberships.map((membership) => this.toRecord(membership));
   }
@@ -355,6 +373,11 @@ export class MembershipService {
       membershipId: saved.id,
       userId: input.userId,
     });
+    await this.emitMembershipActivated({
+      tenantId: tenant.tenantId,
+      userId: input.userId,
+      membershipId: saved.id,
+    });
     const [response] = await this.toResponses([saved]);
     return response;
   }
@@ -366,6 +389,7 @@ export class MembershipService {
   ): Promise<MembershipResponse> {
     await this.requireActiveCustomer(tenant.tenantId);
     const membership = await this.requireVisible(tenant, membershipId);
+    const wasInactive = !membership.is_active;
     if (input.isActive === false && membership.is_active) {
       await this.assertNotLastTenantAdmin(tenant.tenantId, membership);
       membership.is_active = false;
@@ -379,6 +403,13 @@ export class MembershipService {
       membershipId: saved.id,
       isActive: saved.is_active,
     });
+    if (wasInactive && saved.is_active) {
+      await this.emitMembershipActivated({
+        tenantId: saved.tenant_id,
+        userId: saved.user_id,
+        membershipId: saved.id,
+      });
+    }
     const [response] = await this.toResponses([saved]);
     return response;
   }
@@ -410,6 +441,30 @@ export class MembershipService {
     return this.assignRole(tenant, membershipId, role.id);
   }
 
+  /**
+   * Safe to call after invitation/import commit. Listener failures are logged
+   * and never block the membership write path.
+   */
+  async emitMembershipActivated(event: {
+    tenantId: string;
+    userId: string;
+    membershipId: string;
+  }): Promise<void> {
+    if (!this.membershipLifecycle) {
+      return;
+    }
+    try {
+      await this.membershipLifecycle.onMembershipActivated(event);
+    } catch (error) {
+      this.logger.error({
+        msg: 'membership_lifecycle_hook_failed',
+        tenantId: event.tenantId,
+        membershipId: event.membershipId,
+        error: error instanceof Error ? error.message : 'unknown',
+      });
+    }
+  }
+
   async assignRole(
     tenant: TenantContext,
     membershipId: string,
@@ -417,12 +472,20 @@ export class MembershipService {
   ): Promise<RoleSummary[]> {
     await this.requireActiveCustomer(tenant.tenantId);
     const membership = await this.requireVisible(tenant, membershipId);
-    return this.authorization.assignRole(
+    const roles = await this.authorization.assignRole(
       tenant.tenantId,
       membership.id,
       membership.tenant_id,
       roleId,
     );
+    if (roles.some((role) => role.key === SYSTEM_ROLE_MEMBER)) {
+      await this.emitMembershipActivated({
+        tenantId: membership.tenant_id,
+        userId: membership.user_id,
+        membershipId: membership.id,
+      });
+    }
+    return roles;
   }
 
   async unassignRole(

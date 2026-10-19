@@ -12,6 +12,12 @@ export enum ParticipationStatus {
   WITHDRAWN = 'withdrawn',
 }
 
+export enum EnrolmentSource {
+  SELF = 'self',
+  AUTO = 'auto',
+  ADMIN = 'admin',
+}
+
 @Entity('participations')
 @Index(['tenant_id'])
 @Index(['campaign_id'])
@@ -38,6 +44,14 @@ export class Participation {
     enumName: 'participation_status_enum',
   })
   status: ParticipationStatus;
+
+  @Column({
+    type: 'enum',
+    enum: EnrolmentSource,
+    enumName: 'enrolment_source_enum',
+    default: EnrolmentSource.SELF,
+  })
+  enrolment_source: EnrolmentSource;
 
   @Column({ type: 'timestamptz' })
   enrolled_at: Date;

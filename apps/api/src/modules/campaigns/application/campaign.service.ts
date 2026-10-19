@@ -38,7 +38,11 @@ import {
   canTransitionCampaign,
 } from './campaign-lifecycle.js';
 import { campaignVisibleToMemberships } from './campaign-visibility.js';
-import { readSubmissionReview } from './campaign-settings.js';
+import {
+  ENROLMENT_MODE_AUTO,
+  readEnrolmentMode,
+  validateCampaignSettings,
+} from './campaign-settings.js';
 import {
   assertDateOrder,
   assertIanaTimeZone,
@@ -46,6 +50,10 @@ import {
   parseIsoDate,
   toIsoDate,
 } from './timezone.js';
+import {
+  AUTO_ENROLMENT_SERVICE,
+  type AutoEnrolmentPort,
+} from '../../participation/application/auto-enrolment.tokens.js';
 
 export interface CampaignTemplateResponse {
   id: string;
@@ -122,6 +130,9 @@ export class CampaignService {
     @Optional()
     @Inject(forwardRef(() => CAMPAIGN_NOTIFICATIONS))
     private readonly campaignNotifications: CampaignNotifications | null,
+    @Optional()
+    @Inject(forwardRef(() => AUTO_ENROLMENT_SERVICE))
+    private readonly autoEnrolment: AutoEnrolmentPort | null,
   ) {}
 
   async listStartedCampaigns(): Promise<
@@ -146,6 +157,46 @@ export class CampaignService {
       startsOn: toIsoDate(campaign.starts_on),
       endsOn: toIsoDate(campaign.ends_on),
     }));
+  }
+
+  /** Published or started campaigns with enrolmentMode=auto for a tenant. */
+  async listAutoEnrolCampaigns(tenantId: string): Promise<
+    Array<{
+      id: string;
+      communityIds: string[];
+      configuration: Record<string, unknown>;
+      status: CampaignStatus;
+    }>
+  > {
+    const rows = await this.campaignRepository.find({
+      where: [
+        { tenant_id: tenantId, status: CampaignStatus.PUBLISHED },
+        { tenant_id: tenantId, status: CampaignStatus.STARTED },
+      ],
+      order: { created_at: 'ASC' },
+    });
+    const result: Array<{
+      id: string;
+      communityIds: string[];
+      configuration: Record<string, unknown>;
+      status: CampaignStatus;
+    }> = [];
+    for (const campaign of rows) {
+      const configuration = await this.configurationRepository.findOne({
+        where: { campaign_id: campaign.id },
+      });
+      const settings = configuration?.settings ?? {};
+      if (readEnrolmentMode(settings) !== ENROLMENT_MODE_AUTO) {
+        continue;
+      }
+      result.push({
+        id: campaign.id,
+        communityIds: await this.communityIdsFor(campaign.id),
+        configuration: settings,
+        status: campaign.status,
+      });
+    }
+    return result;
   }
 
   async findTemplateById(id: string): Promise<CampaignAccessRecord | null> {
@@ -389,7 +440,22 @@ export class CampaignService {
   async listCampaigns(
     tenant: TenantContext,
     locale: SupportedLocale = 'en',
+    actorUserId?: string,
   ): Promise<CampaignResponse[]> {
+    if (actorUserId && this.autoEnrolment) {
+      try {
+        await this.autoEnrolment.reconcileUserAcrossAutoCampaigns(
+          tenant.tenantId,
+          actorUserId,
+        );
+      } catch (error) {
+        this.logger.error({
+          msg: 'auto_enrol_self_heal_list_failed',
+          tenantId: tenant.tenantId,
+          error: error instanceof Error ? error.message : 'unknown',
+        });
+      }
+    }
     const campaigns = await this.campaignRepository.find({
       where: { tenant_id: tenant.tenantId },
       order: { created_at: 'ASC' },
@@ -409,7 +475,15 @@ export class CampaignService {
     tenant: TenantContext,
     campaignId: string,
     locale: SupportedLocale = 'en',
+    actorUserId?: string,
   ): Promise<CampaignResponse> {
+    if (actorUserId && this.autoEnrolment) {
+      await this.autoEnrolment.ensureCallerEnrolledIfAuto(
+        tenant,
+        campaignId,
+        actorUserId,
+      );
+    }
     const campaign = await this.requireVisibleCampaign(tenant, campaignId);
     const [mapped] = await this.toCampaignResponses([campaign], locale);
     return mapped;
@@ -847,6 +921,22 @@ export class CampaignService {
       tenantId: tenant.tenantId,
       campaignId: campaign.id,
     });
+    if (
+      (next === CampaignStatus.PUBLISHED || next === CampaignStatus.STARTED) &&
+      this.autoEnrolment
+    ) {
+      try {
+        await this.autoEnrolment.reconcileAutoEnrolment(tenant, campaign.id);
+      } catch (error) {
+        this.logger.error({
+          msg: 'auto_enrol_on_transition_failed',
+          tenantId: tenant.tenantId,
+          campaignId: campaign.id,
+          status: next,
+          error: error instanceof Error ? error.message : 'unknown',
+        });
+      }
+    }
     if (next === CampaignStatus.STARTED && this.campaignNotifications) {
       try {
         await this.campaignNotifications.notifyCampaignStarted({
@@ -990,7 +1080,7 @@ export class CampaignService {
     settings: Record<string, unknown>,
   ): Promise<CampaignConfiguration> {
     const normalized = normalizeSettings(settings);
-    readSubmissionReview(normalized);
+    validateCampaignSettings(normalized);
     const existing = await this.configurationRepository.findOne({
       where: { campaign_id: campaignId },
     });

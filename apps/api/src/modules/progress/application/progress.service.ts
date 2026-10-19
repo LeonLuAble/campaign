@@ -295,16 +295,19 @@ export class ProgressService {
         communityId: participation.community_id,
       };
       const commitmentRow = commitmentByParticipation.get(participation.id);
-      const commitment: CountableCommitment | null = commitmentRow
-        ? {
-            id: commitmentRow.id,
-            participationId: commitmentRow.participation_id,
-            typeKey: commitmentRow.type_key,
-            targetValue: commitmentRow.target_value,
-            unit: commitmentRow.unit,
-            payload: commitmentRow.payload,
-          }
-        : null;
+      const commitment: CountableCommitment | null =
+        commitmentRow &&
+        commitmentRow.target_value != null &&
+        commitmentRow.unit
+          ? {
+              id: commitmentRow.id,
+              participationId: commitmentRow.participation_id,
+              typeKey: commitmentRow.type_key,
+              targetValue: commitmentRow.target_value,
+              unit: commitmentRow.unit,
+              payload: commitmentRow.payload,
+            }
+          : null;
       return computeParticipantProgress(
         countable,
         commitment,

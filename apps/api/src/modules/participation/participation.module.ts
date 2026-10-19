@@ -4,18 +4,23 @@ import { PARTICIPATION_READER } from '../authorization/application/access-reader
 import { AuthorizationModule } from '../authorization/authorization.module.js';
 import { AuthModule } from '../auth/auth.module.js';
 import { CampaignsModule } from '../campaigns/campaigns.module.js';
+import { Commitment } from '../commitments/domain/commitment.entity.js';
 import { CommunitiesModule } from '../communities/communities.module.js';
 import { CustomersModule } from '../customers/customers.module.js';
 import { IdentityModule } from '../identity/identity.module.js';
+import { MEMBERSHIP_LIFECYCLE_LISTENER } from '../memberships/application/membership-lifecycle.js';
 import { MembershipsModule } from '../memberships/memberships.module.js';
+import { AutoEnrolmentService } from './application/auto-enrolment.service.js';
+import { AUTO_ENROLMENT_SERVICE } from './application/auto-enrolment.tokens.js';
 import { ParticipationService } from './application/participation.service.js';
 import { Participation } from './domain/participation.entity.js';
+import { CampaignAutoEnrolController } from './presentation/campaign-auto-enrol.controller.js';
 import { CampaignParticipationsController } from './presentation/campaign-participations.controller.js';
 import { ParticipationsController } from './presentation/participations.controller.js';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Participation]),
+    TypeOrmModule.forFeature([Participation, Commitment]),
     AuthModule,
     IdentityModule,
     forwardRef(() => AuthorizationModule),
@@ -24,11 +29,27 @@ import { ParticipationsController } from './presentation/participations.controll
     forwardRef(() => CommunitiesModule),
     forwardRef(() => MembershipsModule),
   ],
-  controllers: [CampaignParticipationsController, ParticipationsController],
+  controllers: [
+    CampaignParticipationsController,
+    CampaignAutoEnrolController,
+    ParticipationsController,
+  ],
   providers: [
     ParticipationService,
+    AutoEnrolmentService,
     { provide: PARTICIPATION_READER, useExisting: ParticipationService },
+    { provide: AUTO_ENROLMENT_SERVICE, useExisting: AutoEnrolmentService },
+    {
+      provide: MEMBERSHIP_LIFECYCLE_LISTENER,
+      useExisting: AutoEnrolmentService,
+    },
   ],
-  exports: [ParticipationService, PARTICIPATION_READER],
+  exports: [
+    ParticipationService,
+    PARTICIPATION_READER,
+    AutoEnrolmentService,
+    AUTO_ENROLMENT_SERVICE,
+    MEMBERSHIP_LIFECYCLE_LISTENER,
+  ],
 })
 export class ParticipationModule {}

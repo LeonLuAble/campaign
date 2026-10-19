@@ -20,6 +20,7 @@ export const ERROR_CODES = [
   'INVALID_SETUP_KEY',
   'CAMPAIGN_FIELD_LOCKED',
   'CAMPAIGN_END_DATE_LOCKED',
+  'ENROLMENT_AUTO_MANAGED',
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

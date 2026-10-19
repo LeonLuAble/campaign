@@ -77,10 +77,12 @@ Campaign (tenant-scoped via `customerId` query/body or resource id; generic conf
 - GET/PUT /campaigns/:campaignId/communities `{ communityIds }` → empty list means tenant-wide; PUT draft only
 
 Participation:
-- POST /campaigns/:campaignId/participations `{ userId? }` → 201. Omitting `userId` (or passing the caller’s id) is self-enroll: any authenticated user with an active, eligible membership may join a published or started campaign. Enrolling another user requires `participations.create`. Target user must be an active tenant member in a targeted community (or any membership if tenant-wide).
-- GET /campaigns/:campaignId/participations → requires `participations.read`. Members see only their own row; tenant admins see all.
+- Campaign `configuration.enrolmentMode` is `'opt_in'` (default) or `'auto'`. Accepted on create and `PUT /configuration` (draft only).
+- POST /campaigns/:campaignId/participations `{ userId? }` → 201. Omitting `userId` (or passing the caller’s id) is self-enroll: any authenticated user with an active, eligible membership may join a published or started campaign. Enrolling another user requires `participations.create`. Target user must be an active tenant member in a targeted community (or any membership if tenant-wide). In `auto` mode, self-enroll is idempotent self-heal (returns the caller’s existing row or creates one; never errors for an existing row).
+- GET /campaigns/:campaignId/participations → requires `participations.read`. Members see only their own row; tenant admins see all. Response includes `enrolmentSource` (`self|auto|admin`) and `engagement` (`awaiting_commitment|taking_part|not_taking_part|withdrawn`).
 - GET /participations/:participationId → requires `participations.read`
-- POST /participations/:participationId/withdraw → self-withdraw is allowed for the participant. Withdrawing another user requires `participations.update`. Idempotent if already withdrawn. Re-enroll restores the same row.
+- POST /participations/:participationId/withdraw → self-withdraw is allowed for the participant in `opt_in` campaigns. In `auto` campaigns, member self-withdraw returns 409 `ENROLMENT_AUTO_MANAGED`; admins with `participations.update` may still withdraw. Idempotent if already withdrawn. Re-enroll restores the same row (`opt_in` only resurrects withdrawn).
+- POST /campaigns/:campaignId/auto-enrol/sync → requires `participations.create`. Idempotent reconcile for `enrolmentMode=auto` campaigns; returns `{ created, alreadyEnrolled, skipped }`. Auto-enrol also runs on publish/start, membership create/reactivate/invite/import (member role), and member campaign list/get self-heal. Never reactivates withdrawn rows; only users with the system `member` role are auto-enrolled.
 
 Actions (tenant-scoped via campaign/participation/action ids; generic recording, no vegetarian schema in this module):
 - POST /campaigns/:campaignId/action-definitions `{ key?, name, unit, description?, settings? }` → 201. Requires `action_definitions.create`.

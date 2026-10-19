@@ -51,19 +51,21 @@ export class CampaignsController {
   @RequirePermission(PERMISSIONS.CAMPAIGNS_READ)
   list(
     @CurrentTenant() tenant: TenantContext,
+    @CurrentUser() user: AuthenticatedUser,
     @AcceptLanguage() locale: SupportedLocale,
   ) {
-    return this.campaigns.listCampaigns(tenant, locale);
+    return this.campaigns.listCampaigns(tenant, locale, user.userId);
   }
 
   @Get(':campaignId')
   @RequirePermission(PERMISSIONS.CAMPAIGNS_READ)
   get(
     @CurrentTenant() tenant: TenantContext,
+    @CurrentUser() user: AuthenticatedUser,
     @Param('campaignId', ParseUUIDPipe) campaignId: string,
     @AcceptLanguage() locale: SupportedLocale,
   ) {
-    return this.campaigns.getCampaign(tenant, campaignId, locale);
+    return this.campaigns.getCampaign(tenant, campaignId, locale, user.userId);
   }
 
   @Patch(':campaignId')

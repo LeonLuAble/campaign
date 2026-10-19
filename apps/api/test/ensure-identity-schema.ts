@@ -10,6 +10,7 @@ import { CreateProgressMilestoneTables1792565810000 } from '../src/platform/data
 import { CreateMeasurementOutcomeVisualizationTables1792665911000 } from '../src/platform/database/migrations/1792665911000-CreateMeasurementOutcomeVisualizationTables.js';
 import { CreateNotificationLocalizationReportTables1792766012000 } from '../src/platform/database/migrations/1792766012000-CreateNotificationLocalizationReportTables.js';
 import { TightenMemberRolePermissions1792866113000 } from '../src/platform/database/migrations/1792866113000-TightenMemberRolePermissions.js';
+import { AddEnrolmentSourceAndCommitmentDecision1793166314000 } from '../src/platform/database/migrations/1793166314000-AddEnrolmentSourceAndCommitmentDecision.js';
 
 type MigrationCtor = new () => MigrationInterface;
 
@@ -26,6 +27,7 @@ const SCHEMA_MIGRATIONS: MigrationCtor[] = [
   CreateMeasurementOutcomeVisualizationTables1792665911000,
   CreateNotificationLocalizationReportTables1792766012000,
   TightenMemberRolePermissions1792866113000,
+  AddEnrolmentSourceAndCommitmentDecision1793166314000,
 ];
 
 export async function revertSchemaMigrationsNewestFirst(
@@ -207,6 +209,14 @@ export async function ensureTenantSchema(
   // Data-only: always apply so member roles lose import/membership/role reads
   // even when older migrations re-granted them during schema bootstrap.
   await new TightenMemberRolePermissions1792866113000().up(queryRunner);
+
+  if (
+    !(await columnExists(dataSource, 'participations', 'enrolment_source'))
+  ) {
+    await new AddEnrolmentSourceAndCommitmentDecision1793166314000().up(
+      queryRunner,
+    );
+  }
 }
 
 async function ensureIdentitySchemaWithoutTenant(

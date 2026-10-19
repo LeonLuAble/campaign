@@ -188,6 +188,7 @@ abstract class CampaignApiClient {
   Future<List<Participation>> listParticipations(String campaignId);
   Future<Participation> joinCampaign(String campaignId);
   Future<Participation> withdrawParticipation(String participationId);
+  Future<AutoEnrolSyncResult> syncAutoEnrolment(String campaignId);
 
   Future<CommitmentOptions> getCommitmentOptions(String campaignId);
   Future<List<Commitment>> listCommitments(String participationId);
@@ -1037,6 +1038,14 @@ class HttpCampaignApiClient implements CampaignApiClient {
     return _post(
       '/participations/$participationId/withdraw',
       parser: Participation.fromJson,
+    );
+  }
+
+  @override
+  Future<AutoEnrolSyncResult> syncAutoEnrolment(String campaignId) {
+    return _post(
+      '/campaigns/$campaignId/auto-enrol/sync',
+      parser: AutoEnrolSyncResult.fromJson,
     );
   }
 

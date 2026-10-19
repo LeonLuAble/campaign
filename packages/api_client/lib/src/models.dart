@@ -799,6 +799,8 @@ class Participation {
     required this.userId,
     required this.status,
     this.communityId,
+    this.enrolmentSource = 'self',
+    this.engagement = 'awaiting_commitment',
   });
 
   final String id;
@@ -807,6 +809,8 @@ class Participation {
   final String userId;
   final String? communityId;
   final String status;
+  final String enrolmentSource;
+  final String engagement;
 
   bool get isEnrolled => status == 'enrolled';
 
@@ -818,6 +822,31 @@ class Participation {
       userId: json['userId'] as String,
       communityId: _string(json['communityId']),
       status: json['status'] as String,
+      enrolmentSource: (json['enrolmentSource'] as String?) ?? 'self',
+      engagement: (json['engagement'] as String?) ??
+          (json['status'] == 'withdrawn'
+              ? 'withdrawn'
+              : 'awaiting_commitment'),
+    );
+  }
+}
+
+class AutoEnrolSyncResult {
+  const AutoEnrolSyncResult({
+    required this.created,
+    required this.alreadyEnrolled,
+    required this.skipped,
+  });
+
+  final int created;
+  final int alreadyEnrolled;
+  final int skipped;
+
+  factory AutoEnrolSyncResult.fromJson(Map<String, dynamic> json) {
+    return AutoEnrolSyncResult(
+      created: _num(json['created']).toInt(),
+      alreadyEnrolled: _num(json['alreadyEnrolled']).toInt(),
+      skipped: _num(json['skipped']).toInt(),
     );
   }
 }

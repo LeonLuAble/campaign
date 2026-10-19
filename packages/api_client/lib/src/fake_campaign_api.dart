@@ -1831,6 +1831,7 @@ class FakeCampaignApiClient implements CampaignApiClient {
         message: 'Users can only enroll in published or started campaigns',
       );
     }
+    final autoMode = campaign.configuration['enrolmentMode'] == 'auto';
     final existing = participations
         .where(
           (row) => row.campaignId == campaignId && row.userId == profile.id,
@@ -1838,6 +1839,9 @@ class FakeCampaignApiClient implements CampaignApiClient {
         .toList();
     if (existing.isNotEmpty) {
       final current = existing.first;
+      if (autoMode) {
+        return current;
+      }
       if (current.isEnrolled) {
         _throw(
           'CONFLICT',
@@ -1852,6 +1856,8 @@ class FakeCampaignApiClient implements CampaignApiClient {
         userId: current.userId,
         communityId: current.communityId,
         status: 'enrolled',
+        enrolmentSource: 'self',
+        engagement: 'awaiting_commitment',
       );
       participations = [
         for (final row in participations)
@@ -1865,6 +1871,8 @@ class FakeCampaignApiClient implements CampaignApiClient {
       campaignId: campaignId,
       userId: profile.id,
       status: 'enrolled',
+      enrolmentSource: autoMode ? 'auto' : 'self',
+      engagement: 'awaiting_commitment',
     );
     participations = [...participations, created];
     return created;
@@ -1873,6 +1881,17 @@ class FakeCampaignApiClient implements CampaignApiClient {
   @override
   Future<Participation> withdrawParticipation(String participationId) async {
     final current = participations.firstWhere((row) => row.id == participationId);
+    final campaignMatches =
+        campaigns.where((row) => row.id == current.campaignId);
+    if (campaignMatches.isNotEmpty &&
+        campaignMatches.first.configuration['enrolmentMode'] == 'auto') {
+      _throw(
+        'ENROLMENT_AUTO_MANAGED',
+        status: 409,
+        message:
+            'This campaign manages enrolment automatically; choose not taking part instead of withdrawing',
+      );
+    }
     final updated = Participation(
       id: current.id,
       customerId: current.customerId,
@@ -1880,12 +1899,57 @@ class FakeCampaignApiClient implements CampaignApiClient {
       userId: current.userId,
       communityId: current.communityId,
       status: 'withdrawn',
+      enrolmentSource: current.enrolmentSource,
+      engagement: 'withdrawn',
     );
     participations = [
       for (final row in participations)
         if (row.id == participationId) updated else row,
     ];
     return updated;
+  }
+
+  @override
+  Future<AutoEnrolSyncResult> syncAutoEnrolment(String campaignId) async {
+    final matches = campaigns.where((row) => row.id == campaignId);
+    if (matches.isEmpty) {
+      _throw('NOT_FOUND', status: 404, message: 'Campaign not found');
+    }
+    final campaign = matches.first;
+    if (campaign.configuration['enrolmentMode'] != 'auto') {
+      return const AutoEnrolSyncResult(
+        created: 0,
+        alreadyEnrolled: 0,
+        skipped: 0,
+      );
+    }
+    final existing = participations.any(
+      (row) => row.campaignId == campaignId && row.userId == profile.id,
+    );
+    if (existing) {
+      return const AutoEnrolSyncResult(
+        created: 0,
+        alreadyEnrolled: 1,
+        skipped: 0,
+      );
+    }
+    participations = [
+      ...participations,
+      Participation(
+        id: 'part-${participations.length + 1}',
+        customerId: campaign.customerId,
+        campaignId: campaignId,
+        userId: profile.id,
+        status: 'enrolled',
+        enrolmentSource: 'auto',
+        engagement: 'awaiting_commitment',
+      ),
+    ];
+    return const AutoEnrolSyncResult(
+      created: 1,
+      alreadyEnrolled: 0,
+      skipped: 0,
+    );
   }
 
   @override

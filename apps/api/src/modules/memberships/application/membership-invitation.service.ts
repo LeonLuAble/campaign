@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
@@ -29,6 +29,7 @@ import {
 import { IdentityType } from '../../identity/domain/user-identity.entity.js';
 import { Membership } from '../domain/membership.entity.js';
 import { resolveActivationStatus } from './membership-directory.js';
+import { MembershipService } from './membership.service.js';
 
 export interface InviteMembershipInput {
   email?: string;
@@ -69,6 +70,8 @@ export class MembershipInvitationService {
     private readonly communities: CommunityService,
     private readonly registration: RegistrationService,
     private readonly config: ConfigService,
+    @Inject(forwardRef(() => MembershipService))
+    private readonly memberships: MembershipService,
   ) {}
 
   async invite(
@@ -256,6 +259,12 @@ export class MembershipInvitationService {
         created: result.created,
         activationStatus,
         hasActivationLink: Boolean(activationLink),
+      });
+
+      await this.memberships.emitMembershipActivated({
+        tenantId: tenant.tenantId,
+        userId: result.userId,
+        membershipId: result.membership.id,
       });
 
       return {

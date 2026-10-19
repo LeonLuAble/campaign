@@ -399,6 +399,22 @@ export type CampaignStatus = 'draft' | 'published' | 'started' | 'completed';
 
 export type ParticipationStatus = 'enrolled' | 'withdrawn';
 
+export type EnrolmentSource = 'self' | 'auto' | 'admin';
+
+export type EnrolmentMode = 'opt_in' | 'auto';
+
+export type ParticipationEngagement =
+  | 'awaiting_commitment'
+  | 'taking_part'
+  | 'not_taking_part'
+  | 'withdrawn';
+
+export interface AutoEnrolSyncResponse {
+  created: number;
+  alreadyEnrolled: number;
+  skipped: number;
+}
+
 export interface CampaignTemplateResponse {
   id: string;
   customerId: string;
@@ -541,6 +557,8 @@ export interface ParticipationResponse {
   userId: string;
   communityId: string | null;
   status: ParticipationStatus;
+  enrolmentSource: EnrolmentSource;
+  engagement: ParticipationEngagement;
   enrolledAt: string;
   withdrawnAt: string | null;
   createdAt: string;
