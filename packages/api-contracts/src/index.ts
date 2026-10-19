@@ -24,7 +24,13 @@ export type ErrorCode =
   | 'WEAK_PASSWORD'
   | 'SOCIAL_TOKEN_INVALID'
   | 'SETUP_NOT_AVAILABLE'
-  | 'INVALID_SETUP_KEY';
+  | 'INVALID_SETUP_KEY'
+  | 'CAMPAIGN_FIELD_LOCKED'
+  | 'CAMPAIGN_END_DATE_LOCKED'
+  | 'ENROLMENT_AUTO_MANAGED'
+  | 'MILESTONE_LOCKED'
+  | 'MILESTONE_DATE_OUT_OF_WINDOW'
+  | 'MILESTONE_DATE_DUPLICATE';
 
 export interface ApiErrorResponse {
   statusCode: number;
@@ -806,17 +812,34 @@ export interface AggregateProgressResponse {
   units: ProgressUnit[];
 }
 
+export interface MilestoneContentTranslations {
+  en?: {
+    name?: string | null;
+    description?: string | null;
+  };
+}
+
+/**
+ * A milestone has a due date, a collective goal, or both. The goal fields
+ * (metric, thresholdValue, unit) are all set or all null.
+ */
 export interface MilestoneResponse {
   id: string;
   customerId: string;
   campaignId: string;
   key: string;
+  /** Localized by Accept-Language; zh-Hans is the primary value. */
   name: string;
   description: string | null;
-  metric: MilestoneMetric;
-  thresholdValue: number;
-  unit: string;
+  /** ISO date inside the campaign window. Locked once the campaign is published. */
+  dueOn: string | null;
+  metric: MilestoneMetric | null;
+  thresholdValue: number | null;
+  unit: string | null;
+  hasGoal: boolean;
   isActive: boolean;
+  /** Raw stored English values, for editing. */
+  translations: { en: { name: string | null; description: string | null } };
   createdByUserId: string;
   createdAt: string;
   updatedAt: string;
@@ -826,27 +849,35 @@ export interface CreateMilestoneRequest {
   key?: string;
   name: string;
   description?: string;
-  metric: MilestoneMetric;
-  thresholdValue: number;
-  unit: string;
+  dueOn?: string;
+  metric?: MilestoneMetric;
+  thresholdValue?: number;
+  unit?: string;
+  translations?: MilestoneContentTranslations;
 }
 
 export interface UpdateMilestoneRequest {
   name?: string;
   description?: string | null;
-  metric?: MilestoneMetric;
-  thresholdValue?: number;
-  unit?: string;
+  /** Draft only; after publish a change returns MILESTONE_LOCKED. */
+  dueOn?: string | null;
+  /** Send all three as null to remove the goal. */
+  metric?: MilestoneMetric | null;
+  thresholdValue?: number | null;
+  unit?: string | null;
+  /** Deactivating a dated milestone after publish returns MILESTONE_LOCKED. */
   isActive?: boolean;
+  translations?: MilestoneContentTranslations;
 }
 
 export interface MilestoneProgressResponse {
   milestoneId: string;
   campaignId: string;
   customerId: string;
-  metric: MilestoneMetric;
-  unit: string;
-  thresholdValue: number;
+  hasGoal: boolean;
+  metric: MilestoneMetric | null;
+  unit: string | null;
+  thresholdValue: number | null;
   currentAchievedValue: number;
   currentTargetValue: number;
   currentCompletionPercent: number | null;
@@ -867,6 +898,22 @@ export interface MilestoneEvaluationResponse {
   status: CompletionStatus;
   evaluatedAt: string;
   createdAt: string;
+}
+
+/**
+ * A slice of the campaign window ending on a dated milestone, or the implicit
+ * final period ending on the campaign end date.
+ */
+export interface CampaignPeriodResponse {
+  /** Period end date; stable identifier for the period. */
+  key: string;
+  index: number;
+  startsOn: string;
+  endsOn: string;
+  milestoneId: string | null;
+  name: string | null;
+  isFinal: boolean;
+  dayCount: number;
 }
 
 export type TimeSeriesGranularity = 'day' | 'week';

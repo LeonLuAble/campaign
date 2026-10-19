@@ -207,6 +207,41 @@ abstract class CampaignApiClient {
     String decision = CommitmentDecision.committed,
   });
 
+  Future<List<Milestone>> listMilestones(String campaignId);
+
+  /// A milestone needs a [dueOn], a [goal], or both. Dated milestones can
+  /// only be added while the campaign is a draft.
+  Future<Milestone> createMilestone({
+    required String campaignId,
+    required String name,
+    String? key,
+    String? description,
+    String? dueOn,
+    MilestoneGoal? goal,
+    MilestoneContentTranslations? translations,
+  });
+
+  /// [clearDueOn] and [clearGoal] send explicit nulls. After publish,
+  /// changing the date or deactivating a dated milestone fails with
+  /// `MILESTONE_LOCKED`.
+  Future<Milestone> updateMilestone(
+    String milestoneId, {
+    String? name,
+    String? description,
+    String? dueOn,
+    bool clearDueOn = false,
+    MilestoneGoal? goal,
+    bool clearGoal = false,
+    bool? isActive,
+    MilestoneContentTranslations? translations,
+  });
+  Future<MilestoneProgress> getMilestoneProgress(String milestoneId);
+  Future<MilestoneEvaluation> evaluateMilestone(String milestoneId);
+  Future<List<MilestoneEvaluation>> listMilestoneEvaluations(
+    String milestoneId,
+  );
+  Future<List<CampaignPeriod>> listCampaignPeriods(String campaignId);
+
   Future<List<ActionDefinition>> listActionDefinitions(String campaignId);
   Future<ActionDefinition> createActionDefinition({
     required String campaignId,
@@ -1103,6 +1138,106 @@ class HttpCampaignApiClient implements CampaignApiClient {
         if (!notTakingPart && unit != null) 'unit': unit,
       },
       parser: Commitment.fromJson,
+    );
+  }
+
+  @override
+  Future<List<Milestone>> listMilestones(String campaignId) {
+    return _getList(
+      '/campaigns/$campaignId/milestones',
+      parser: Milestone.fromJson,
+    );
+  }
+
+  @override
+  Future<Milestone> createMilestone({
+    required String campaignId,
+    required String name,
+    String? key,
+    String? description,
+    String? dueOn,
+    MilestoneGoal? goal,
+    MilestoneContentTranslations? translations,
+  }) {
+    return _post(
+      '/campaigns/$campaignId/milestones',
+      data: {
+        'name': name,
+        if (key != null) 'key': key,
+        if (description != null) 'description': description,
+        if (dueOn != null) 'dueOn': dueOn,
+        if (goal != null) ...goal.toJson(),
+        if (translations != null) 'translations': translations.toJson(),
+      },
+      parser: Milestone.fromJson,
+    );
+  }
+
+  @override
+  Future<Milestone> updateMilestone(
+    String milestoneId, {
+    String? name,
+    String? description,
+    String? dueOn,
+    bool clearDueOn = false,
+    MilestoneGoal? goal,
+    bool clearGoal = false,
+    bool? isActive,
+    MilestoneContentTranslations? translations,
+  }) {
+    return _patch(
+      '/milestones/$milestoneId',
+      data: {
+        if (name != null) 'name': name,
+        if (description != null) 'description': description,
+        if (clearDueOn)
+          'dueOn': null
+        else if (dueOn != null)
+          'dueOn': dueOn,
+        if (clearGoal) ...{
+          'metric': null,
+          'thresholdValue': null,
+          'unit': null,
+        } else if (goal != null)
+          ...goal.toJson(),
+        if (isActive != null) 'isActive': isActive,
+        if (translations != null) 'translations': translations.toJson(),
+      },
+      parser: Milestone.fromJson,
+    );
+  }
+
+  @override
+  Future<MilestoneProgress> getMilestoneProgress(String milestoneId) {
+    return _get(
+      '/milestones/$milestoneId/progress',
+      parser: MilestoneProgress.fromJson,
+    );
+  }
+
+  @override
+  Future<MilestoneEvaluation> evaluateMilestone(String milestoneId) {
+    return _post(
+      '/milestones/$milestoneId/evaluate',
+      parser: MilestoneEvaluation.fromJson,
+    );
+  }
+
+  @override
+  Future<List<MilestoneEvaluation>> listMilestoneEvaluations(
+    String milestoneId,
+  ) {
+    return _getList(
+      '/milestones/$milestoneId/evaluations',
+      parser: MilestoneEvaluation.fromJson,
+    );
+  }
+
+  @override
+  Future<List<CampaignPeriod>> listCampaignPeriods(String campaignId) {
+    return _getList(
+      '/campaigns/$campaignId/periods',
+      parser: CampaignPeriod.fromJson,
     );
   }
 

@@ -1,9 +1,10 @@
 import { Inject, Injectable, Logger, Optional, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomBytes } from 'node:crypto';
-import { Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import {
   AccessForbiddenException,
+  InvalidRequestException,
   ResourceConflictException,
   ResourceNotFoundException,
 } from '../../../shared/errors/domain-http.exceptions.js';
@@ -16,18 +17,34 @@ import type { CampaignAccessRecord } from '../../authorization/application/acces
 import { hasTenantLevelMembership } from '../../authorization/application/membership-scope.js';
 import type { TenantContext } from '../../authorization/application/tenant-context.js';
 import { CampaignService } from '../../campaigns/application/campaign.service.js';
+import {
+  parseIsoDate,
+  toIsoDate,
+} from '../../campaigns/application/timezone.js';
+import { CampaignStatus } from '../../campaigns/domain/campaign.entity.js';
 import { CustomerService } from '../../customers/application/customer.service.js';
+import type { SupportedLocale } from '../../localization/application/locale-catalog.js';
+import {
+  LocalizationService,
+  type MilestoneContentTranslations,
+} from '../../localization/application/localization.service.js';
 import { milestoneCrossed } from '../../progress/application/completion.js';
 import {
   CAMPAIGN_NOTIFICATIONS,
   type CampaignNotifications,
 } from '../../notifications/application/campaign-notifications.js';
 import { ProgressService } from '../../progress/application/progress.service.js';
+import {
+  computeCampaignPeriods,
+  type CampaignPeriod,
+} from '../domain/campaign-periods.js';
 import { Milestone, MilestoneMetric } from '../domain/milestone.entity.js';
 import { MilestoneEvaluation } from '../domain/milestone-evaluation.entity.js';
 import { MilestoneProgress } from '../domain/milestone-progress.entity.js';
 import type { CreateMilestoneDto } from '../dto/create-milestone.dto.js';
 import type { UpdateMilestoneDto } from '../dto/update-milestone.dto.js';
+
+const DUE_ON_INDEX = 'uq_milestones_campaign_due_on';
 
 export interface MilestoneResponse {
   id: string;
@@ -36,10 +53,13 @@ export interface MilestoneResponse {
   key: string;
   name: string;
   description: string | null;
-  metric: MilestoneMetric;
-  thresholdValue: number;
-  unit: string;
+  dueOn: string | null;
+  metric: MilestoneMetric | null;
+  thresholdValue: number | null;
+  unit: string | null;
+  hasGoal: boolean;
   isActive: boolean;
+  translations: { en: { name: string | null; description: string | null } };
   createdByUserId: string;
   createdAt: string;
   updatedAt: string;
@@ -49,9 +69,10 @@ export interface MilestoneProgressResponse {
   milestoneId: string;
   campaignId: string;
   customerId: string;
-  metric: MilestoneMetric;
-  unit: string;
-  thresholdValue: number;
+  hasGoal: boolean;
+  metric: MilestoneMetric | null;
+  unit: string | null;
+  thresholdValue: number | null;
   currentAchievedValue: number;
   currentTargetValue: number;
   currentCompletionPercent: number | null;
@@ -74,6 +95,20 @@ export interface MilestoneEvaluationResponse {
   createdAt: string;
 }
 
+export type CampaignPeriodResponse = CampaignPeriod;
+
+interface MilestoneGoal {
+  metric: MilestoneMetric;
+  thresholdValue: number;
+  unit: string;
+}
+
+type GoalInput = {
+  metric: MilestoneMetric | null | undefined;
+  thresholdValue: number | null | undefined;
+  unit: string | null | undefined;
+};
+
 @Injectable()
 export class MilestoneService {
   private readonly logger = new Logger(MilestoneService.name);
@@ -91,6 +126,7 @@ export class MilestoneService {
     private readonly progress: ProgressService,
     @Inject(forwardRef(() => CustomerService))
     private readonly customers: CustomerService,
+    private readonly localization: LocalizationService,
     @Optional()
     @Inject(forwardRef(() => CAMPAIGN_NOTIFICATIONS))
     private readonly campaignNotifications: CampaignNotifications | null,
@@ -106,21 +142,57 @@ export class MilestoneService {
   async listForCampaign(
     tenant: TenantContext,
     campaignId: string,
+    locale: SupportedLocale = 'en',
   ): Promise<MilestoneResponse[]> {
     await this.campaigns.getCampaignRecord(tenant, campaignId);
     const rows = await this.milestoneRepository.find({
       where: { tenant_id: tenant.tenantId, campaign_id: campaignId },
       order: { created_at: 'ASC' },
     });
-    return rows.map((row) => this.toMilestoneResponse(row));
+    return Promise.all(rows.map((row) => this.toMilestoneResponse(row, locale)));
   }
 
   async get(
     tenant: TenantContext,
     milestoneId: string,
+    locale: SupportedLocale = 'en',
   ): Promise<MilestoneResponse> {
     const milestone = await this.requireVisible(tenant, milestoneId);
-    return this.toMilestoneResponse(milestone);
+    return this.toMilestoneResponse(milestone, locale);
+  }
+
+  async listPeriods(
+    tenant: TenantContext,
+    campaignId: string,
+    locale: SupportedLocale = 'en',
+  ): Promise<CampaignPeriodResponse[]> {
+    const campaign = await this.campaigns.getCampaignRecord(tenant, campaignId);
+    const rows = await this.milestoneRepository.find({
+      where: {
+        tenant_id: tenant.tenantId,
+        campaign_id: campaign.id,
+        is_active: true,
+        due_on: Not(IsNull()),
+      },
+    });
+    const dated = await Promise.all(
+      rows.map(async (row) => ({
+        id: row.id,
+        dueOn: toIsoDate(row.due_on) as string,
+        name:
+          (await this.localization.resolveMilestoneContent(
+            locale,
+            row.tenant_id,
+            row.id,
+            'name',
+            row.name,
+          )) ?? row.name,
+      })),
+    );
+    return computeCampaignPeriods(
+      { startsOn: campaign.startsOn, endsOn: campaign.endsOn },
+      dated,
+    );
   }
 
   async create(
@@ -128,77 +200,151 @@ export class MilestoneService {
     campaignId: string,
     actorUserId: string,
     dto: CreateMilestoneDto,
+    locale: SupportedLocale = 'en',
   ): Promise<MilestoneResponse> {
     await this.assertCanManage(tenant);
     const campaign = await this.campaigns.getCampaignRecord(tenant, campaignId);
+    const goal = this.resolveGoal({
+      metric: dto.metric,
+      thresholdValue: dto.thresholdValue,
+      unit: dto.unit,
+    });
+    const dueOn = dto.dueOn ? parseIsoDate(dto.dueOn, 'dueOn') : null;
+    this.assertHasPurpose(goal, dueOn);
+    if (dueOn) {
+      if (campaign.status !== CampaignStatus.DRAFT) {
+        throw new ResourceConflictException(
+          'Dated milestones can only be added while the campaign is a draft',
+          'MILESTONE_LOCKED',
+        );
+      }
+      this.assertDueOnInWindow(campaign, dueOn);
+      await this.assertDueOnFree(tenant.tenantId, campaign.id, dueOn, null);
+    }
     const key = this.normalizeKey(dto.key ?? dto.name, 'milestone');
+    let saved: Milestone;
     try {
-      const saved = await this.milestoneRepository.save(
+      saved = await this.milestoneRepository.save(
         this.milestoneRepository.create({
           tenant_id: tenant.tenantId,
           campaign_id: campaign.id,
           key,
           name: dto.name.trim(),
           description: dto.description?.trim() || null,
-          metric: dto.metric,
-          threshold_value: dto.thresholdValue,
-          unit: dto.unit.trim(),
+          due_on: dueOn,
+          metric: goal?.metric ?? null,
+          threshold_value: goal?.thresholdValue ?? null,
+          unit: goal?.unit ?? null,
           is_active: true,
           created_by_user_id: actorUserId,
         }),
       );
-      this.logger.log({
-        msg: 'milestone_created',
-        tenantId: tenant.tenantId,
-        campaignId: campaign.id,
-        milestoneId: saved.id,
-      });
-      return this.toMilestoneResponse(saved);
     } catch (error) {
-      if (isUniqueViolation(error)) {
-        throw new ResourceConflictException(
-          'A milestone with this key already exists on the campaign',
-        );
-      }
-      if (isRaiseException(error)) {
-        throw new ResourceNotFoundException('Campaign not found');
-      }
-      throw error;
+      this.rethrowWriteError(error);
     }
+    await this.localization.upsertMilestoneContentTranslations(
+      tenant.tenantId,
+      saved.id,
+      dto.translations as MilestoneContentTranslations | undefined,
+    );
+    this.logger.log({
+      msg: 'milestone_created',
+      tenantId: tenant.tenantId,
+      campaignId: campaign.id,
+      milestoneId: saved.id,
+      dated: dueOn !== null,
+      hasGoal: goal !== null,
+    });
+    return this.toMilestoneResponse(saved, locale);
   }
 
   async update(
     tenant: TenantContext,
     milestoneId: string,
     dto: UpdateMilestoneDto,
+    locale: SupportedLocale = 'en',
   ): Promise<MilestoneResponse> {
     await this.assertCanManage(tenant);
     const milestone = await this.requireVisible(tenant, milestoneId);
+    const campaign = await this.campaigns.getCampaignRecord(
+      tenant,
+      milestone.campaign_id,
+    );
+    const currentDueOn = toIsoDate(milestone.due_on);
+    const nextDueOn =
+      dto.dueOn === undefined
+        ? currentDueOn
+        : dto.dueOn === null
+          ? null
+          : parseIsoDate(dto.dueOn, 'dueOn');
+    const nextActive = dto.isActive ?? milestone.is_active;
+    const dueOnChanged = nextDueOn !== currentDueOn;
+    const activeChanged = nextActive !== milestone.is_active;
+
+    if (campaign.status !== CampaignStatus.DRAFT) {
+      if (dueOnChanged) {
+        throw new ResourceConflictException(
+          'A milestone date cannot change after the campaign is published',
+          'MILESTONE_LOCKED',
+        );
+      }
+      if (activeChanged && currentDueOn !== null) {
+        throw new ResourceConflictException(
+          'A dated milestone cannot be removed or restored after the campaign is published',
+          'MILESTONE_LOCKED',
+        );
+      }
+    }
+
+    const goal = this.resolveGoal({
+      metric: dto.metric === undefined ? milestone.metric : dto.metric,
+      thresholdValue:
+        dto.thresholdValue === undefined
+          ? milestone.threshold_value
+          : dto.thresholdValue,
+      unit: dto.unit === undefined ? milestone.unit : dto.unit,
+    });
+    this.assertHasPurpose(goal, nextDueOn);
+    if (nextDueOn && dueOnChanged) {
+      this.assertDueOnInWindow(campaign, nextDueOn);
+    }
+    if (nextDueOn && nextActive && (dueOnChanged || activeChanged)) {
+      await this.assertDueOnFree(
+        tenant.tenantId,
+        milestone.campaign_id,
+        nextDueOn,
+        milestone.id,
+      );
+    }
+
     if (dto.name !== undefined) {
       milestone.name = dto.name.trim();
     }
     if (dto.description !== undefined) {
       milestone.description = dto.description?.trim() || null;
     }
-    if (dto.metric !== undefined) {
-      milestone.metric = dto.metric;
+    milestone.due_on = nextDueOn;
+    milestone.metric = goal?.metric ?? null;
+    milestone.threshold_value = goal?.thresholdValue ?? null;
+    milestone.unit = goal?.unit ?? null;
+    milestone.is_active = nextActive;
+    let saved: Milestone;
+    try {
+      saved = await this.milestoneRepository.save(milestone);
+    } catch (error) {
+      this.rethrowWriteError(error);
     }
-    if (dto.thresholdValue !== undefined) {
-      milestone.threshold_value = dto.thresholdValue;
-    }
-    if (dto.unit !== undefined) {
-      milestone.unit = dto.unit.trim();
-    }
-    if (dto.isActive !== undefined) {
-      milestone.is_active = dto.isActive;
-    }
-    const saved = await this.milestoneRepository.save(milestone);
+    await this.localization.upsertMilestoneContentTranslations(
+      tenant.tenantId,
+      saved.id,
+      dto.translations as MilestoneContentTranslations | undefined,
+    );
     this.logger.log({
       msg: 'milestone_updated',
       tenantId: tenant.tenantId,
       milestoneId: saved.id,
     });
-    return this.toMilestoneResponse(saved);
+    return this.toMilestoneResponse(saved, locale);
   }
 
   async getProgress(
@@ -217,6 +363,11 @@ export class MilestoneService {
   ): Promise<MilestoneEvaluationResponse> {
     await this.assertCanManage(tenant);
     const milestone = await this.requireVisible(tenant, milestoneId);
+    if (!this.goalOf(milestone)) {
+      throw new InvalidRequestException(
+        'This milestone has no collective goal to evaluate',
+      );
+    }
     const previouslyCrossed = Boolean(
       await this.evaluationRepository.findOne({
         where: { milestone_id: milestone.id, crossed: true },
@@ -294,17 +445,35 @@ export class MilestoneService {
     milestone: Milestone,
     now = new Date(),
   ): Promise<MilestoneProgressResponse> {
+    const goal = this.goalOf(milestone);
+    if (!goal) {
+      return {
+        milestoneId: milestone.id,
+        campaignId: milestone.campaign_id,
+        customerId: tenant.tenantId,
+        hasGoal: false,
+        metric: null,
+        unit: null,
+        thresholdValue: null,
+        currentAchievedValue: 0,
+        currentTargetValue: 0,
+        currentCompletionPercent: null,
+        crossed: false,
+        status: 'none',
+        computedAt: now.toISOString(),
+      };
+    }
     const aggregate = await this.progress.getCampaignProgress(
       tenant,
       milestone.campaign_id,
     );
-    const unitRow = aggregate.units.find((row) => row.unit === milestone.unit);
+    const unitRow = aggregate.units.find((row) => row.unit === goal.unit);
     const achievedValue = unitRow?.achievedValue ?? 0;
     const targetValue = unitRow?.targetValue ?? 0;
     const percent = unitRow?.completionPercent ?? null;
     const crossed = milestoneCrossed(
-      milestone.metric,
-      milestone.threshold_value,
+      goal.metric,
+      goal.thresholdValue,
       achievedValue,
       percent,
     );
@@ -312,9 +481,10 @@ export class MilestoneService {
       milestoneId: milestone.id,
       campaignId: milestone.campaign_id,
       customerId: tenant.tenantId,
-      metric: milestone.metric,
-      unit: milestone.unit,
-      thresholdValue: milestone.threshold_value,
+      hasGoal: true,
+      metric: goal.metric,
+      unit: goal.unit,
+      thresholdValue: goal.thresholdValue,
       currentAchievedValue: achievedValue,
       currentTargetValue: targetValue,
       currentCompletionPercent: percent,
@@ -353,6 +523,112 @@ export class MilestoneService {
     await this.progressRepository.save(this.progressRepository.create(values));
   }
 
+  private goalOf(milestone: Milestone): MilestoneGoal | null {
+    if (
+      milestone.metric == null ||
+      milestone.threshold_value == null ||
+      milestone.unit == null
+    ) {
+      return null;
+    }
+    return {
+      metric: milestone.metric,
+      thresholdValue: milestone.threshold_value,
+      unit: milestone.unit,
+    };
+  }
+
+  private resolveGoal(input: GoalInput): MilestoneGoal | null {
+    const unit = input.unit == null ? null : input.unit.trim() || null;
+    const present = [input.metric, input.thresholdValue, unit].filter(
+      (value) => value != null,
+    ).length;
+    if (present === 0) {
+      return null;
+    }
+    if (present !== 3) {
+      throw new InvalidRequestException(
+        'metric, thresholdValue and unit must be set together or all omitted',
+      );
+    }
+    return {
+      metric: input.metric as MilestoneMetric,
+      thresholdValue: input.thresholdValue as number,
+      unit: unit as string,
+    };
+  }
+
+  private assertHasPurpose(
+    goal: MilestoneGoal | null,
+    dueOn: string | null,
+  ): void {
+    if (!goal && !dueOn) {
+      throw new InvalidRequestException(
+        'A milestone needs a due date, a collective goal, or both',
+      );
+    }
+  }
+
+  private assertDueOnInWindow(
+    campaign: { startsOn: string | null; endsOn: string | null },
+    dueOn: string,
+  ): void {
+    if (!campaign.startsOn || !campaign.endsOn) {
+      throw new InvalidRequestException(
+        'Set the campaign start and end dates before dating a milestone',
+        'MILESTONE_DATE_OUT_OF_WINDOW',
+      );
+    }
+    if (dueOn < campaign.startsOn || dueOn > campaign.endsOn) {
+      throw new InvalidRequestException(
+        'dueOn must be within the campaign start and end dates',
+        'MILESTONE_DATE_OUT_OF_WINDOW',
+      );
+    }
+  }
+
+  private async assertDueOnFree(
+    tenantId: string,
+    campaignId: string,
+    dueOn: string,
+    excludeMilestoneId: string | null,
+  ): Promise<void> {
+    const clash = await this.milestoneRepository.findOne({
+      where: {
+        tenant_id: tenantId,
+        campaign_id: campaignId,
+        due_on: dueOn,
+        is_active: true,
+        ...(excludeMilestoneId ? { id: Not(excludeMilestoneId) } : {}),
+      },
+    });
+    if (clash) {
+      throw this.duplicateDateError();
+    }
+  }
+
+  private duplicateDateError(): ResourceConflictException {
+    return new ResourceConflictException(
+      'Another milestone is already due on this date',
+      'MILESTONE_DATE_DUPLICATE',
+    );
+  }
+
+  private rethrowWriteError(error: unknown): never {
+    if (isUniqueViolation(error, DUE_ON_INDEX)) {
+      throw this.duplicateDateError();
+    }
+    if (isUniqueViolation(error)) {
+      throw new ResourceConflictException(
+        'A milestone with this key already exists on the campaign',
+      );
+    }
+    if (isRaiseException(error)) {
+      throw new ResourceNotFoundException('Campaign not found');
+    }
+    throw error;
+  }
+
   private async requireVisible(
     tenant: TenantContext,
     milestoneId: string,
@@ -383,18 +659,51 @@ export class MilestoneService {
     ).replace(/-/g, '_');
   }
 
-  private toMilestoneResponse(milestone: Milestone): MilestoneResponse {
+  private async toMilestoneResponse(
+    milestone: Milestone,
+    locale: SupportedLocale,
+  ): Promise<MilestoneResponse> {
+    const [name, description, enName, enDescription] = await Promise.all([
+      this.localization.resolveMilestoneContent(
+        locale,
+        milestone.tenant_id,
+        milestone.id,
+        'name',
+        milestone.name,
+      ),
+      this.localization.resolveMilestoneContent(
+        locale,
+        milestone.tenant_id,
+        milestone.id,
+        'description',
+        milestone.description,
+      ),
+      this.localization.readMilestoneEnglish(
+        milestone.tenant_id,
+        milestone.id,
+        'name',
+      ),
+      this.localization.readMilestoneEnglish(
+        milestone.tenant_id,
+        milestone.id,
+        'description',
+      ),
+    ]);
+    const goal = this.goalOf(milestone);
     return {
       id: milestone.id,
       customerId: milestone.tenant_id,
       campaignId: milestone.campaign_id,
       key: milestone.key,
-      name: milestone.name,
-      description: milestone.description,
-      metric: milestone.metric,
-      thresholdValue: milestone.threshold_value,
-      unit: milestone.unit,
+      name: name ?? milestone.name,
+      description,
+      dueOn: toIsoDate(milestone.due_on),
+      metric: goal?.metric ?? null,
+      thresholdValue: goal?.thresholdValue ?? null,
+      unit: goal?.unit ?? null,
+      hasGoal: goal !== null,
       isActive: milestone.is_active,
+      translations: { en: { name: enName, description: enDescription } },
       createdByUserId: milestone.created_by_user_id,
       createdAt: milestone.created_at.toISOString(),
       updatedAt: milestone.updated_at.toISOString(),

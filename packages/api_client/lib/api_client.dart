@@ -1,4 +1,5 @@
 export 'src/campaign_api.dart';
+export 'src/campaign_periods.dart' show computeCampaignPeriods;
 export 'src/errors.dart';
 export 'src/locale.dart';
 export 'src/models.dart';

@@ -34,18 +34,24 @@ export class Milestone {
   @Column({ type: 'varchar', length: 2000, nullable: true })
   description: string | null;
 
+  /** Campaign-timezone calendar date that closes a period. */
+  @Column({ type: 'date', nullable: true })
+  due_on: string | null;
+
+  /** Goal columns are all set or all null (`chk_milestones_goal_all_or_none`). */
   @Column({
     type: 'enum',
     enum: MilestoneMetric,
     enumName: 'milestone_metric_enum',
+    nullable: true,
   })
-  metric: MilestoneMetric;
+  metric: MilestoneMetric | null;
 
-  @Column({ type: 'int' })
-  threshold_value: number;
+  @Column({ type: 'int', nullable: true })
+  threshold_value: number | null;
 
-  @Column({ type: 'varchar', length: 50 })
-  unit: string;
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  unit: string | null;
 
   @Column({ type: 'boolean', default: true })
   is_active: boolean;

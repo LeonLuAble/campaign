@@ -21,6 +21,8 @@ import { CurrentTenant } from '../../authorization/presentation/current-tenant.d
 import { PermissionsGuard } from '../../authorization/presentation/permissions.guard.js';
 import { RequirePermission } from '../../authorization/presentation/require-permission.decorator.js';
 import { TenantScopeGuard } from '../../authorization/presentation/tenant-scope.guard.js';
+import type { SupportedLocale } from '../../localization/application/locale-catalog.js';
+import { AcceptLanguage } from '../../localization/presentation/accept-language.decorator.js';
 import { MilestoneService } from '../application/milestone.service.js';
 import { UpdateMilestoneDto } from '../dto/update-milestone.dto.js';
 
@@ -34,8 +36,9 @@ export class MilestonesController {
   get(
     @CurrentTenant() tenant: TenantContext,
     @Param('milestoneId', ParseUUIDPipe) milestoneId: string,
+    @AcceptLanguage() locale: SupportedLocale,
   ) {
-    return this.milestones.get(tenant, milestoneId);
+    return this.milestones.get(tenant, milestoneId, locale);
   }
 
   @Patch(':milestoneId')
@@ -44,8 +47,9 @@ export class MilestonesController {
     @CurrentTenant() tenant: TenantContext,
     @Param('milestoneId', ParseUUIDPipe) milestoneId: string,
     @Body() dto: UpdateMilestoneDto,
+    @AcceptLanguage() locale: SupportedLocale,
   ) {
-    return this.milestones.update(tenant, milestoneId, dto);
+    return this.milestones.update(tenant, milestoneId, dto, locale);
   }
 
   @Get(':milestoneId/progress')

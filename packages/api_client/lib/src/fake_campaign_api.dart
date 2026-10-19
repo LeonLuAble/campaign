@@ -1,5 +1,6 @@
 import 'errors.dart';
 import 'campaign_api.dart';
+import 'campaign_periods.dart';
 import 'models.dart';
 import 'token_store.dart';
 
@@ -433,6 +434,11 @@ class FakeCampaignApiClient implements CampaignApiClient {
   List<CampaignScope> scopes;
   List<Participation> participations;
   List<Commitment> commitments = [];
+  List<Milestone> milestones = [];
+  List<MilestoneEvaluation> milestoneEvaluations = [];
+  /// Collective totals used by milestone progress and evaluation.
+  num fakeMilestoneAchievedValue = 0;
+  num fakeMilestoneTargetValue = 0;
   CommitmentOptions commitmentOptions;
   List<ActionDefinition> actionDefinitions;
   List<RecordedAction> actions;
@@ -2050,6 +2056,319 @@ class FakeCampaignApiClient implements CampaignApiClient {
           row,
     ];
     return created;
+  }
+
+  Milestone _localizedMilestone(Milestone row) {
+    final en = row.englishTranslations;
+    if (!lastAcceptLanguage.startsWith('en')) {
+      return row;
+    }
+    return _copyMilestone(
+      row,
+      name: en.name ?? row.name,
+      description: en.description ?? row.description,
+    );
+  }
+
+  Milestone _copyMilestone(
+    Milestone row, {
+    String? name,
+    String? description,
+    bool clearDescription = false,
+    String? dueOn,
+    bool clearDueOn = false,
+    MilestoneGoal? goal,
+    bool clearGoal = false,
+    bool? isActive,
+    MilestoneEnglishTranslations? englishTranslations,
+  }) {
+    return Milestone(
+      id: row.id,
+      customerId: row.customerId,
+      campaignId: row.campaignId,
+      key: row.key,
+      name: name ?? row.name,
+      description: clearDescription ? null : description ?? row.description,
+      dueOn: clearDueOn ? null : dueOn ?? row.dueOn,
+      goal: clearGoal ? null : goal ?? row.goal,
+      isActive: isActive ?? row.isActive,
+      englishTranslations: englishTranslations ?? row.englishTranslations,
+      createdByUserId: row.createdByUserId,
+      createdAt: row.createdAt,
+      updatedAt: DateTime.now().toUtc(),
+    );
+  }
+
+  MilestoneEnglishTranslations _mergeMilestoneEnglish(
+    MilestoneEnglishTranslations current,
+    MilestoneContentTranslations? translations,
+  ) {
+    final en = translations?.en;
+    if (en == null) {
+      return current;
+    }
+    return MilestoneEnglishTranslations(
+      name: en.name ?? current.name,
+      description: en.description ?? current.description,
+    );
+  }
+
+  Milestone _milestone(String milestoneId) {
+    final matches = milestones.where((row) => row.id == milestoneId);
+    if (matches.isEmpty) {
+      _throw('NOT_FOUND', status: 404, message: 'Milestone not found');
+    }
+    return matches.first;
+  }
+
+  void _assertMilestoneDueOn(
+    Campaign campaign,
+    String dueOn, {
+    String? excludeId,
+  }) {
+    final startsOn = campaign.startsOn;
+    final endsOn = campaign.endsOn;
+    if (startsOn == null ||
+        endsOn == null ||
+        dueOn.compareTo(startsOn) < 0 ||
+        dueOn.compareTo(endsOn) > 0) {
+      _throw(
+        'MILESTONE_DATE_OUT_OF_WINDOW',
+        message: 'dueOn must be inside the campaign window',
+      );
+    }
+    final clash = milestones.any(
+      (row) =>
+          row.campaignId == campaign.id &&
+          row.id != excludeId &&
+          row.isActive &&
+          row.dueOn == dueOn,
+    );
+    if (clash) {
+      _throw(
+        'MILESTONE_DATE_DUPLICATE',
+        status: 409,
+        message: 'Another active milestone already uses this date',
+      );
+    }
+  }
+
+  Never _milestoneLocked() => _throw(
+        'MILESTONE_LOCKED',
+        status: 409,
+        message: 'Milestone dates are fixed once the campaign is published',
+      );
+
+  @override
+  Future<List<Milestone>> listMilestones(String campaignId) async => milestones
+      .where((row) => row.campaignId == campaignId)
+      .map(_localizedMilestone)
+      .toList();
+
+  @override
+  Future<Milestone> createMilestone({
+    required String campaignId,
+    required String name,
+    String? key,
+    String? description,
+    String? dueOn,
+    MilestoneGoal? goal,
+    MilestoneContentTranslations? translations,
+  }) async {
+    final campaign = await getCampaign(campaignId);
+    if (dueOn == null && goal == null) {
+      _throw(
+        'BAD_REQUEST',
+        message: 'A milestone needs a due date, a collective goal, or both',
+      );
+    }
+    if (dueOn != null) {
+      if (campaign.status != 'draft') {
+        _milestoneLocked();
+      }
+      _assertMilestoneDueOn(campaign, dueOn);
+    }
+    final now = DateTime.now().toUtc();
+    final created = Milestone(
+      id: 'ms-${milestones.length + 1}',
+      customerId: campaign.customerId,
+      campaignId: campaignId,
+      key: key ?? 'milestone_${milestones.length + 1}',
+      name: name,
+      description: description,
+      dueOn: dueOn,
+      goal: goal,
+      isActive: true,
+      englishTranslations: _mergeMilestoneEnglish(
+        const MilestoneEnglishTranslations(),
+        translations,
+      ),
+      createdByUserId: profile.id,
+      createdAt: now,
+      updatedAt: now,
+    );
+    milestones = [...milestones, created];
+    return _localizedMilestone(created);
+  }
+
+  @override
+  Future<Milestone> updateMilestone(
+    String milestoneId, {
+    String? name,
+    String? description,
+    String? dueOn,
+    bool clearDueOn = false,
+    MilestoneGoal? goal,
+    bool clearGoal = false,
+    bool? isActive,
+    MilestoneContentTranslations? translations,
+  }) async {
+    final current = _milestone(milestoneId);
+    final campaign = await getCampaign(current.campaignId);
+    final nextDueOn = clearDueOn ? null : dueOn ?? current.dueOn;
+    final nextActive = isActive ?? current.isActive;
+    final dueOnChanged = nextDueOn != current.dueOn;
+    final activeChanged = nextActive != current.isActive;
+    if (campaign.status != 'draft' &&
+        (dueOnChanged || (activeChanged && current.dueOn != null))) {
+      _milestoneLocked();
+    }
+    final nextHasGoal = clearGoal ? false : goal != null || current.hasGoal;
+    if (nextDueOn == null && !nextHasGoal) {
+      _throw(
+        'BAD_REQUEST',
+        message: 'A milestone needs a due date, a collective goal, or both',
+      );
+    }
+    if (nextDueOn != null && nextActive && (dueOnChanged || activeChanged)) {
+      _assertMilestoneDueOn(campaign, nextDueOn, excludeId: milestoneId);
+    }
+    final updated = _copyMilestone(
+      current,
+      name: name,
+      description: description,
+      dueOn: nextDueOn,
+      clearDueOn: nextDueOn == null,
+      goal: goal,
+      clearGoal: clearGoal,
+      isActive: nextActive,
+      englishTranslations: _mergeMilestoneEnglish(
+        current.englishTranslations,
+        translations,
+      ),
+    );
+    milestones = [
+      for (final row in milestones)
+        if (row.id == milestoneId) updated else row,
+    ];
+    return _localizedMilestone(updated);
+  }
+
+  ({num? percent, bool crossed}) _milestoneCrossing(MilestoneGoal goal) {
+    final target = fakeMilestoneTargetValue;
+    final achieved = fakeMilestoneAchievedValue;
+    final percent = target > 0 ? achieved * 100 / target : null;
+    final crossed = goal.metric == MilestoneMetric.completionPercent
+        ? percent != null && percent >= goal.thresholdValue
+        : achieved >= goal.thresholdValue;
+    return (percent: percent, crossed: crossed);
+  }
+
+  @override
+  Future<MilestoneProgress> getMilestoneProgress(String milestoneId) async {
+    final row = _milestone(milestoneId);
+    final goal = row.goal;
+    final now = DateTime.now().toUtc();
+    if (goal == null) {
+      return MilestoneProgress(
+        milestoneId: row.id,
+        campaignId: row.campaignId,
+        customerId: row.customerId,
+        hasGoal: false,
+        currentAchievedValue: 0,
+        currentTargetValue: 0,
+        crossed: false,
+        status: 'none',
+        computedAt: now,
+      );
+    }
+    final crossing = _milestoneCrossing(goal);
+    return MilestoneProgress(
+      milestoneId: row.id,
+      campaignId: row.campaignId,
+      customerId: row.customerId,
+      hasGoal: true,
+      metric: goal.metric,
+      unit: goal.unit,
+      thresholdValue: goal.thresholdValue,
+      currentAchievedValue: fakeMilestoneAchievedValue,
+      currentTargetValue: fakeMilestoneTargetValue,
+      currentCompletionPercent: crossing.percent,
+      crossed: crossing.crossed,
+      status: crossing.crossed
+          ? 'achieved'
+          : fakeMilestoneAchievedValue > 0
+              ? 'in_progress'
+              : 'not_started',
+      computedAt: now,
+    );
+  }
+
+  @override
+  Future<MilestoneEvaluation> evaluateMilestone(String milestoneId) async {
+    final row = _milestone(milestoneId);
+    final goal = row.goal;
+    if (goal == null) {
+      _throw(
+        'BAD_REQUEST',
+        message: 'This milestone has no collective goal to evaluate',
+      );
+    }
+    final progress = await getMilestoneProgress(milestoneId);
+    final now = DateTime.now().toUtc();
+    final evaluation = MilestoneEvaluation(
+      id: 'mse-${milestoneEvaluations.length + 1}',
+      milestoneId: row.id,
+      customerId: row.customerId,
+      evaluatedByUserId: profile.id,
+      achievedValue: progress.currentAchievedValue,
+      targetValue: progress.currentTargetValue,
+      completionPercent: progress.currentCompletionPercent,
+      crossed: progress.crossed,
+      status: progress.status,
+      evaluatedAt: now,
+      createdAt: now,
+    );
+    milestoneEvaluations = [evaluation, ...milestoneEvaluations];
+    return evaluation;
+  }
+
+  @override
+  Future<List<MilestoneEvaluation>> listMilestoneEvaluations(
+    String milestoneId,
+  ) async {
+    _milestone(milestoneId);
+    return milestoneEvaluations
+        .where((row) => row.milestoneId == milestoneId)
+        .toList();
+  }
+
+  @override
+  Future<List<CampaignPeriod>> listCampaignPeriods(String campaignId) async {
+    final campaign = await getCampaign(campaignId);
+    final dated = milestones
+        .where(
+          (row) =>
+              row.campaignId == campaignId && row.isActive && row.dueOn != null,
+        )
+        .map(_localizedMilestone)
+        .map((row) => (id: row.id, dueOn: row.dueOn!, name: row.name))
+        .toList();
+    return computeCampaignPeriods(
+      startsOn: campaign.startsOn,
+      endsOn: campaign.endsOn,
+      milestones: dated,
+    );
   }
 
   @override

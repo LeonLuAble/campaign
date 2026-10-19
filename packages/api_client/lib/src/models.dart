@@ -1610,3 +1610,254 @@ class AggregateReport {
     );
   }
 }
+
+abstract final class MilestoneMetric {
+  static const completionPercent = 'completion_percent';
+  static const achievedValue = 'achieved_value';
+}
+
+/// A collective target. All three fields are set together or not at all.
+class MilestoneGoal {
+  const MilestoneGoal({
+    required this.metric,
+    required this.thresholdValue,
+    required this.unit,
+  });
+
+  final String metric;
+  final num thresholdValue;
+  final String unit;
+
+  Map<String, dynamic> toJson() => {
+        'metric': metric,
+        'thresholdValue': thresholdValue,
+        'unit': unit,
+      };
+}
+
+class MilestoneContentTranslations {
+  const MilestoneContentTranslations({this.en});
+
+  final MilestoneEnglishTranslations? en;
+
+  Map<String, dynamic> toJson() => {
+        if (en != null) 'en': en!.toJson(),
+      };
+}
+
+class MilestoneEnglishTranslations {
+  const MilestoneEnglishTranslations({this.name, this.description});
+
+  final String? name;
+  final String? description;
+
+  factory MilestoneEnglishTranslations.fromJson(Map<String, dynamic> json) {
+    return MilestoneEnglishTranslations(
+      name: _string(json['name']),
+      description: _string(json['description']),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        if (name != null) 'name': name,
+        if (description != null) 'description': description,
+      };
+}
+
+class Milestone {
+  const Milestone({
+    required this.id,
+    required this.customerId,
+    required this.campaignId,
+    required this.key,
+    required this.name,
+    required this.isActive,
+    required this.createdByUserId,
+    required this.createdAt,
+    required this.updatedAt,
+    this.description,
+    this.dueOn,
+    this.goal,
+    this.englishTranslations = const MilestoneEnglishTranslations(),
+  });
+
+  final String id;
+  final String customerId;
+  final String campaignId;
+  final String key;
+
+  /// Localized by the request locale; zh-Hans is the primary value.
+  final String name;
+  final String? description;
+
+  /// ISO date. Fixed once the campaign is published.
+  final String? dueOn;
+  final MilestoneGoal? goal;
+  final bool isActive;
+
+  /// Raw stored English values, for editing.
+  final MilestoneEnglishTranslations englishTranslations;
+  final String createdByUserId;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  bool get hasGoal => goal != null;
+  bool get isDated => dueOn != null;
+
+  factory Milestone.fromJson(Map<String, dynamic> json) {
+    final metric = _string(json['metric']);
+    final unit = _string(json['unit']);
+    final threshold = json['thresholdValue'];
+    return Milestone(
+      id: json['id'] as String,
+      customerId: json['customerId'] as String,
+      campaignId: json['campaignId'] as String,
+      key: json['key'] as String,
+      name: json['name'] as String,
+      description: _string(json['description']),
+      dueOn: _string(json['dueOn']),
+      goal: metric != null && unit != null && threshold is num
+          ? MilestoneGoal(metric: metric, thresholdValue: threshold, unit: unit)
+          : null,
+      isActive: _bool(json['isActive'], true),
+      englishTranslations: MilestoneEnglishTranslations.fromJson(
+        _map(_map(json['translations'])['en']),
+      ),
+      createdByUserId: json['createdByUserId'] as String,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
+    );
+  }
+}
+
+class MilestoneProgress {
+  const MilestoneProgress({
+    required this.milestoneId,
+    required this.campaignId,
+    required this.customerId,
+    required this.hasGoal,
+    required this.currentAchievedValue,
+    required this.currentTargetValue,
+    required this.crossed,
+    required this.status,
+    required this.computedAt,
+    this.metric,
+    this.unit,
+    this.thresholdValue,
+    this.currentCompletionPercent,
+  });
+
+  final String milestoneId;
+  final String campaignId;
+  final String customerId;
+  final bool hasGoal;
+  final String? metric;
+  final String? unit;
+  final num? thresholdValue;
+  final num currentAchievedValue;
+  final num currentTargetValue;
+  final num? currentCompletionPercent;
+  final bool crossed;
+  final String status;
+  final DateTime computedAt;
+
+  factory MilestoneProgress.fromJson(Map<String, dynamic> json) {
+    return MilestoneProgress(
+      milestoneId: json['milestoneId'] as String,
+      campaignId: json['campaignId'] as String,
+      customerId: json['customerId'] as String,
+      hasGoal: _bool(json['hasGoal'], json['metric'] != null),
+      metric: _string(json['metric']),
+      unit: _string(json['unit']),
+      thresholdValue: json['thresholdValue'] as num?,
+      currentAchievedValue: _num(json['currentAchievedValue']),
+      currentTargetValue: _num(json['currentTargetValue']),
+      currentCompletionPercent: json['currentCompletionPercent'] as num?,
+      crossed: _bool(json['crossed']),
+      status: json['status'] as String? ?? 'none',
+      computedAt: DateTime.parse(json['computedAt'] as String),
+    );
+  }
+}
+
+class MilestoneEvaluation {
+  const MilestoneEvaluation({
+    required this.id,
+    required this.milestoneId,
+    required this.customerId,
+    required this.evaluatedByUserId,
+    required this.achievedValue,
+    required this.targetValue,
+    required this.crossed,
+    required this.status,
+    required this.evaluatedAt,
+    required this.createdAt,
+    this.completionPercent,
+  });
+
+  final String id;
+  final String milestoneId;
+  final String customerId;
+  final String evaluatedByUserId;
+  final num achievedValue;
+  final num targetValue;
+  final num? completionPercent;
+  final bool crossed;
+  final String status;
+  final DateTime evaluatedAt;
+  final DateTime createdAt;
+
+  factory MilestoneEvaluation.fromJson(Map<String, dynamic> json) {
+    return MilestoneEvaluation(
+      id: json['id'] as String,
+      milestoneId: json['milestoneId'] as String,
+      customerId: json['customerId'] as String,
+      evaluatedByUserId: json['evaluatedByUserId'] as String,
+      achievedValue: _num(json['achievedValue']),
+      targetValue: _num(json['targetValue']),
+      completionPercent: json['completionPercent'] as num?,
+      crossed: _bool(json['crossed']),
+      status: json['status'] as String? ?? 'none',
+      evaluatedAt: DateTime.parse(json['evaluatedAt'] as String),
+      createdAt: DateTime.parse(json['createdAt'] as String),
+    );
+  }
+}
+
+/// A slice of the campaign window ending on a dated milestone, or the
+/// implicit final period ending on the campaign end date. [key] is the end
+/// date and identifies the period.
+class CampaignPeriod {
+  const CampaignPeriod({
+    required this.key,
+    required this.index,
+    required this.startsOn,
+    required this.endsOn,
+    required this.isFinal,
+    required this.dayCount,
+    this.milestoneId,
+    this.name,
+  });
+
+  final String key;
+  final int index;
+  final String startsOn;
+  final String endsOn;
+  final String? milestoneId;
+  final String? name;
+  final bool isFinal;
+  final int dayCount;
+
+  factory CampaignPeriod.fromJson(Map<String, dynamic> json) {
+    return CampaignPeriod(
+      key: json['key'] as String,
+      index: _num(json['index']).toInt(),
+      startsOn: json['startsOn'] as String,
+      endsOn: json['endsOn'] as String,
+      milestoneId: _string(json['milestoneId']),
+      name: _string(json['name']),
+      isFinal: _bool(json['isFinal']),
+      dayCount: _num(json['dayCount']).toInt(),
+    );
+  }
+}

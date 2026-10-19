@@ -20,6 +20,8 @@ import { CurrentTenant } from '../../authorization/presentation/current-tenant.d
 import { PermissionsGuard } from '../../authorization/presentation/permissions.guard.js';
 import { RequirePermission } from '../../authorization/presentation/require-permission.decorator.js';
 import { TenantScopeGuard } from '../../authorization/presentation/tenant-scope.guard.js';
+import type { SupportedLocale } from '../../localization/application/locale-catalog.js';
+import { AcceptLanguage } from '../../localization/presentation/accept-language.decorator.js';
 import { MilestoneService } from '../application/milestone.service.js';
 import { CreateMilestoneDto } from '../dto/create-milestone.dto.js';
 
@@ -36,8 +38,9 @@ export class CampaignMilestonesController {
     @CurrentUser() user: AuthenticatedUser,
     @Param('campaignId', ParseUUIDPipe) campaignId: string,
     @Body() dto: CreateMilestoneDto,
+    @AcceptLanguage() locale: SupportedLocale,
   ) {
-    return this.milestones.create(tenant, campaignId, user.userId, dto);
+    return this.milestones.create(tenant, campaignId, user.userId, dto, locale);
   }
 
   @Get()
@@ -45,7 +48,8 @@ export class CampaignMilestonesController {
   list(
     @CurrentTenant() tenant: TenantContext,
     @Param('campaignId', ParseUUIDPipe) campaignId: string,
+    @AcceptLanguage() locale: SupportedLocale,
   ) {
-    return this.milestones.listForCampaign(tenant, campaignId);
+    return this.milestones.listForCampaign(tenant, campaignId, locale);
   }
 }

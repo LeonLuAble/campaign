@@ -11,6 +11,7 @@ import { CreateMeasurementOutcomeVisualizationTables1792665911000 } from '../src
 import { CreateNotificationLocalizationReportTables1792766012000 } from '../src/platform/database/migrations/1792766012000-CreateNotificationLocalizationReportTables.js';
 import { TightenMemberRolePermissions1792866113000 } from '../src/platform/database/migrations/1792866113000-TightenMemberRolePermissions.js';
 import { AddEnrolmentSourceAndCommitmentDecision1793166314000 } from '../src/platform/database/migrations/1793166314000-AddEnrolmentSourceAndCommitmentDecision.js';
+import { AddMilestoneDueDate1793266415000 } from '../src/platform/database/migrations/1793266415000-AddMilestoneDueDate.js';
 
 type MigrationCtor = new () => MigrationInterface;
 
@@ -28,6 +29,7 @@ const SCHEMA_MIGRATIONS: MigrationCtor[] = [
   CreateNotificationLocalizationReportTables1792766012000,
   TightenMemberRolePermissions1792866113000,
   AddEnrolmentSourceAndCommitmentDecision1793166314000,
+  AddMilestoneDueDate1793266415000,
 ];
 
 export async function revertSchemaMigrationsNewestFirst(
@@ -216,6 +218,9 @@ export async function ensureTenantSchema(
     await new AddEnrolmentSourceAndCommitmentDecision1793166314000().up(
       queryRunner,
     );
+  }
+  if (!(await columnExists(dataSource, 'milestones', 'due_on'))) {
+    await new AddMilestoneDueDate1793266415000().up(queryRunner);
   }
 }
 

@@ -119,14 +119,18 @@ Only enrolled participations count. Withdrawn participations are excluded from e
 
 Completion is `achieved / target * 100` and is not capped. Status: `none` (no target), `not_started`, `in_progress`, `achieved` (exactly 100%), `exceeded` (>100%).
 
-Milestones (campaign-scoped stage targets; evaluation is an explicit admin action and never deletes history):
-- POST `/campaigns/:campaignId/milestones` `{ key?, name, description?, metric: 'completion_percent' | 'achieved_value', thresholdValue, unit }` → 201. Requires `milestones.create` and a tenant-level membership.
+Milestones (campaign-scoped checkpoints: a due date, a collective goal, or both; evaluation is an explicit admin action and never deletes history):
+- POST `/campaigns/:campaignId/milestones` `{ key?, name, description?, dueOn?, metric?, thresholdValue?, unit?, translations?: { en?: { name?, description? } } }` → 201. Requires `milestones.create` and a tenant-level membership. `name`/`description` are the primary (zh-Hans) values; `translations.en` is optional. The goal fields `metric` (`'completion_percent' | 'achieved_value'`), `thresholdValue` and `unit` are all present or all omitted (partial → 400). A milestone needs `dueOn`, a goal, or both (neither → 400). `dueOn` (`YYYY-MM-DD`) must fall inside the campaign's `[startsOn, endsOn]` (outside, or campaign dates unset → 400 `MILESTONE_DATE_OUT_OF_WINDOW`) and be unique among the campaign's active milestones (409 `MILESTONE_DATE_DUPLICATE`). Dated milestones can only be added while the campaign is `draft` (otherwise 409 `MILESTONE_LOCKED`); goal-only milestones can still be added later.
 - GET `/campaigns/:campaignId/milestones` → requires `milestones.read`
 - GET `/milestones/:milestoneId` → requires `milestones.read`
-- PATCH `/milestones/:milestoneId` → requires `milestones.update`
-- GET `/milestones/:milestoneId/progress` → live campaign aggregate vs the threshold; no individual rows
-- POST `/milestones/:milestoneId/evaluate` → requires `milestones.evaluate`; appends an evaluation snapshot and upserts `milestone_progress`
+- PATCH `/milestones/:milestoneId` `{ name?, description?, dueOn?, metric?, thresholdValue?, unit?, isActive?, translations? }` → requires `milestones.update`. `null` clears `description` or `dueOn`; send all three goal fields as `null` to remove the goal. Draft: fully editable. After publish (`published`, `started`, `completed`): changing `dueOn` (including clearing it) or deactivating a dated milestone → 409 `MILESTONE_LOCKED`; `name`, `description`, `translations` and the goal stay editable. Goal-only milestones may still be deactivated.
+- Milestone response: `{ id, customerId, campaignId, key, name, description, dueOn, metric, thresholdValue, unit, hasGoal, isActive, translations: { en: { name, description } }, createdByUserId, createdAt, updatedAt }`. `name`/`description` are resolved for `Accept-Language` (zh-Hans → primary, en → English when set); `translations.en` holds the raw stored English values for editing. Goal fields are null when `hasGoal` is false.
+- GET `/milestones/:milestoneId/progress` → live campaign aggregate vs the threshold; no individual rows. Goal-less milestones return `hasGoal: false`, null goal fields, zero values, `crossed: false`, `status: 'none'`.
+- POST `/milestones/:milestoneId/evaluate` → requires `milestones.evaluate`; appends an evaluation snapshot and upserts `milestone_progress`. The first crossing sends the achievement notification once. Goal-less milestones are skipped: 400 with no snapshot and no notification.
 - GET `/milestones/:milestoneId/evaluations` → append-only history
+
+Campaign periods (derived on read; nothing is stored):
+- GET `/campaigns/:campaignId/periods` → requires `campaigns.read`; members can read periods for campaigns they can see, with the same tenant isolation as the campaign. Active dated milestones split `[startsOn, endsOn]`: each period runs from the day after the previous due date (or `startsOn`) to its milestone's `dueOn`. If no milestone falls on `endsOn`, an implicit final period ends there (`milestoneId` and `name` null). With no dated milestones the whole campaign is one period. Returns `[]` while either campaign date is unset. Response: `[{ key, index, startsOn, endsOn, milestoneId, name, isFinal, dayCount }]`. `key` is the period end date and is the stable identifier; `name` is the milestone name for `Accept-Language`; `dayCount` is inclusive.
 
 Goals: `/goals` (not implemented; participant targets are commitments)
 Measurement definitions (campaign-scoped source units that may be converted):

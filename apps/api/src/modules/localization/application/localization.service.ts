@@ -27,6 +27,12 @@ export interface CampaignContentTranslations {
   en?: Partial<Record<CampaignContentField, string | null>>;
 }
 
+export type MilestoneContentField = 'name' | 'description';
+
+export interface MilestoneContentTranslations {
+  en?: Partial<Record<MilestoneContentField, string | null>>;
+}
+
 @Injectable()
 export class LocalizationService {
   constructor(
@@ -99,6 +105,13 @@ export class LocalizationService {
     return `campaign.${campaignId}.${field}`;
   }
 
+  milestoneContentKey(
+    milestoneId: string,
+    field: MilestoneContentField,
+  ): string {
+    return `milestone.${milestoneId}.${field}`;
+  }
+
   async resolveCampaignContent(
     locale: SupportedLocale,
     tenantId: string,
@@ -106,11 +119,82 @@ export class LocalizationService {
     field: CampaignContentField,
     primary: string | null,
   ): Promise<string | null> {
+    return this.resolveTenantContent(
+      locale,
+      tenantId,
+      this.campaignContentKey(campaignId, field),
+      primary,
+    );
+  }
+
+  async resolveMilestoneContent(
+    locale: SupportedLocale,
+    tenantId: string,
+    milestoneId: string,
+    field: MilestoneContentField,
+    primary: string | null,
+  ): Promise<string | null> {
+    return this.resolveTenantContent(
+      locale,
+      tenantId,
+      this.milestoneContentKey(milestoneId, field),
+      primary,
+    );
+  }
+
+  /** Stored English override for a milestone field, or null. */
+  async readMilestoneEnglish(
+    tenantId: string,
+    milestoneId: string,
+    field: MilestoneContentField,
+  ): Promise<string | null> {
+    const row = await this.translationRepository.findOne({
+      where: {
+        locale: 'en',
+        namespace: this.tenantNamespace(tenantId),
+        key: this.milestoneContentKey(milestoneId, field),
+      },
+    });
+    return row?.value ?? null;
+  }
+
+  async upsertCampaignContentTranslations(
+    tenantId: string,
+    campaignId: string,
+    translations: CampaignContentTranslations | undefined,
+  ): Promise<void> {
+    await this.upsertTenantEnglish(
+      tenantId,
+      translations?.en,
+      ['name', 'description', 'treeDisplayName'],
+      (field) => this.campaignContentKey(campaignId, field),
+    );
+  }
+
+  async upsertMilestoneContentTranslations(
+    tenantId: string,
+    milestoneId: string,
+    translations: MilestoneContentTranslations | undefined,
+  ): Promise<void> {
+    await this.upsertTenantEnglish(
+      tenantId,
+      translations?.en,
+      ['name', 'description'],
+      (field) => this.milestoneContentKey(milestoneId, field),
+    );
+  }
+
+  private async resolveTenantContent(
+    locale: SupportedLocale,
+    tenantId: string,
+    key: string,
+    primary: string | null,
+  ): Promise<string | null> {
     if (locale !== 'zh-Hans') {
       const override = await this.resolveTranslation(
         locale,
         this.tenantNamespace(tenantId),
-        this.campaignContentKey(campaignId, field),
+        key,
       );
       if (override != null && override.trim().length > 0) {
         return override;
@@ -119,22 +203,23 @@ export class LocalizationService {
     return primary;
   }
 
-  async upsertCampaignContentTranslations(
+  /** Missing fields are left alone; null or blank removes the override. */
+  private async upsertTenantEnglish<F extends string>(
     tenantId: string,
-    campaignId: string,
-    translations: CampaignContentTranslations | undefined,
+    en: Partial<Record<F, string | null>> | undefined,
+    fields: readonly F[],
+    keyFor: (field: F) => string,
   ): Promise<void> {
-    const en = translations?.en;
     if (!en) {
       return;
     }
     const namespace = this.tenantNamespace(tenantId);
-    for (const field of ['name', 'description', 'treeDisplayName'] as const) {
+    for (const field of fields) {
       if (!(field in en)) {
         continue;
       }
       const value = en[field];
-      const key = this.campaignContentKey(campaignId, field);
+      const key = keyFor(field);
       const existing = await this.translationRepository.findOne({
         where: { locale: 'en', namespace, key },
       });

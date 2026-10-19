@@ -1,12 +1,18 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { AccessForbiddenException } from '../../../shared/errors/domain-http.exceptions.js';
+import {
+  AccessForbiddenException,
+  InvalidRequestException,
+  ResourceConflictException,
+} from '../../../shared/errors/domain-http.exceptions.js';
 import type { TenantContext } from '../../authorization/application/tenant-context.js';
 import { PERMISSIONS } from '../../authorization/domain/permission-keys.js';
 import { CampaignService } from '../../campaigns/application/campaign.service.js';
 import { CampaignStatus } from '../../campaigns/domain/campaign.entity.js';
 import { CustomerService } from '../../customers/application/customer.service.js';
+import { LocalizationService } from '../../localization/application/localization.service.js';
+import { CAMPAIGN_NOTIFICATIONS } from '../../notifications/application/campaign-notifications.js';
 import { ProgressService } from '../../progress/application/progress.service.js';
 import { MilestoneEvaluation } from '../domain/milestone-evaluation.entity.js';
 import { MilestoneProgress } from '../domain/milestone-progress.entity.js';
@@ -55,7 +61,7 @@ function communityAdminContext(): TenantContext {
   };
 }
 
-function milestone(): Milestone {
+function milestone(overrides: Partial<Milestone> = {}): Milestone {
   return {
     id: milestoneId,
     tenant_id: tenantA,
@@ -63,6 +69,7 @@ function milestone(): Milestone {
     key: 'halfway',
     name: 'Halfway',
     description: null,
+    due_on: null,
     metric: MilestoneMetric.COMPLETION_PERCENT,
     threshold_value: 50,
     unit: 'days',
@@ -70,6 +77,7 @@ function milestone(): Milestone {
     created_by_user_id: adminUserId,
     created_at: new Date('2026-01-01T00:00:00.000Z'),
     updated_at: new Date('2026-01-01T00:00:00.000Z'),
+    ...overrides,
   };
 }
 
@@ -95,6 +103,26 @@ describe('MilestoneService', () => {
   const campaigns = { getCampaignRecord: vi.fn() };
   const progress = { getCampaignProgress: vi.fn() };
   const customers = { requireActive: vi.fn() };
+  const localization = {
+    resolveMilestoneContent: vi.fn(),
+    readMilestoneEnglish: vi.fn(),
+    upsertMilestoneContentTranslations: vi.fn(),
+  };
+  const notifications = { notifyMilestoneAchieved: vi.fn() };
+
+  function campaignWithStatus(status: CampaignStatus) {
+    return {
+      id: campaignId,
+      tenantId: tenantA,
+      name: '速素数数',
+      status,
+      timezone: 'Asia/Kuala_Lumpur',
+      startsOn: '2026-01-01',
+      endsOn: '2026-01-31',
+      configuration: {},
+      communityIds: [],
+    };
+  }
 
   beforeEach(async () => {
     vi.resetAllMocks();
@@ -111,7 +139,22 @@ describe('MilestoneService', () => {
       communityIds: [],
     });
     evaluationRepository.findOne.mockResolvedValue(null);
-    milestoneRepository.findOne.mockResolvedValue(milestone());
+    localization.resolveMilestoneContent.mockImplementation(
+      async (
+        _locale: string,
+        _tenantId: string,
+        _id: string,
+        _field: string,
+        primary: string | null,
+      ) => primary,
+    );
+    localization.readMilestoneEnglish.mockResolvedValue(null);
+    localization.upsertMilestoneContentTranslations.mockResolvedValue(undefined);
+    notifications.notifyMilestoneAchieved.mockResolvedValue(undefined);
+    milestoneRepository.findOne.mockImplementation(
+      async (options: { where: { id?: string; due_on?: string } }) =>
+        options.where.due_on === undefined ? milestone() : null,
+    );
     milestoneRepository.save.mockImplementation(async (value: Milestone) => ({
       ...milestone(),
       ...value,
@@ -161,6 +204,8 @@ describe('MilestoneService', () => {
         { provide: CampaignService, useValue: campaigns },
         { provide: ProgressService, useValue: progress },
         { provide: CustomerService, useValue: customers },
+        { provide: LocalizationService, useValue: localization },
+        { provide: CAMPAIGN_NOTIFICATIONS, useValue: notifications },
       ],
     }).compile();
     service = module.get(MilestoneService);
@@ -200,5 +245,325 @@ describe('MilestoneService', () => {
         unit: 'days',
       }),
     ).rejects.toBeInstanceOf(AccessForbiddenException);
+  });
+
+  describe('dated milestones', () => {
+    async function expectCode(promise: Promise<unknown>, code: string) {
+      await expect(promise).rejects.toSatisfy((error: unknown) => {
+        const body = (error as { getResponse: () => { code: string } })
+          .getResponse();
+        return body.code === code;
+      });
+    }
+
+    beforeEach(() => {
+      campaigns.getCampaignRecord.mockResolvedValue(
+        campaignWithStatus(CampaignStatus.DRAFT),
+      );
+    });
+
+    it('creates a dated milestone without a goal in a draft campaign', async () => {
+      const created = await service.create(adminContext(), campaignId, adminUserId, {
+        name: '第一阶段',
+        dueOn: '2026-01-15',
+        translations: { en: { name: 'Stage one' } },
+      });
+      expect(created).toMatchObject({
+        dueOn: '2026-01-15',
+        metric: null,
+        thresholdValue: null,
+        unit: null,
+        hasGoal: false,
+      });
+      expect(milestoneRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          due_on: '2026-01-15',
+          metric: null,
+          threshold_value: null,
+          unit: null,
+        }),
+      );
+      expect(localization.upsertMilestoneContentTranslations).toHaveBeenCalledWith(
+        tenantA,
+        milestoneId,
+        { en: { name: 'Stage one' } },
+      );
+    });
+
+    it('accepts dueOn on the first and last campaign day', async () => {
+      for (const dueOn of ['2026-01-01', '2026-01-31']) {
+        await expect(
+          service.create(adminContext(), campaignId, adminUserId, {
+            name: 'Edge',
+            dueOn,
+          }),
+        ).resolves.toMatchObject({ dueOn });
+      }
+    });
+
+    it.each(['2025-12-31', '2026-02-01'])(
+      'rejects dueOn %s outside the campaign window',
+      async (dueOn) => {
+        await expectCode(
+          service.create(adminContext(), campaignId, adminUserId, {
+            name: 'Outside',
+            dueOn,
+          }),
+          'MILESTONE_DATE_OUT_OF_WINDOW',
+        );
+      },
+    );
+
+    it('rejects a dated milestone when the campaign has no window', async () => {
+      campaigns.getCampaignRecord.mockResolvedValue({
+        ...campaignWithStatus(CampaignStatus.DRAFT),
+        endsOn: null,
+      });
+      await expectCode(
+        service.create(adminContext(), campaignId, adminUserId, {
+          name: 'No window',
+          dueOn: '2026-01-10',
+        }),
+        'MILESTONE_DATE_OUT_OF_WINDOW',
+      );
+    });
+
+    it('rejects an invalid calendar date', async () => {
+      await expect(
+        service.create(adminContext(), campaignId, adminUserId, {
+          name: 'Bad date',
+          dueOn: '2026-02-30',
+        }),
+      ).rejects.toBeInstanceOf(InvalidRequestException);
+    });
+
+    it('rejects a second active milestone on the same date', async () => {
+      milestoneRepository.findOne.mockResolvedValue(
+        milestone({ id: 'other', due_on: '2026-01-15' }),
+      );
+      await expectCode(
+        service.create(adminContext(), campaignId, adminUserId, {
+          name: 'Clash',
+          dueOn: '2026-01-15',
+        }),
+        'MILESTONE_DATE_DUPLICATE',
+      );
+    });
+
+    it('rejects a partial goal', async () => {
+      await expect(
+        service.create(adminContext(), campaignId, adminUserId, {
+          name: 'Partial',
+          dueOn: '2026-01-15',
+          metric: MilestoneMetric.ACHIEVED_VALUE,
+        }),
+      ).rejects.toBeInstanceOf(InvalidRequestException);
+    });
+
+    it('rejects a milestone with neither a date nor a goal', async () => {
+      await expect(
+        service.create(adminContext(), campaignId, adminUserId, {
+          name: 'Empty',
+        }),
+      ).rejects.toBeInstanceOf(InvalidRequestException);
+    });
+
+    it('allows changing the date and removing a dated milestone in draft', async () => {
+      milestoneRepository.findOne.mockImplementation(
+        async (options: { where: { due_on?: string } }) =>
+          options.where.due_on === undefined
+            ? milestone({ due_on: '2026-01-15', metric: null, threshold_value: null, unit: null })
+            : null,
+      );
+      await expect(
+        service.update(adminContext(), milestoneId, { dueOn: '2026-01-20' }),
+      ).resolves.toMatchObject({ dueOn: '2026-01-20' });
+      await expect(
+        service.update(adminContext(), milestoneId, { isActive: false }),
+      ).resolves.toMatchObject({ isActive: false });
+    });
+
+    it('clears the goal when all goal fields are set to null', async () => {
+      milestoneRepository.findOne.mockImplementation(
+        async (options: { where: { due_on?: string } }) =>
+          options.where.due_on === undefined
+            ? milestone({ due_on: '2026-01-15' })
+            : null,
+      );
+      const updated = await service.update(adminContext(), milestoneId, {
+        metric: null,
+        thresholdValue: null,
+        unit: null,
+      });
+      expect(updated.hasGoal).toBe(false);
+    });
+
+    describe.each([
+      CampaignStatus.PUBLISHED,
+      CampaignStatus.STARTED,
+      CampaignStatus.COMPLETED,
+    ])('after publish (%s)', (status) => {
+      beforeEach(() => {
+        campaigns.getCampaignRecord.mockResolvedValue(campaignWithStatus(status));
+        milestoneRepository.findOne.mockImplementation(
+          async (options: { where: { due_on?: string } }) =>
+            options.where.due_on === undefined
+              ? milestone({ due_on: '2026-01-15' })
+              : null,
+        );
+      });
+
+      it('locks dueOn changes', async () => {
+        await expectCode(
+          service.update(adminContext(), milestoneId, { dueOn: '2026-01-20' }),
+          'MILESTONE_LOCKED',
+        );
+        await expectCode(
+          service.update(adminContext(), milestoneId, { dueOn: null }),
+          'MILESTONE_LOCKED',
+        );
+      });
+
+      it('locks removal or deactivation of a dated milestone', async () => {
+        await expectCode(
+          service.update(adminContext(), milestoneId, { isActive: false }),
+          'MILESTONE_LOCKED',
+        );
+      });
+
+      it('locks adding a new dated milestone', async () => {
+        await expectCode(
+          service.create(adminContext(), campaignId, adminUserId, {
+            name: 'Late',
+            dueOn: '2026-01-20',
+          }),
+          'MILESTONE_LOCKED',
+        );
+      });
+
+      it('keeps name, description, translations and goal editable', async () => {
+        const updated = await service.update(adminContext(), milestoneId, {
+          name: 'Renamed',
+          description: 'New description',
+          dueOn: '2026-01-15',
+          isActive: true,
+          metric: MilestoneMetric.ACHIEVED_VALUE,
+          thresholdValue: 99,
+          unit: 'meals',
+          translations: { en: { name: 'Renamed EN' } },
+        });
+        expect(updated).toMatchObject({
+          name: 'Renamed',
+          description: 'New description',
+          dueOn: '2026-01-15',
+          metric: 'achieved_value',
+          thresholdValue: 99,
+          unit: 'meals',
+        });
+      });
+    });
+
+    it('still lets an undated goal milestone be added and deactivated after publish', async () => {
+      campaigns.getCampaignRecord.mockResolvedValue(
+        campaignWithStatus(CampaignStatus.STARTED),
+      );
+      await expect(
+        service.create(adminContext(), campaignId, adminUserId, {
+          name: 'Halfway',
+          metric: MilestoneMetric.COMPLETION_PERCENT,
+          thresholdValue: 50,
+          unit: 'days',
+        }),
+      ).resolves.toMatchObject({ dueOn: null, hasGoal: true });
+      await expect(
+        service.update(adminContext(), milestoneId, { isActive: false }),
+      ).resolves.toMatchObject({ isActive: false });
+    });
+
+    it('maps the due-date unique index race to MILESTONE_DATE_DUPLICATE', async () => {
+      const { QueryFailedError } = await import('typeorm');
+      milestoneRepository.save.mockRejectedValue(
+        new QueryFailedError('INSERT', [], {
+          code: '23505',
+          constraint: 'uq_milestones_campaign_due_on',
+        } as unknown as Error),
+      );
+      await expectCode(
+        service.create(adminContext(), campaignId, adminUserId, {
+          name: 'Race',
+          dueOn: '2026-01-15',
+        }),
+        'MILESTONE_DATE_DUPLICATE',
+      );
+    });
+  });
+
+  describe('goal-less milestones', () => {
+    beforeEach(() => {
+      milestoneRepository.findOne.mockResolvedValue(
+        milestone({
+          due_on: '2026-01-15',
+          metric: null,
+          threshold_value: null,
+          unit: null,
+        }),
+      );
+    });
+
+    it('skips evaluation, history and the first-crossing notification', async () => {
+      await expect(
+        service.evaluate(adminContext(), milestoneId, adminUserId),
+      ).rejects.toBeInstanceOf(InvalidRequestException);
+      expect(evaluationRepository.save).not.toHaveBeenCalled();
+      expect(progressRepository.save).not.toHaveBeenCalled();
+      expect(notifications.notifyMilestoneAchieved).not.toHaveBeenCalled();
+      expect(progress.getCampaignProgress).not.toHaveBeenCalled();
+    });
+
+    it('reports progress as goal-less and never crossed', async () => {
+      const current = await service.getProgress(adminContext(), milestoneId);
+      expect(current).toMatchObject({
+        hasGoal: false,
+        metric: null,
+        crossed: false,
+        status: 'none',
+      });
+    });
+  });
+
+  it('notifies once on the first crossing of a goal milestone', async () => {
+    await service.evaluate(adminContext(), milestoneId, adminUserId);
+    expect(notifications.notifyMilestoneAchieved).toHaveBeenCalledTimes(1);
+  });
+
+  describe('listPeriods', () => {
+    it('splits the campaign window at active dated milestones', async () => {
+      milestoneRepository.find.mockResolvedValue([
+        milestone({ id: 'm2', name: 'Two', due_on: '2026-01-20' }),
+        milestone({ id: 'm1', name: 'One', due_on: '2026-01-10' }),
+      ]);
+      const periods = await service.listPeriods(adminContext(), campaignId);
+      expect(periods.map((p) => [p.key, p.startsOn, p.milestoneId, p.name])).toEqual([
+        ['2026-01-10', '2026-01-01', 'm1', 'One'],
+        ['2026-01-20', '2026-01-11', 'm2', 'Two'],
+        ['2026-01-31', '2026-01-21', null, null],
+      ]);
+      expect(milestoneRepository.find).toHaveBeenCalledWith({
+        where: expect.objectContaining({
+          tenant_id: tenantA,
+          campaign_id: campaignId,
+          is_active: true,
+        }),
+      });
+    });
+
+    it('propagates campaign visibility errors', async () => {
+      campaigns.getCampaignRecord.mockRejectedValue(
+        new ResourceConflictException('nope'),
+      );
+      await expect(
+        service.listPeriods(adminContext(), campaignId),
+      ).rejects.toBeInstanceOf(ResourceConflictException);
+    });
   });
 });

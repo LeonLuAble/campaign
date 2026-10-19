@@ -36,9 +36,9 @@ export class ResourceConflictException extends ConflictException {
 }
 
 export class InvalidRequestException extends BadRequestException {
-  constructor(message = 'Invalid request') {
+  constructor(message = 'Invalid request', code = 'BAD_REQUEST') {
     super({
-      code: 'BAD_REQUEST',
+      code,
       error: 'Bad Request',
       message,
     });
