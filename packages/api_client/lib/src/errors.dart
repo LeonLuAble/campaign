@@ -5,6 +5,7 @@ class ApiException implements Exception {
     required this.message,
     this.correlationId,
     this.path,
+    this.details,
   });
 
   final int statusCode;
@@ -13,7 +14,16 @@ class ApiException implements Exception {
   final String? correlationId;
   final String? path;
 
+  /// Machine-readable extras for some codes.
+  final Map<String, dynamic>? details;
+
   bool get isTokenReused => code == 'TOKEN_REUSED';
+
+  /// Days already recorded, from `SUBMISSION_OVERLAP`.
+  List<String> get conflictingDates {
+    final value = details?['conflictingDates'];
+    return value is List ? value.map((row) => row.toString()).toList() : const [];
+  }
 
   factory ApiException.fromJson(Map<String, dynamic> json, {int? statusCode}) {
     final rawMessage = json['message'];
@@ -26,6 +36,10 @@ class ApiException implements Exception {
       message: message,
       correlationId: json['correlationId'] as String?,
       path: json['path'] as String?,
+      details: json['details'] is Map
+          ? (json['details'] as Map)
+              .map((key, value) => MapEntry(key.toString(), value))
+          : null,
     );
   }
 

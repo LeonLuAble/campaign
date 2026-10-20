@@ -1,4 +1,5 @@
 import { Test } from '@nestjs/testing';
+import { QueryFailedError } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -12,10 +13,13 @@ import { PERMISSIONS } from '../../authorization/domain/permission-keys.js';
 import { CAMPAIGN_RULE_STRATEGIES } from '../../campaigns/application/campaign-rule-strategy.js';
 import { CampaignService } from '../../campaigns/application/campaign.service.js';
 import { CampaignStatus } from '../../campaigns/domain/campaign.entity.js';
+import { Commitment } from '../../commitments/domain/commitment.entity.js';
 import { CustomerService } from '../../customers/application/customer.service.js';
+import { MilestoneService } from '../../milestones/application/milestone.service.js';
 import { ParticipationStatus } from '../../participation/domain/participation.entity.js';
 import { ParticipationService } from '../../participation/application/participation.service.js';
 import { VegetarianRuleStrategy } from '../../vegetarian/application/vegetarian-rules.js';
+import { ActionBatch } from '../domain/action-batch.entity.js';
 import { ActionDefinition } from '../domain/action-definition.entity.js';
 import { Action, ActionStatus, PrivacyLevel } from '../domain/action.entity.js';
 import { Submission, SubmissionStatus } from '../domain/submission.entity.js';
@@ -153,6 +157,9 @@ describe('ActionService', () => {
   const participations = { getParticipationRecord: vi.fn() };
   const campaigns = { getCampaignRecord: vi.fn() };
   const customers = { requireActive: vi.fn() };
+  const commitmentRepository = { find: vi.fn() };
+  const batchRepository = { findOne: vi.fn() };
+  const milestones = { periodsForCampaign: vi.fn() };
 
   beforeEach(async () => {
     vi.resetAllMocks();
@@ -176,6 +183,15 @@ describe('ActionService', () => {
       communityIds: [],
     });
     definitionRepository.findOne.mockResolvedValue(definition());
+    commitmentRepository.find.mockResolvedValue([]);
+    milestones.periodsForCampaign.mockResolvedValue([
+      {
+        key: '2026-12-31',
+        startsOn: '2026-01-01',
+        endsOn: '2026-12-31',
+        milestoneId: null,
+      },
+    ]);
     submissionRepository.find.mockResolvedValue([]);
     actionRepository.save.mockImplementation(async (value: Action) => ({
       ...action(),
@@ -196,6 +212,15 @@ describe('ActionService', () => {
         { provide: CampaignService, useValue: campaigns },
         { provide: ParticipationService, useValue: participations },
         { provide: CustomerService, useValue: customers },
+        {
+          provide: getRepositoryToken(Commitment),
+          useValue: commitmentRepository,
+        },
+        {
+          provide: getRepositoryToken(ActionBatch),
+          useValue: batchRepository,
+        },
+        { provide: MilestoneService, useValue: milestones },
         {
           provide: CAMPAIGN_RULE_STRATEGIES,
           useValue: [new VegetarianRuleStrategy()],
@@ -225,6 +250,61 @@ describe('ActionService', () => {
     expect(created.occurredOn).toBe('2026-10-12');
     expect(created.privacyLevel).toBe(PrivacyLevel.PRIVATE);
     expect(created.status).toBe(ActionStatus.RECORDED);
+  });
+
+  describe('day coverage', () => {
+    const recordOn = (occurredOn: string) =>
+      service.record(
+        memberContext(),
+        userId,
+        { participationId, actionDefinitionId: definitionId, occurredOn },
+        new Date('2026-10-13T02:00:00.000Z'),
+      );
+
+    beforeEach(() => {
+      actionRepository.findOne.mockResolvedValue(null);
+      manager.save.mockImplementation(async (_entity, value) => ({
+        ...action(),
+        ...(value as Action),
+      }));
+    });
+
+    it('needs a committed window in campaigns with dated milestones', async () => {
+      milestones.periodsForCampaign.mockResolvedValue([
+        { key: '2026-10-10', startsOn: '2026-01-01', endsOn: '2026-10-10', milestoneId: 'm-1' },
+        { key: '2026-12-31', startsOn: '2026-10-11', endsOn: '2026-12-31', milestoneId: null },
+      ]);
+      commitmentRepository.find.mockResolvedValue([
+        { decision: 'committed', valid_from: '2026-10-12', valid_to: '2026-12-31' },
+      ]);
+      await expect(recordOn('2026-10-11')).rejects.toMatchObject({
+        response: { code: 'NO_COMMITMENT_FOR_DATE' },
+      });
+      await expect(recordOn('2026-10-12')).resolves.toMatchObject({
+        occurredOn: '2026-10-12',
+      });
+    });
+
+    it('blocks a whole-campaign not_taking_part decision', async () => {
+      commitmentRepository.find.mockResolvedValue([
+        { decision: 'not_taking_part', valid_from: null, valid_to: null },
+      ]);
+      await expect(recordOn('2026-10-12')).rejects.toMatchObject({
+        response: { code: 'NO_COMMITMENT_FOR_DATE' },
+      });
+    });
+
+    it('reports a duplicate day as SUBMISSION_OVERLAP with the date', async () => {
+      manager.save.mockRejectedValue(
+        new QueryFailedError('INSERT', [], Object.assign(new Error('dup'), { code: '23505' })),
+      );
+      await expect(recordOn('2026-10-12')).rejects.toMatchObject({
+        response: {
+          code: 'SUBMISSION_OVERLAP',
+          details: { conflictingDates: ['2026-10-12'] },
+        },
+      });
+    });
   });
 
   it('rejects a future campaign-local day', async () => {

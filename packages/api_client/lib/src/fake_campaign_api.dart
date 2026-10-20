@@ -442,6 +442,9 @@ class FakeCampaignApiClient implements CampaignApiClient {
   CommitmentOptions commitmentOptions;
   List<ActionDefinition> actionDefinitions;
   List<RecordedAction> actions;
+
+  /// Range entries; their days live in [actions] with `batchId` set.
+  List<ActionBatch> actionBatches = [];
   List<InboxNotification> notifications;
   ParticipantDashboard participantDashboard;
   AggregateDashboard campaignDashboard;
@@ -491,11 +494,17 @@ class FakeCampaignApiClient implements CampaignApiClient {
     await tokenStore?.clear();
   }
 
-  Never _throw(String code, {int status = 400, String? message}) {
+  Never _throw(
+    String code, {
+    int status = 400,
+    String? message,
+    Map<String, dynamic>? details,
+  }) {
     throw ApiException(
       statusCode: status,
       code: code,
       message: message ?? code,
+      details: details,
     );
   }
 
@@ -2732,6 +2741,7 @@ class FakeCampaignApiClient implements CampaignApiClient {
         return replay.first;
       }
     }
+    _assertCoverage(participationId, day, day);
     final duplicate = actions.where(
       (row) =>
           row.participationId == participationId &&
@@ -2741,9 +2751,12 @@ class FakeCampaignApiClient implements CampaignApiClient {
     );
     if (duplicate.isNotEmpty) {
       _throw(
-        'CONFLICT',
+        'SUBMISSION_OVERLAP',
         status: 409,
         message: 'Action already recorded for this day',
+        details: {
+          'conflictingDates': [day],
+        },
       );
     }
     final participation = participations.where((row) => row.id == participationId);
@@ -2795,6 +2808,7 @@ class FakeCampaignApiClient implements CampaignApiClient {
       submission: current.submission,
       payload: current.payload,
       idempotencyKey: current.idempotencyKey,
+      batchId: current.batchId,
     );
     actions = [
       for (final row in actions)
@@ -2805,12 +2819,356 @@ class FakeCampaignApiClient implements CampaignApiClient {
 
   @override
   Future<Submission> rejectSubmission(String submissionId, {String? note}) async {
-    return Submission(
+    final match = actions
+        .where((row) => row.submission?.id == submissionId)
+        .firstOrNull;
+    final rejected = Submission(
       id: submissionId,
-      actionId: 'act-1',
+      actionId: match?.id ?? 'act-1',
       status: 'rejected',
       reviewNote: note,
     );
+    if (match != null) {
+      actions = [
+        for (final row in actions)
+          if (row.id == match.id) _withSubmission(row, rejected) else row,
+      ];
+    }
+    return rejected;
+  }
+
+  RecordedAction _withSubmission(
+    RecordedAction row,
+    Submission? submission, {
+    String? status,
+  }) =>
+      RecordedAction(
+        id: row.id,
+        campaignId: row.campaignId,
+        participationId: row.participationId,
+        userId: row.userId,
+        actionDefinitionId: row.actionDefinitionId,
+        occurredOn: row.occurredOn,
+        quantity: row.quantity,
+        status: status ?? row.status,
+        submission: submission,
+        payload: row.payload,
+        idempotencyKey: row.idempotencyKey,
+        batchId: row.batchId,
+      );
+
+  void _assertCoverage(String participationId, String startOn, String endOn) {
+    final participation =
+        participations.where((row) => row.id == participationId).firstOrNull;
+    final campaign = participation == null
+        ? null
+        : campaigns
+            .where((row) => row.id == participation.campaignId)
+            .firstOrNull;
+    if (campaign == null) {
+      return;
+    }
+    final periods = _periodsFor(campaign);
+    final own =
+        commitments.where((row) => row.participationId == participationId);
+    if (!_isPeriodised(periods)) {
+      final whole = own.where((row) => row.isWholeCampaign).firstOrNull;
+      if (whole?.isNotTakingPart ?? false) {
+        _throw(
+          'NO_COMMITMENT_FOR_DATE',
+          status: 409,
+          message: 'There is no commitment covering this day',
+        );
+      }
+      return;
+    }
+    CampaignPeriod? periodOf(String day) => periods
+        .where(
+          (period) =>
+              period.startsOn.compareTo(day) <= 0 &&
+              day.compareTo(period.endsOn) <= 0,
+        )
+        .firstOrNull;
+    Commitment? windowOf(String day) => own
+        .where(
+          (row) =>
+              !row.isNotTakingPart &&
+              row.validFrom != null &&
+              row.validTo != null &&
+              row.validFrom!.compareTo(day) <= 0 &&
+              day.compareTo(row.validTo!) <= 0,
+        )
+        .firstOrNull;
+    if (periodOf(startOn)?.key != periodOf(endOn)?.key) {
+      _throw(
+        'RANGE_SPANS_PERIODS',
+        message: 'The range must lie inside one period and one commitment window',
+      );
+    }
+    final first = windowOf(startOn);
+    final last = windowOf(endOn);
+    if (first == null && last == null) {
+      _throw(
+        'NO_COMMITMENT_FOR_DATE',
+        status: 409,
+        message: 'There is no commitment covering these days',
+      );
+    }
+    if (first?.id != last?.id) {
+      _throw(
+        'RANGE_SPANS_PERIODS',
+        message: 'The range must lie inside one period and one commitment window',
+      );
+    }
+  }
+
+  static String _addDays(String isoDate, int days) => DateTime.parse(
+        '${isoDate}T00:00:00Z',
+      ).add(Duration(days: days)).toIso8601String().substring(0, 10);
+
+  ActionBatchDetail _batchDetail(ActionBatch stored) {
+    final children = actions.where((row) => row.batchId == stored.id).toList()
+      ..sort((a, b) => a.occurredOn.compareTo(b.occurredOn));
+    final live = children.where((row) => !row.isCancelled).toList();
+    final basis = live.isEmpty ? children : live;
+    String statusOf(RecordedAction row) =>
+        row.submission?.status ?? ActionBatchStatus.submitted;
+    final statuses = basis.map(statusOf).toSet();
+    int count(String status) =>
+        live.where((row) => statusOf(row) == status).length;
+    return ActionBatchDetail(
+      batch: ActionBatch(
+        id: stored.id,
+        campaignId: stored.campaignId,
+        participationId: stored.participationId,
+        userId: stored.userId,
+        actionDefinitionId: stored.actionDefinitionId,
+        startOn: stored.startOn,
+        endOn: stored.endOn,
+        dayCount: stored.dayCount,
+        quantityPerDay: stored.quantityPerDay,
+        status: statuses.length == 1
+            ? statuses.first
+            : statuses.isEmpty
+                ? ActionBatchStatus.submitted
+                : ActionBatchStatus.mixed,
+        cancelled: live.isEmpty,
+        submittedCount: count(ActionBatchStatus.submitted),
+        approvedCount: count(ActionBatchStatus.approved),
+        rejectedCount: count(ActionBatchStatus.rejected),
+        cancelledCount: children.length - live.length,
+        payload: stored.payload,
+        idempotencyKey: stored.idempotencyKey,
+      ),
+      actions: children,
+    );
+  }
+
+  ActionBatch _requireBatch(String batchId) {
+    final match = actionBatches.where((row) => row.id == batchId).firstOrNull;
+    if (match == null) {
+      _throw('NOT_FOUND', status: 404, message: 'Action batch not found');
+    }
+    return match;
+  }
+
+  @override
+  Future<ActionBatchDetail> recordActionRange({
+    required String participationId,
+    required String actionDefinitionId,
+    required String startOn,
+    required int days,
+    required num quantityPerDay,
+    String? idempotencyKey,
+    String? privacyLevel,
+    Map<String, dynamic>? payload,
+  }) async {
+    if (failRecordNetwork) {
+      throw Exception('SocketException: Failed host lookup');
+    }
+    if (days < 1 || days > 92) {
+      _throw('VALIDATION_FAILED', message: 'days must be between 1 and 92');
+    }
+    final body = payload ?? const <String, dynamic>{};
+    if (idempotencyKey != null && idempotencyKey.isNotEmpty) {
+      final replay = actionBatches
+          .where(
+            (row) =>
+                row.participationId == participationId &&
+                row.idempotencyKey == idempotencyKey,
+          )
+          .firstOrNull;
+      if (replay != null) {
+        if (replay.startOn != startOn ||
+            replay.dayCount != days ||
+            replay.quantityPerDay != quantityPerDay ||
+            replay.actionDefinitionId != actionDefinitionId) {
+          _throw(
+            'CONFLICT',
+            status: 409,
+            message: 'Idempotency key was reused with a different range',
+          );
+        }
+        return _batchDetail(replay);
+      }
+    }
+    final endOn = _addDays(startOn, days - 1);
+    if (endOn.compareTo(_fakeDay()) > 0) {
+      _throw(
+        'BAD_REQUEST',
+        message: 'The range cannot end in the future in the campaign timezone',
+      );
+    }
+    final definition = actionDefinitions
+        .where((row) => row.id == actionDefinitionId)
+        .firstOrNull;
+    if (definition?.unit == 'days' && quantityPerDay != 1) {
+      _throw('BAD_REQUEST', message: 'quantity must be 1 for a vegetarian day');
+    }
+    if (definition?.unit == 'meals' &&
+        (quantityPerDay < 1 || quantityPerDay > 3)) {
+      _throw(
+        'BAD_REQUEST',
+        message: 'quantity must be between 1 and 3 vegetarian meals',
+      );
+    }
+    _assertCoverage(participationId, startOn, endOn);
+    final dates = [for (var i = 0; i < days; i++) _addDays(startOn, i)];
+    final conflicting = actions
+        .where(
+          (row) =>
+              row.participationId == participationId &&
+              row.actionDefinitionId == actionDefinitionId &&
+              !row.isCancelled &&
+              dates.contains(row.occurredOn),
+        )
+        .map((row) => row.occurredOn)
+        .toSet()
+        .toList()
+      ..sort();
+    if (conflicting.isNotEmpty) {
+      _throw(
+        'SUBMISSION_OVERLAP',
+        status: 409,
+        message: 'Actions are already recorded on some of these days',
+        details: {'conflictingDates': conflicting},
+      );
+    }
+    final participation =
+        participations.where((row) => row.id == participationId).firstOrNull;
+    final campaignId = participation?.campaignId ?? 'camp-1';
+    final campaign = campaigns.where((row) => row.id == campaignId).firstOrNull;
+    final reviewMode =
+        campaign?.configuration['submissionReview']?.toString() ?? 'auto';
+    final submissionStatus = forceSubmissionStatus ??
+        (reviewMode == 'manual' ? 'submitted' : 'approved');
+    final batch = ActionBatch(
+      id: 'batch-${actionBatches.length + 1}',
+      campaignId: campaignId,
+      participationId: participationId,
+      userId: profile.id,
+      actionDefinitionId: actionDefinitionId,
+      startOn: startOn,
+      endOn: endOn,
+      dayCount: days,
+      quantityPerDay: quantityPerDay,
+      status: submissionStatus,
+      payload: body,
+      idempotencyKey: idempotencyKey,
+    );
+    final created = [
+      for (final date in dates)
+        () {
+          final actionId = 'act-${actions.length + dates.indexOf(date) + 1}';
+          return RecordedAction(
+            id: actionId,
+            campaignId: campaignId,
+            participationId: participationId,
+            userId: profile.id,
+            actionDefinitionId: actionDefinitionId,
+            occurredOn: date,
+            quantity: quantityPerDay,
+            status: 'recorded',
+            payload: body,
+            batchId: batch.id,
+            submission: Submission(
+              id: 'sub-${actions.length + dates.indexOf(date) + 1}',
+              actionId: actionId,
+              status: submissionStatus,
+            ),
+          );
+        }(),
+    ];
+    actionBatches = [...actionBatches, batch];
+    actions = [...actions, ...created];
+    return _batchDetail(batch);
+  }
+
+  @override
+  Future<List<ActionBatch>> listActionBatches(String participationId) async => [
+        for (final row in actionBatches)
+          if (row.participationId == participationId) _batchDetail(row).batch,
+      ];
+
+  @override
+  Future<ActionBatchDetail> getActionBatch(String batchId) async =>
+      _batchDetail(_requireBatch(batchId));
+
+  @override
+  Future<ActionBatchDetail> cancelActionBatch(String batchId) async {
+    final batch = _requireBatch(batchId);
+    actions = [
+      for (final row in actions)
+        if (row.batchId == batch.id && !row.isCancelled)
+          _withSubmission(row, row.submission, status: 'cancelled')
+        else
+          row,
+    ];
+    return _batchDetail(batch);
+  }
+
+  @override
+  Future<ActionBatchDetail> approveActionBatch(
+    String batchId, {
+    String? note,
+  }) =>
+      _reviewBatch(batchId, 'approved', note);
+
+  @override
+  Future<ActionBatchDetail> rejectActionBatch(
+    String batchId, {
+    String? note,
+  }) =>
+      _reviewBatch(batchId, 'rejected', note);
+
+  Future<ActionBatchDetail> _reviewBatch(
+    String batchId,
+    String status,
+    String? note,
+  ) async {
+    final batch = _requireBatch(batchId);
+    final live = actions
+        .where((row) => row.batchId == batch.id && !row.isCancelled)
+        .toList();
+    if (live.isEmpty) {
+      _throw('BAD_REQUEST', message: 'Cancelled ranges cannot be reviewed');
+    }
+    actions = [
+      for (final row in actions)
+        if (row.batchId == batch.id && !row.isCancelled)
+          _withSubmission(
+            row,
+            Submission(
+              id: row.submission?.id ?? 'sub-${row.id}',
+              actionId: row.id,
+              status: status,
+              reviewNote: note,
+            ),
+          )
+        else
+          row,
+    ];
+    return _batchDetail(batch);
   }
 
   @override

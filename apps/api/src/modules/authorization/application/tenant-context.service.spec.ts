@@ -40,6 +40,7 @@ describe('TenantContextService', () => {
     findActionById: vi.fn(),
     findDefinitionById: vi.fn(),
     findSubmissionById: vi.fn(),
+    findBatchById: vi.fn(),
   };
   const commitments = { findById: vi.fn() };
   const milestones = { findById: vi.fn() };

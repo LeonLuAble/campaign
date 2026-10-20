@@ -182,9 +182,15 @@ export class ParticipationService {
     return this.toResponse(participation);
   }
 
+  /**
+   * Visible to the participant and to callers who manage participations;
+   * `alsoAllow` adds permissions that may read any participation in the
+   * tenant (never `participations.read`, which every member holds).
+   */
   async getParticipationRecord(
     tenant: TenantContext,
     participationId: string,
+    alsoAllow: readonly string[] = [],
   ): Promise<{
     id: string;
     tenantId: string;
@@ -193,7 +199,11 @@ export class ParticipationService {
     communityId: string | null;
     status: ParticipationStatus;
   }> {
-    const participation = await this.requireVisible(tenant, participationId);
+    const participation = await this.requireVisible(
+      tenant,
+      participationId,
+      alsoAllow,
+    );
     return {
       id: participation.id,
       tenantId: participation.tenant_id,
@@ -421,6 +431,7 @@ export class ParticipationService {
   private async requireVisible(
     tenant: TenantContext,
     participationId: string,
+    alsoAllow: readonly string[] = [],
   ): Promise<Participation> {
     const participation = await this.participationRepository.findOne({
       where: { id: participationId, tenant_id: tenant.tenantId },
@@ -431,6 +442,7 @@ export class ParticipationService {
     await this.campaigns.getCampaignRecord(tenant, participation.campaign_id);
     if (
       !this.canManageParticipations(tenant) &&
+      !alsoAllow.some((permission) => tenant.permissions.has(permission)) &&
       !this.isOwn(tenant, participation)
     ) {
       throw new ResourceNotFoundException('Participation not found');

@@ -40,11 +40,15 @@ import {
   toIsoDate,
 } from '../../campaigns/application/timezone.js';
 import { CustomerService } from '../../customers/application/customer.service.js';
+import { Commitment } from '../../commitments/domain/commitment.entity.js';
+import { MilestoneService } from '../../milestones/application/milestone.service.js';
 import { ParticipationStatus } from '../../participation/domain/participation.entity.js';
 import { ParticipationService } from '../../participation/application/participation.service.js';
+import { ActionBatch } from '../domain/action-batch.entity.js';
 import { ActionDefinition } from '../domain/action-definition.entity.js';
 import { Action, ActionStatus, PrivacyLevel } from '../domain/action.entity.js';
 import { Submission, SubmissionStatus } from '../domain/submission.entity.js';
+import { rangeCoverage } from '../domain/day-coverage.js';
 import type { CreateActionDefinitionDto } from '../dto/create-action-definition.dto.js';
 import type { UpdateActionDefinitionDto } from '../dto/update-action-definition.dto.js';
 import type { CreateActionDto } from '../dto/create-action.dto.js';
@@ -90,6 +94,8 @@ export interface ActionResponse {
   status: ActionStatus;
   payload: Record<string, unknown>;
   idempotencyKey: string | null;
+  /** Set when the day belongs to a range entry. */
+  batchId: string | null;
   recordedByUserId: string;
   cancelledAt: string | null;
   cancelledByUserId: string | null;
@@ -112,12 +118,18 @@ export class ActionService {
     private readonly actionRepository: Repository<Action>,
     @InjectRepository(Submission)
     private readonly submissionRepository: Repository<Submission>,
+    @InjectRepository(ActionBatch)
+    private readonly batchRepository: Repository<ActionBatch>,
     @Inject(forwardRef(() => CampaignService))
     private readonly campaigns: CampaignService,
     @Inject(forwardRef(() => ParticipationService))
     private readonly participations: ParticipationService,
     @Inject(forwardRef(() => CustomerService))
     private readonly customers: CustomerService,
+    @InjectRepository(Commitment)
+    private readonly commitmentRepository: Repository<Commitment>,
+    @Inject(forwardRef(() => MilestoneService))
+    private readonly milestones: MilestoneService,
     @Optional()
     @Inject(CAMPAIGN_RULE_STRATEGIES)
     private readonly strategies: CampaignRuleStrategy[] | null,
@@ -150,6 +162,11 @@ export class ActionService {
   async findActionById(id: string): Promise<CampaignAccessRecord | null> {
     const action = await this.actionRepository.findOne({ where: { id } });
     return action ? { id: action.id, tenantId: action.tenant_id } : null;
+  }
+
+  async findBatchById(id: string): Promise<CampaignAccessRecord | null> {
+    const batch = await this.batchRepository.findOne({ where: { id } });
+    return batch ? { id: batch.id, tenantId: batch.tenant_id } : null;
   }
 
   async findDefinitionById(id: string): Promise<CampaignAccessRecord | null> {
@@ -326,38 +343,13 @@ export class ActionService {
     dto: CreateActionDto,
     now = new Date(),
   ): Promise<ActionResponse> {
-    await this.customers.requireActive(tenant.tenantId);
-    const participation = await this.participations.getParticipationRecord(
-      tenant,
-      dto.participationId,
-    );
-    this.assertCanRecordFor(tenant, actorUserId, participation.userId);
-    if (participation.status !== ParticipationStatus.ENROLLED) {
-      throw new InvalidRequestException(
-        'Actions can only be recorded on an enrolled participation',
+    const { participation, campaign, definition } =
+      await this.prepareRecording(
+        tenant,
+        actorUserId,
+        dto.participationId,
+        dto.actionDefinitionId,
       );
-    }
-    const campaign = await this.campaigns.getCampaignRecord(
-      tenant,
-      participation.campaignId,
-    );
-    if (!canRecordActions(campaign.status)) {
-      throw new InvalidRequestException(
-        'Actions can only be recorded while the campaign is started',
-      );
-    }
-    const definition = await this.requireDefinition(
-      tenant,
-      dto.actionDefinitionId,
-    );
-    if (definition.campaign_id !== participation.campaignId) {
-      throw new InvalidRequestException(
-        'Action definition does not belong to this campaign',
-      );
-    }
-    if (!definition.is_active) {
-      throw new InvalidRequestException('Action definition is not active');
-    }
 
     const occurredOn = resolveOccurredOn(
       dto.occurredOn,
@@ -371,11 +363,7 @@ export class ActionService {
     );
     const quantity = dto.quantity ?? 1;
     const payload = normalizeSettings(dto.payload);
-    resolveCampaignRules(
-      campaign.configuration,
-      this.strategyList(),
-      this.genericRules,
-    ).validateAction({
+    this.rulesFor(campaign.configuration).validateAction({
       definitionKey: definition.key,
       definitionUnit: definition.unit,
       quantity,
@@ -404,6 +392,7 @@ export class ActionService {
         return mapped;
       }
     }
+    await this.assertCoverage(tenant, participation.id, campaign, occurredOn, occurredOn);
 
     try {
       const saved = await this.actionRepository.manager.transaction(
@@ -476,9 +465,7 @@ export class ActionService {
         }
       }
       if (isUniqueViolation(error)) {
-        throw new ResourceConflictException(
-          'An action is already recorded for this definition and day',
-        );
+        throw overlapException([occurredOn]);
       }
       if (isRaiseException(error)) {
         throw new ResourceNotFoundException('Action could not be recorded');
@@ -526,11 +513,7 @@ export class ActionService {
       dto.payload === undefined
         ? action.payload
         : normalizeSettings(dto.payload);
-    resolveCampaignRules(
-      campaign.configuration,
-      this.strategyList(),
-      this.genericRules,
-    ).validateAction({
+    this.rulesFor(campaign.configuration).validateAction({
       definitionKey: definition.key,
       definitionUnit: definition.unit,
       quantity,
@@ -553,9 +536,7 @@ export class ActionService {
       return mapped;
     } catch (error) {
       if (isUniqueViolation(error)) {
-        throw new ResourceConflictException(
-          'An action is already recorded for this definition and day',
-        );
+        throw overlapException([occurredOn]);
       }
       throw error;
     }
@@ -680,6 +661,122 @@ export class ActionService {
     return this.toSubmissionResponse(saved);
   }
 
+  /**
+   * Shared checks for recording on a participation: active tenant, own
+   * participation (or `actions.update`), enrolled, campaign started, and an
+   * active definition of the same campaign.
+   */
+  async prepareRecording(
+    tenant: TenantContext,
+    actorUserId: string,
+    participationId: string,
+    actionDefinitionId: string,
+  ) {
+    await this.customers.requireActive(tenant.tenantId);
+    const participation = await this.participations.getParticipationRecord(
+      tenant,
+      participationId,
+    );
+    this.assertCanRecordFor(tenant, actorUserId, participation.userId);
+    if (participation.status !== ParticipationStatus.ENROLLED) {
+      throw new InvalidRequestException(
+        'Actions can only be recorded on an enrolled participation',
+      );
+    }
+    const campaign = await this.campaigns.getCampaignRecord(
+      tenant,
+      participation.campaignId,
+    );
+    if (!canRecordActions(campaign.status)) {
+      throw new InvalidRequestException(
+        'Actions can only be recorded while the campaign is started',
+      );
+    }
+    const definition = await this.requireDefinition(
+      tenant,
+      actionDefinitionId,
+    );
+    if (definition.campaign_id !== participation.campaignId) {
+      throw new InvalidRequestException(
+        'Action definition does not belong to this campaign',
+      );
+    }
+    if (!definition.is_active) {
+      throw new InvalidRequestException('Action definition is not active');
+    }
+    return { participation, campaign, definition };
+  }
+
+  rulesFor(configuration: Record<string, unknown>): CampaignRuleStrategy {
+    return resolveCampaignRules(
+      configuration,
+      this.strategyList(),
+      this.genericRules,
+    );
+  }
+
+  /**
+   * In campaigns with dated milestones the days must lie in one committed
+   * commitment window; elsewhere only a `not_taking_part` decision blocks.
+   */
+  async assertCoverage(
+    tenant: TenantContext,
+    participationId: string,
+    campaign: {
+      id: string;
+      tenantId: string;
+      startsOn: string | null;
+      endsOn: string | null;
+    },
+    startOn: string,
+    endOn: string,
+  ): Promise<void> {
+    const [periods, commitments] = await Promise.all([
+      this.milestones.periodsForCampaign(campaign),
+      this.commitmentRepository.find({
+        where: { tenant_id: tenant.tenantId, participation_id: participationId },
+      }),
+    ]);
+    const result = rangeCoverage(
+      periods,
+      commitments.map((row) => ({
+        decision: row.decision,
+        validFrom: toIsoDate(row.valid_from),
+        validTo: toIsoDate(row.valid_to),
+      })),
+      startOn,
+      endOn,
+    );
+    if (result.ok) {
+      return;
+    }
+    if (result.code === 'RANGE_SPANS_PERIODS') {
+      throw new InvalidRequestException(
+        'The range must lie inside one period and one commitment window',
+        'RANGE_SPANS_PERIODS',
+      );
+    }
+    throw new ResourceConflictException(
+      startOn === endOn
+        ? 'There is no commitment covering this day'
+        : 'There is no commitment covering these days',
+      'NO_COMMITMENT_FOR_DATE',
+    );
+  }
+
+  canCorrectActions(tenant: TenantContext): boolean {
+    return this.canCorrect(tenant);
+  }
+
+  canViewOwnedBy(tenant: TenantContext, userId: string): boolean {
+    return (
+      this.canCorrect(tenant) ||
+      tenant.memberships.some(
+        (membership) => membership.isActive && membership.userId === userId,
+      )
+    );
+  }
+
   private async requireDefinition(
     tenant: TenantContext,
     definitionId: string,
@@ -711,13 +808,7 @@ export class ActionService {
   }
 
   private canViewAction(tenant: TenantContext, action: Action): boolean {
-    if (this.canCorrect(tenant)) {
-      return true;
-    }
-    return tenant.memberships.some(
-      (membership) =>
-        membership.isActive && membership.userId === action.user_id,
-    );
+    return this.canViewOwnedBy(tenant, action.user_id);
   }
 
   private strategyList(): CampaignRuleStrategy[] {
@@ -781,7 +872,7 @@ export class ActionService {
     }
   }
 
-  private async toActionResponses(
+  async toActionResponses(
     tenant: TenantContext,
     actions: Action[],
   ): Promise<ActionResponse[]> {
@@ -817,6 +908,7 @@ export class ActionService {
       status: action.status,
       payload: action.payload,
       idempotencyKey: action.idempotency_key,
+      batchId: action.batch_id ?? null,
       recordedByUserId: action.recorded_by_user_id,
       cancelledAt: action.cancelled_at?.toISOString() ?? null,
       cancelledByUserId: action.cancelled_by_user_id,
@@ -846,7 +938,7 @@ export class ActionService {
     };
   }
 
-  private toSubmissionResponse(submission: Submission): SubmissionResponse {
+  toSubmissionResponse(submission: Submission): SubmissionResponse {
     return {
       id: submission.id,
       customerId: submission.tenant_id,
@@ -867,4 +959,16 @@ export class ActionService {
       `${fallbackPrefix}-${randomBytes(4).toString('hex')}`,
     ).replace(/-/g, '_');
   }
+}
+
+export function overlapException(
+  conflictingDates: string[],
+): ResourceConflictException {
+  return new ResourceConflictException(
+    conflictingDates.length === 1
+      ? 'An action is already recorded for this definition and day'
+      : 'Actions are already recorded for this definition on some of these days',
+    'SUBMISSION_OVERLAP',
+    { conflictingDates },
+  );
 }

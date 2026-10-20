@@ -198,7 +198,7 @@ class _CheckInPageState extends State<CheckInPage> {
         return;
       }
       if (error is ApiException &&
-          error.code == 'CONFLICT' &&
+          (error.code == 'CONFLICT' || error.code == 'SUBMISSION_OVERLAP') &&
           error.message.toLowerCase().contains('already')) {
         setState(() {
           _busy = false;

@@ -88,6 +88,7 @@ export class TenantContextService {
         'actionDefinitionId',
       ),
       submissionId: requireUuid(input.submissionId, 'submissionId'),
+      actionBatchId: requireUuid(input.actionBatchId, 'actionBatchId'),
       commitmentId: requireUuid(input.commitmentId, 'commitmentId'),
       milestoneId: requireUuid(input.milestoneId, 'milestoneId'),
       measurementDefinitionId: requireUuid(
@@ -227,6 +228,14 @@ export class TenantContextService {
         throw new ResourceNotFoundException('Resource not found');
       }
       candidates.add(submission.tenantId);
+    }
+
+    if (input.actionBatchId) {
+      const batch = await this.actions.findBatchById(input.actionBatchId);
+      if (!batch) {
+        throw new ResourceNotFoundException('Resource not found');
+      }
+      candidates.add(batch.tenantId);
     }
 
     if (input.commitmentId) {

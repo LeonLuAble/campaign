@@ -69,6 +69,10 @@ export class Action {
   @Column({ type: 'varchar', length: 128, nullable: true })
   idempotency_key: string | null;
 
+  /** Set when the day was entered as part of a range. */
+  @Column({ type: 'uuid', nullable: true })
+  batch_id: string | null;
+
   @Column({ type: 'uuid' })
   recorded_by_user_id: string;
 

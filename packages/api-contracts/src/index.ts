@@ -32,7 +32,10 @@ export type ErrorCode =
   | 'MILESTONE_DATE_OUT_OF_WINDOW'
   | 'MILESTONE_DATE_DUPLICATE'
   | 'PERIOD_CLOSED'
-  | 'COMMITMENT_TARGET_EXCEEDS_PERIOD';
+  | 'COMMITMENT_TARGET_EXCEEDS_PERIOD'
+  | 'NO_COMMITMENT_FOR_DATE'
+  | 'SUBMISSION_OVERLAP'
+  | 'RANGE_SPANS_PERIODS';
 
 export interface ApiErrorResponse {
   statusCode: number;
@@ -42,6 +45,12 @@ export interface ApiErrorResponse {
   correlationId: string | null;
   timestamp: string;
   path: string;
+  /** Present for some codes, e.g. `SUBMISSION_OVERLAP` → `{ conflictingDates }`. */
+  details?: Record<string, unknown>;
+}
+
+export interface SubmissionOverlapDetails {
+  conflictingDates: string[];
 }
 
 export interface RegisterRequest {
@@ -736,6 +745,8 @@ export interface ActionResponse {
   status: ActionStatus;
   payload: Record<string, unknown>;
   idempotencyKey: string | null;
+  /** Set when the day belongs to a range entry. */
+  batchId: string | null;
   recordedByUserId: string;
   cancelledAt: string | null;
   cancelledByUserId: string | null;
@@ -765,6 +776,55 @@ export interface UpdateActionRequest {
 
 export interface ReviewSubmissionRequest {
   note?: string;
+}
+
+/** `POST /participations/:participationId/action-ranges` */
+export interface CreateActionRangeRequest {
+  actionDefinitionId: string;
+  /** First day, `YYYY-MM-DD` in the campaign timezone. */
+  startOn: string;
+  /** 1 to 92, inclusive of `startOn`. */
+  days: number;
+  quantityPerDay: number;
+  idempotencyKey?: string;
+  privacyLevel?: PrivacyLevel;
+  payload?: Record<string, unknown>;
+}
+
+export type ActionBatchStatus = 'submitted' | 'approved' | 'rejected' | 'mixed';
+
+export interface ActionBatchResponse {
+  id: string;
+  customerId: string;
+  campaignId: string;
+  participationId: string;
+  userId: string;
+  actionDefinitionId: string;
+  startOn: string;
+  endOn: string;
+  dayCount: number;
+  quantityPerDay: number;
+  totalQuantity: number;
+  privacyLevel: PrivacyLevel;
+  payload: Record<string, unknown>;
+  idempotencyKey: string | null;
+  createdByUserId: string;
+  createdAt: string;
+  /** Derived from the child submissions of the days still recorded. */
+  status: ActionBatchStatus;
+  /** True once every day is cancelled. */
+  cancelled: boolean;
+  counts: {
+    submitted: number;
+    approved: number;
+    rejected: number;
+    cancelled: number;
+  };
+}
+
+export interface ActionBatchDetailResponse {
+  batch: ActionBatchResponse;
+  actions: ActionResponse[];
 }
 
 export type CompletionStatus =

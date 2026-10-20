@@ -164,6 +164,7 @@ export class ProgressService {
     const participation = await this.participations.getParticipationRecord(
       tenant,
       participationId,
+      [PERMISSIONS.SUBMISSIONS_UPDATE],
     );
     const campaign = await this.campaigns.getCampaignRecord(
       tenant,

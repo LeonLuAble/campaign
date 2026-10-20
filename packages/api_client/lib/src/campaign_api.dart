@@ -278,6 +278,26 @@ abstract class CampaignApiClient {
   Future<RecordedAction> cancelAction(String actionId);
   Future<Submission> rejectSubmission(String submissionId, {String? note});
 
+  /// Records [quantityPerDay] on each of [days] days from [startOn]. Overlap
+  /// with a recorded day fails with `SUBMISSION_OVERLAP`
+  /// ([ApiException.conflictingDates]); crossing a period or commitment
+  /// window fails with `RANGE_SPANS_PERIODS`.
+  Future<ActionBatchDetail> recordActionRange({
+    required String participationId,
+    required String actionDefinitionId,
+    required String startOn,
+    required int days,
+    required num quantityPerDay,
+    String? idempotencyKey,
+    String? privacyLevel,
+    Map<String, dynamic>? payload,
+  });
+  Future<List<ActionBatch>> listActionBatches(String participationId);
+  Future<ActionBatchDetail> getActionBatch(String batchId);
+  Future<ActionBatchDetail> cancelActionBatch(String batchId);
+  Future<ActionBatchDetail> approveActionBatch(String batchId, {String? note});
+  Future<ActionBatchDetail> rejectActionBatch(String batchId, {String? note});
+
   Future<ParticipantProgress> getProgress(String participationId);
   Future<ParticipantDashboard> getParticipantDashboard(String participationId);
   Future<AggregateDashboard> getCampaignDashboard(
@@ -1353,6 +1373,71 @@ class HttpCampaignApiClient implements CampaignApiClient {
       '/submissions/$submissionId/reject',
       data: {if (note != null) 'note': note},
       parser: Submission.fromJson,
+    );
+  }
+
+  @override
+  Future<ActionBatchDetail> recordActionRange({
+    required String participationId,
+    required String actionDefinitionId,
+    required String startOn,
+    required int days,
+    required num quantityPerDay,
+    String? idempotencyKey,
+    String? privacyLevel,
+    Map<String, dynamic>? payload,
+  }) {
+    return _post(
+      '/participations/$participationId/action-ranges',
+      data: {
+        'actionDefinitionId': actionDefinitionId,
+        'startOn': startOn,
+        'days': days,
+        'quantityPerDay': quantityPerDay,
+        if (idempotencyKey != null) 'idempotencyKey': idempotencyKey,
+        if (privacyLevel != null) 'privacyLevel': privacyLevel,
+        if (payload != null) 'payload': payload,
+      },
+      parser: ActionBatchDetail.fromJson,
+    );
+  }
+
+  @override
+  Future<List<ActionBatch>> listActionBatches(String participationId) {
+    return _getList(
+      '/participations/$participationId/action-batches',
+      parser: ActionBatch.fromJson,
+    );
+  }
+
+  @override
+  Future<ActionBatchDetail> getActionBatch(String batchId) {
+    return _get('/action-batches/$batchId', parser: ActionBatchDetail.fromJson);
+  }
+
+  @override
+  Future<ActionBatchDetail> cancelActionBatch(String batchId) {
+    return _post(
+      '/action-batches/$batchId/cancel',
+      parser: ActionBatchDetail.fromJson,
+    );
+  }
+
+  @override
+  Future<ActionBatchDetail> approveActionBatch(String batchId, {String? note}) {
+    return _post(
+      '/action-batches/$batchId/approve',
+      data: {if (note != null) 'note': note},
+      parser: ActionBatchDetail.fromJson,
+    );
+  }
+
+  @override
+  Future<ActionBatchDetail> rejectActionBatch(String batchId, {String? note}) {
+    return _post(
+      '/action-batches/$batchId/reject',
+      data: {if (note != null) 'note': note},
+      parser: ActionBatchDetail.fromJson,
     );
   }
 

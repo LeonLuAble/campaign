@@ -26,21 +26,31 @@ export class AccessForbiddenException extends ForbiddenException {
 }
 
 export class ResourceConflictException extends ConflictException {
-  constructor(message = 'Resource already exists', code = 'CONFLICT') {
+  constructor(
+    message = 'Resource already exists',
+    code = 'CONFLICT',
+    details?: Record<string, unknown>,
+  ) {
     super({
       code,
       error: 'Conflict',
       message,
+      ...(details ? { details } : {}),
     });
   }
 }
 
 export class InvalidRequestException extends BadRequestException {
-  constructor(message = 'Invalid request', code = 'BAD_REQUEST') {
+  constructor(
+    message = 'Invalid request',
+    code = 'BAD_REQUEST',
+    details?: Record<string, unknown>,
+  ) {
     super({
       code,
       error: 'Bad Request',
       message,
+      ...(details ? { details } : {}),
     });
   }
 }

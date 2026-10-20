@@ -26,6 +26,9 @@ export const ERROR_CODES = [
   'MILESTONE_LOCKED',
   'PERIOD_CLOSED',
   'COMMITMENT_TARGET_EXCEEDS_PERIOD',
+  'NO_COMMITMENT_FOR_DATE',
+  'SUBMISSION_OVERLAP',
+  'RANGE_SPANS_PERIODS',
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];
@@ -42,4 +45,6 @@ export interface ApiErrorResponse {
   correlationId: string | null;
   timestamp: string;
   path: string;
+  /** Machine-readable extras for some codes, e.g. `conflictingDates`. */
+  details?: Record<string, unknown>;
 }

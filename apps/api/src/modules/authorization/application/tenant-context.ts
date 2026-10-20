@@ -20,6 +20,7 @@ export interface TenantScopeInput {
   actionId?: string | null;
   actionDefinitionId?: string | null;
   submissionId?: string | null;
+  actionBatchId?: string | null;
   commitmentId?: string | null;
   milestoneId?: string | null;
   measurementDefinitionId?: string | null;

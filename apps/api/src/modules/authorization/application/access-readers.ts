@@ -73,6 +73,7 @@ export interface ActionReader {
   findActionById(id: string): Promise<CampaignAccessRecord | null>;
   findDefinitionById(id: string): Promise<CampaignAccessRecord | null>;
   findSubmissionById(id: string): Promise<CampaignAccessRecord | null>;
+  findBatchById(id: string): Promise<CampaignAccessRecord | null>;
 }
 
 export interface CommitmentReader {

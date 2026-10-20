@@ -1169,6 +1169,7 @@ class RecordedAction {
     this.submission,
     this.payload = const {},
     this.idempotencyKey,
+    this.batchId,
   });
 
   final String id;
@@ -1182,6 +1183,9 @@ class RecordedAction {
   final Submission? submission;
   final Map<String, dynamic> payload;
   final String? idempotencyKey;
+
+  /// Set when the day belongs to a range entry ([ActionBatch]).
+  final String? batchId;
 
   bool get isCancelled => status == 'cancelled';
 
@@ -1203,6 +1207,101 @@ class RecordedAction {
           : Submission.fromJson(_map(submissionJson)),
       payload: _map(json['payload']),
       idempotencyKey: _string(json['idempotencyKey']),
+      batchId: _string(json['batchId']),
+    );
+  }
+}
+
+abstract final class ActionBatchStatus {
+  static const submitted = 'submitted';
+  static const approved = 'approved';
+  static const rejected = 'rejected';
+  static const mixed = 'mixed';
+}
+
+/// A range entry: the same figure on each of [dayCount] days.
+class ActionBatch {
+  const ActionBatch({
+    required this.id,
+    required this.campaignId,
+    required this.participationId,
+    required this.userId,
+    required this.actionDefinitionId,
+    required this.startOn,
+    required this.endOn,
+    required this.dayCount,
+    required this.quantityPerDay,
+    required this.status,
+    this.cancelled = false,
+    this.submittedCount = 0,
+    this.approvedCount = 0,
+    this.rejectedCount = 0,
+    this.cancelledCount = 0,
+    this.payload = const {},
+    this.idempotencyKey,
+  });
+
+  final String id;
+  final String campaignId;
+  final String participationId;
+  final String userId;
+  final String actionDefinitionId;
+  final String startOn;
+  final String endOn;
+  final int dayCount;
+  final num quantityPerDay;
+
+  /// Derived from the child submissions of the days still recorded.
+  final String status;
+
+  /// True once every day is cancelled.
+  final bool cancelled;
+  final int submittedCount;
+  final int approvedCount;
+  final int rejectedCount;
+  final int cancelledCount;
+  final Map<String, dynamic> payload;
+  final String? idempotencyKey;
+
+  num get totalQuantity => quantityPerDay * dayCount;
+
+  factory ActionBatch.fromJson(Map<String, dynamic> json) {
+    final counts = _map(json['counts']);
+    return ActionBatch(
+      id: json['id'] as String,
+      campaignId: json['campaignId'] as String,
+      participationId: json['participationId'] as String,
+      userId: json['userId'] as String? ?? '',
+      actionDefinitionId: json['actionDefinitionId'] as String,
+      startOn: json['startOn'] as String,
+      endOn: json['endOn'] as String,
+      dayCount: _num(json['dayCount']).toInt(),
+      quantityPerDay: _num(json['quantityPerDay'], 1),
+      status: json['status'] as String? ?? ActionBatchStatus.submitted,
+      cancelled: json['cancelled'] as bool? ?? false,
+      submittedCount: _num(counts['submitted']).toInt(),
+      approvedCount: _num(counts['approved']).toInt(),
+      rejectedCount: _num(counts['rejected']).toInt(),
+      cancelledCount: _num(counts['cancelled']).toInt(),
+      payload: _map(json['payload']),
+      idempotencyKey: _string(json['idempotencyKey']),
+    );
+  }
+}
+
+/// A batch with its per-day actions.
+class ActionBatchDetail {
+  const ActionBatchDetail({required this.batch, required this.actions});
+
+  final ActionBatch batch;
+  final List<RecordedAction> actions;
+
+  factory ActionBatchDetail.fromJson(Map<String, dynamic> json) {
+    return ActionBatchDetail(
+      batch: ActionBatch.fromJson(_map(json['batch'])),
+      actions: _list(json['actions'])
+          .map((row) => RecordedAction.fromJson(_map(row)))
+          .toList(),
     );
   }
 }

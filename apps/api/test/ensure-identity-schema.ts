@@ -13,6 +13,7 @@ import { TightenMemberRolePermissions1792866113000 } from '../src/platform/datab
 import { AddEnrolmentSourceAndCommitmentDecision1793166314000 } from '../src/platform/database/migrations/1793166314000-AddEnrolmentSourceAndCommitmentDecision.js';
 import { AddMilestoneDueDate1793266415000 } from '../src/platform/database/migrations/1793266415000-AddMilestoneDueDate.js';
 import { AddCommitmentPeriods1793366516000 } from '../src/platform/database/migrations/1793366516000-AddCommitmentPeriods.js';
+import { CreateActionBatches1793466617000 } from '../src/platform/database/migrations/1793466617000-CreateActionBatches.js';
 
 type MigrationCtor = new () => MigrationInterface;
 
@@ -32,6 +33,7 @@ const SCHEMA_MIGRATIONS: MigrationCtor[] = [
   AddEnrolmentSourceAndCommitmentDecision1793166314000,
   AddMilestoneDueDate1793266415000,
   AddCommitmentPeriods1793366516000,
+  CreateActionBatches1793466617000,
 ];
 
 export async function revertSchemaMigrationsNewestFirst(
@@ -106,6 +108,7 @@ export async function clearTenantData(dataSource: DataSource): Promise<void> {
     'measurement_definitions',
     'submissions',
     'actions',
+    'action_batches',
     'commitments',
     'milestone_evaluations',
     'milestone_progress',
@@ -226,6 +229,9 @@ export async function ensureTenantSchema(
   }
   if (!(await columnExists(dataSource, 'commitments', 'valid_to'))) {
     await new AddCommitmentPeriods1793366516000().up(queryRunner);
+  }
+  if (!(await tableExists(dataSource, 'action_batches'))) {
+    await new CreateActionBatches1793466617000().up(queryRunner);
   }
 }
 

@@ -56,6 +56,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         : HttpStatus.INTERNAL_SERVER_ERROR;
     const { message, error } = this.describe(exception, status);
     const code = this.resolveErrorCode(exception, status);
+    const details = this.resolveDetails(exception);
 
     if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
       this.logger.error(
@@ -72,6 +73,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       correlationId: request.id ?? this.headerCorrelationId(request),
       timestamp: new Date().toISOString(),
       path: request.originalUrl ?? request.url,
+      ...(details ? { details } : {}),
     };
 
     response.status(status).json(body);
@@ -84,6 +86,24 @@ export class AllExceptionsFilter implements ExceptionFilter {
     }
 
     return resolveCorrelationId(header);
+  }
+
+  private resolveDetails(
+    exception: unknown,
+  ): Record<string, unknown> | undefined {
+    if (!(exception instanceof HttpException)) {
+      return undefined;
+    }
+    const exceptionBody = exception.getResponse();
+    if (typeof exceptionBody !== 'object' || exceptionBody === null) {
+      return undefined;
+    }
+    const details = (exceptionBody as Record<string, unknown>).details;
+    return typeof details === 'object' &&
+      details !== null &&
+      !Array.isArray(details)
+      ? (details as Record<string, unknown>)
+      : undefined;
   }
 
   private resolveErrorCode(exception: unknown, status: number): ErrorCode {
